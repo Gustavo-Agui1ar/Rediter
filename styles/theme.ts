@@ -45,20 +45,33 @@ export const styles = StyleSheet.create({
   },
 
   content: {
-    flexGrow: 0.8,
+    flex: 1,
+    flexGrow: 0.65,
     width: "80%",
     gap: 20,
     alignItems: "center",
     justifyContent: "center",
+    margin: "auto",
   },
 
   header: {
     flex: 1,
-    flexGrow: 0.2,
+    flexGrow: 0.3,
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    margin: "auto",
+  },
+
+  footer: {
+    flex: 1,
+    flexGrow: 0.1,
+
     width: "100%",
     alignItems: "center",
     gap: 10,
     padding: 10,
+    margin: "auto",
   },
 
   title: {
@@ -102,15 +115,6 @@ export const styles = StyleSheet.create({
     textAlign: "justify",
   },
 
-  keyboard_avoid: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 10,
-    padding: 20,
-    width: "100%",
-  },
-
   scroll_view: {
     flex: 1,
     width: "100%",
@@ -127,6 +131,6 @@ export const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 20,
+    paddingVertical: 40,
   },
 });

@@ -1,5 +1,4 @@
 import { Button, Header, HelperText, TextBox } from "@/components/components";
-import { indexStyle } from "@/styles/index.style";
 import { styles } from "@/styles/theme";
 import { LoginValidator } from "@/utils/loginVerify";
 import { router } from "expo-router";
@@ -11,84 +10,102 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [confirmPasswordSubmitted, setConfirmPasswordSubmitted] =
-    useState(false);
+
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorText, setErrorText] = useState("");
-  const controller = new AbortController();
-  setTimeout(() => controller.abort(), 5000);
 
   async function sendRegisterRequest() {
+    setIsSubmitted(true);
     setErrorText("");
 
-    router.push("/verify?userId=123");
-    // if (
-    //   !LoginValidator.isEmailValid(email) ||
-    //   !LoginValidator.isPasswordValid(password) ||
-    //   !LoginValidator.doPasswordsMatch(password, confirmPassword)
-    // ) {
-    //   setErrorText("Por favor, corrija os erros no formulário.");
-    //   return;
-    // }
+    const isEmailValid = LoginValidator.isEmailValid(email);
+    const isPasswordValid = LoginValidator.isPasswordValid(password);
+    const doPasswordsMatch = LoginValidator.doPasswordsMatch(
+      password,
+      confirmPassword,
+    );
 
-    // var user = {
-    //   name: name,
-    //   email: email,
-    //   password: password,
-    // };
-    // var response = await fetch("http://192.168.18.75:6969/User/Register", {
-    //   method: "PUT",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify(user),
-    //   signal: controller.signal,
-    // });
-    // if (response.ok) {
-    //   const userId = (await response.json()).userId;
-    //   router.push(`/verify?userId=${userId}`);
-    // } else {
-    //   setErrorText("Failed to register user.");
-    // }
+    if (!isEmailValid || !isPasswordValid || !doPasswordsMatch) {
+      setErrorText("Por favor, corrija os erros no formulário.");
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    try {
+      const user = {
+        name: name,
+        email: email,
+        password: password,
+      };
+
+      const response = await fetch("http://192.168.18.75:6969/User/Register", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(user),
+      });
+
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        console.log("Usuário registrado com sucesso!");
+        const data = await response.json();
+        console.log("Resposta do servidor:", data);
+        router.push(`/verify?userId=${data.userId}`);
+      } else {
+        setErrorText(
+          "Falha ao registrar usuário. Verifique se o e-mail já existe.",
+        );
+      }
+    } catch (error: any) {
+      if (error.name === "AbortError") {
+        setErrorText("O servidor demorou muito para responder (Timeout).");
+      } else {
+        setErrorText("Erro de conexão com o servidor.");
+      }
+    }
   }
 
   return (
-    <KeyboardAvoidingView style={[styles.key_board_avoid]} behavior="padding">
+    <KeyboardAvoidingView style={styles.key_board_avoid} behavior={"height"}>
       <ScrollView
-        style={[styles.scroll_view]}
+        style={styles.scroll_view}
         contentContainerStyle={styles.scroll_content}
+        keyboardShouldPersistTaps="handled"
       >
-        <Header title="Crie sua conta" style={[indexStyle.headerIndex]} />
+        <Header title="Crie sua conta" style={styles.header} />
 
-        <HelperText message={errorText} visible={!!errorText} />
         <View style={[styles.content]}>
-          <TextBox
-            placeholder="Nome"
-            value={name}
-            onChangeText={(text: string) => setName(text)}
-          />
-          <TextBox
-            placeholder="Email"
-            value={email}
-            onChangeText={(text: string) => setEmail(text)}
-          />
+          <HelperText message={errorText} visible={!!errorText} />
+          <TextBox placeholder="Nome" value={name} onChangeText={setName} />
+
+          <TextBox placeholder="Email" value={email} onChangeText={setEmail} />
           <HelperText
             message="E-mail incorreto ou não preenchido"
             visible={!!email && !LoginValidator.isEmailValid(email)}
           />
+
           <TextBox
             placeholder="Senha"
             value={password}
-            onChangeText={(text: string) => setPassword(text)}
+            onChangeText={setPassword}
             secureTextEntry
           />
           <HelperText
-            message="Senha deve conter pelo menos 6 caracteres, incluindo letras maiúsculas, minúsculas, números e caracteres especiais."
-            visible={!!password && !LoginValidator.isPasswordValid(password)}
+            message="A senha deve ter 6+ caracteres, maiúsculas, números e símbolos."
+            visible={
+              (isSubmitted || !!password) &&
+              !LoginValidator.isPasswordValid(password)
+            }
           />
+
           <TextBox
             placeholder="Confirmar senha"
             value={confirmPassword}
-            onChangeText={(text: string) => setConfirmPassword(text)}
+            onChangeText={setConfirmPassword}
             secureTextEntry
           />
           <HelperText
@@ -102,9 +119,10 @@ export default function Register() {
           <Button
             title="Criar conta"
             onPress={sendRegisterRequest}
-            style={[{ marginTop: 20 }]}
+            style={{ marginTop: 20 }}
           />
         </View>
+        <View style={styles.footer} />
       </ScrollView>
     </KeyboardAvoidingView>
   );

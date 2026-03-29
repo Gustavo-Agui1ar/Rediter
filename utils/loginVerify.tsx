@@ -1,3 +1,6 @@
+import { saveTokens } from "@/utils/storage";
+import { router } from "expo-router";
+
 export class LoginValidator {
   static isEmailValid(email: string) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -15,5 +18,13 @@ export class LoginValidator {
 
   static doPasswordsMatch(password: string, confirmPassword: string) {
     return password === confirmPassword;
+  }
+
+  static async EnterInRediter(response: Response) {
+    var tokens = await response.json();
+    var refresh = tokens.refreshToken;
+    var access = tokens.accessToken;
+    await saveTokens(access, refresh);
+    router.push("/main");
   }
 }

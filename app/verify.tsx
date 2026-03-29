@@ -1,6 +1,6 @@
 import { Button, Code, LinkText } from "@/components/components";
 import { styles } from "@/styles/theme";
-import { saveTokens } from "@/utils/storage";
+import { LoginValidator } from "@/utils/loginVerify";
 import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Image, KeyboardAvoidingView, Text, View } from "react-native";
@@ -9,7 +9,6 @@ export default function Verify() {
   const { userId } = useLocalSearchParams();
   const [code, setCode] = useState("");
   const controller = new AbortController();
-  setTimeout(() => controller.abort(), 5000);
 
   async function verifyCode(code: string) {
     if (code.length !== 6) {
@@ -17,22 +16,29 @@ export default function Verify() {
       return;
     }
 
-    var response = await fetch(
-      `http://192.168.18.75:6969/Auth/Code?code=${code}&userId=${userId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        signal: controller.signal,
-      },
-    );
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-    if (response.ok) {
-      var tokens = await response.json();
-      var refresh = tokens.refreshToken;
-      var access = tokens.accessToken;
-      await saveTokens(access, refresh);
+    try {
+      var response = await fetch(
+        `http://192.168.18.75:6969/Auth/Code?code=${code}&userId=${userId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          signal: controller.signal,
+        },
+      );
+
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        await LoginValidator.EnterInRediter(response);
+      }
+    } catch (error) {
+      console.error("Erro ao verificar código:", error);
+      alert("Ocorreu um erro ao verificar o código. Tente novamente.");
     }
   }
 

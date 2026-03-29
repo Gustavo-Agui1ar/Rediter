@@ -12,6 +12,7 @@ export default function Layout() {
       <Stack.Screen name="index" />
       <Stack.Screen name="register" />
       <Stack.Screen name="verify" />
+      <Stack.Screen name="main" />
     </Stack>
   );
 }

@@ -6,11 +6,10 @@ import {
   LinkText,
   TextBox,
 } from "@/components/components";
-import { indexStyle } from "@/styles/index.style";
 import { Colors, styles } from "@/styles/theme";
+import { LoginValidator } from "@/utils/loginVerify";
 import {
   GoogleSignin,
-  User,
   isSuccessResponse,
 } from "@react-native-google-signin/google-signin";
 import { router } from "expo-router";
@@ -23,6 +22,9 @@ import {
   View,
 } from "react-native";
 
+import * as StorageUtils from "@/utils/storage";
+import { useEffect } from "react";
+
 GoogleSignin.configure({
   webClientId:
     "573963521901-0tovmn0v1au6ob5dm2uq7q19gm21o144.apps.googleusercontent.com",
@@ -30,7 +32,19 @@ GoogleSignin.configure({
 });
 
 export default function Index() {
-  const [authenticated, setAuthenticated] = useState<User | null>(null);
+  useEffect(() => {
+    async function checkTokens() {
+      const accessToken = await StorageUtils.getStoreageItem("user_token");
+      const refreshToken = await StorageUtils.getStoreageItem("refresh_token");
+      if (accessToken && refreshToken) {
+        console.log("Tokens encontrados, redirecionando para main...");
+        router.push("/main"); // TODO terminar segurança e validação dos tokens: se o tempo do acesstokem tiver expirado, usar o refresh token para obter um novo access token. Se o refresh token também tiver expirado, redirecionar para a tela de login.
+      }
+    }
+
+    checkTokens();
+  }, []);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [Emailsubmitted, setEmailSubmitted] = useState(false);
@@ -58,12 +72,43 @@ export default function Index() {
     return password.length >= 6;
   }
 
-  function authenticate() {
-    console.log("Authenticating with email:", email);
+  async function authenticate() {
     setEmailSubmitted(true);
     setPasswordSubmitted(true);
     if (!isValidEmail(email)) return;
     if (!isPasswordValid(password)) return;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    var user = {
+      name: "User Redider",
+      email: email,
+      password: password,
+    };
+
+    console.log("Usuário a ser registrado:", user);
+
+    try {
+      var response = await fetch("http://192.168.18.75:6969/Auth/Rediter", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(user),
+        signal: controller.signal,
+      });
+
+      console.log("Resposta da autenticação:", response);
+
+      if (response.ok) {
+        await LoginValidator.EnterInRediter(response);
+      }
+    } catch (error) {
+      console.error("Error during authentication:", error);
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }
 
   return (
@@ -72,7 +117,7 @@ export default function Index() {
         style={[styles.scroll_view]}
         contentContainerStyle={styles.scroll_content}
       >
-        <Header title="Bem-vindo ao Rediter" style={[indexStyle.headerIndex]} />
+        <Header title="Bem-vindo ao Rediter" style={[styles.header]} />
         <View style={styles.content}>
           <TextBox
             placeholder="Email"
@@ -138,6 +183,7 @@ export default function Index() {
             />
           </View>
         </View>
+        <View style={styles.footer} />
       </ScrollView>
     </KeyboardAvoidingView>
   );
