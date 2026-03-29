@@ -1,0 +1,17 @@
+import { Colors } from "@/styles/theme";
+import { Stack } from "expo-router";
+
+export default function Layout() {
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: Colors.primary },
+      }}
+    >
+      <Stack.Screen name="index" />
+      <Stack.Screen name="register" />
+      <Stack.Screen name="verify" />
+    </Stack>
+  );
+}

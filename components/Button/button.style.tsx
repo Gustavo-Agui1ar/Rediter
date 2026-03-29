@@ -6,6 +6,7 @@ export const buttonStyles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: 16,
     paddingHorizontal: 20,
+    width: "100%",
   },
 
   fill: {

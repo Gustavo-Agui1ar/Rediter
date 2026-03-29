@@ -35,7 +35,7 @@
             "image": "./assets/logo/white_r.png",
             "backgroundColor": "#000000"
           },
-          "imageWidth": 200
+          "imageWidth": 300
         }
       ],
       "@react-native-google-signin/google-signin",
