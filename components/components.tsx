@@ -4,5 +4,6 @@ export { Divider } from "./Divider/divider";
 export { Header } from "./header/header";
 export { HelperText } from "./HelperText/helpertext";
 export { default as LinkText } from "./LinkText/linktext";
+export { NavBar, NavItem } from "./NavBar/navbar";
 export { default as TextBox } from "./TextBox/textbox";
 

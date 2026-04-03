@@ -29,49 +29,34 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+
+  TextAlignCenter: {
+    textAlign: "center",
+    color: Colors.perimary,
+  },
+
   base: {
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
   },
 
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 40,
-    paddingTop: 40,
-    paddingBottom: 40,
-  },
-
   content: {
     flex: 1,
-    flexGrow: 0.65,
-    width: "80%",
+    flexGrow: 0.75,
+    width: "100%",
     gap: 20,
     alignItems: "center",
     justifyContent: "center",
-    margin: "auto",
-  },
-
-  header: {
-    flex: 1,
-    flexGrow: 0.3,
-    width: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-    margin: "auto",
   },
 
   footer: {
     flex: 1,
     flexGrow: 0.1,
-
     width: "100%",
+    justifyContent: "center",
     alignItems: "center",
     gap: 10,
-    padding: 10,
-    margin: "auto",
   },
 
   title: {
@@ -115,12 +100,7 @@ export const styles = StyleSheet.create({
     textAlign: "justify",
   },
 
-  scroll_view: {
-    flex: 1,
-    width: "100%",
-  },
-
-  key_board_avoid: {
+  container: {
     flex: 1,
     width: "100%",
   },
@@ -132,5 +112,12 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 40,
+  },
+
+  centerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
   },
 });

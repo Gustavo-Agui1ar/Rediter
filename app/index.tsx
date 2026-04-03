@@ -6,12 +6,8 @@ import {
   LinkText,
   TextBox,
 } from "@/components/components";
-import { Colors, styles } from "@/styles/theme";
-import { LoginValidator } from "@/utils/loginVerify";
-import {
-  GoogleSignin,
-  isSuccessResponse,
-} from "@react-native-google-signin/google-signin";
+import { styles } from "@/styles/theme";
+import { LoginValidator, updateField } from "@/utils/loginVerify";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
@@ -22,14 +18,10 @@ import {
   View,
 } from "react-native";
 
+import { ScriptIndex } from "@/scripts/index.script";
+import { indexStyle } from "@/styles/index.style";
 import * as StorageUtils from "@/utils/storage";
 import { useEffect } from "react";
-
-GoogleSignin.configure({
-  webClientId:
-    "573963521901-0tovmn0v1au6ob5dm2uq7q19gm21o144.apps.googleusercontent.com",
-  offlineAccess: true,
-});
 
 export default function Index() {
   useEffect(() => {
@@ -45,104 +37,47 @@ export default function Index() {
     checkTokens();
   }, []);
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [Emailsubmitted, setEmailSubmitted] = useState(false);
-  const [Passwordsubmitted, setPasswordSubmitted] = useState(false);
+  const [Submitted, setSubmitted] = useState(false);
 
-  async function signInWithGoogle() {
-    try {
-      const userInfo = await GoogleSignin.hasPlayServices();
-      const response = await GoogleSignin.signIn();
-
-      if (isSuccessResponse(response)) {
-        console.log("Google Sign-In successful:", response.data);
-      }
-    } catch (error) {
-      console.error("Error during Google Sign-In:", error);
-    }
-  }
-
-  function isValidEmail(email: string) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
-
-  function isPasswordValid(password: string) {
-    return password.length >= 6;
-  }
-
-  async function authenticate() {
-    setEmailSubmitted(true);
-    setPasswordSubmitted(true);
-    if (!isValidEmail(email)) return;
-    if (!isPasswordValid(password)) return;
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-    var user = {
-      name: "User Redider",
-      email: email,
-      password: password,
-    };
-
-    console.log("Usuário a ser registrado:", user);
-
-    try {
-      var response = await fetch("http://192.168.18.75:6969/Auth/Rediter", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(user),
-        signal: controller.signal,
-      });
-
-      console.log("Resposta da autenticação:", response);
-
-      if (response.ok) {
-        await LoginValidator.EnterInRediter(response);
-      }
-    } catch (error) {
-      console.error("Error during authentication:", error);
-    } finally {
-      clearTimeout(timeoutId);
-    }
-  }
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
 
   return (
-    <KeyboardAvoidingView style={[styles.key_board_avoid]} behavior="padding">
+    <KeyboardAvoidingView style={[styles.container]} behavior="padding">
       <ScrollView
-        style={[styles.scroll_view]}
+        style={[styles.container]}
         contentContainerStyle={styles.scroll_content}
       >
-        <Header title="Bem-vindo ao Rediter" style={[styles.header]} />
-        <View style={styles.content}>
+        <Header title="Bem-vindo ao Rediter" />
+        <View style={indexStyle.content_login}>
           <TextBox
             placeholder="Email"
-            value={email}
+            value={form.email}
             onChangeText={(text: string) => {
-              setEmail(text);
-              if (Emailsubmitted) setEmailSubmitted(false);
+              updateField(setForm, "email", text);
+              if (Submitted) setSubmitted(false);
             }}
           />
           <HelperText
             message="E-mail incorreto ou não preenchido"
-            visible={Emailsubmitted && !isValidEmail(email)}
+            visible={Submitted && !LoginValidator.isEmailValid(form.email)}
           />
           <TextBox
             placeholder="Password"
-            value={password}
+            value={form.password}
             onChangeText={(text: string) => {
-              setPassword(text);
-              if (Passwordsubmitted) setPasswordSubmitted(false);
+              updateField(setForm, "password", text);
+              if (Submitted) setSubmitted(false);
             }}
             secureTextEntry
           />
           <HelperText
             message="A senha deve conter pelo menos 6 caracteres"
-            visible={Passwordsubmitted && !isPasswordValid(password)}
+            visible={
+              Submitted && !LoginValidator.isPasswordValid(form.password)
+            }
           />
           <LinkText
             text="Esqueceu sua senha?"
@@ -153,13 +88,26 @@ export default function Index() {
           />
           <Button
             title="Conectar-se agora"
-            onPress={authenticate}
+            onPress={async () => {
+              setSubmitted(true);
+
+              const result = await ScriptIndex.authenticate(
+                form.email,
+                form.password,
+              );
+
+              if (!result.success) return;
+
+              await StorageUtils.saveTokens(result.access, result.refresh);
+
+              router.push("/main");
+            }}
             type="fill"
           />
           <Divider text="ou" />
           <Button
             title="Entrar com Google"
-            onPress={signInWithGoogle}
+            onPress={() => ScriptIndex.signInWithGoogle()}
             type="border"
             icon={
               <Image
@@ -169,12 +117,8 @@ export default function Index() {
             }
           />
 
-          <View
-            style={{ flexDirection: "row", justifyContent: "center", gap: 5 }}
-          >
-            <Text style={{ textAlign: "center", color: Colors.terciary }}>
-              Não possui uma conta?{" "}
-            </Text>
+          <View style={styles.centerRow}>
+            <Text style={[styles.TextAlignCenter]}>Não possui uma conta? </Text>
             <LinkText
               text="Inscreva-se"
               onPress={() => {

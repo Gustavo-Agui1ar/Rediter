@@ -1,124 +1,101 @@
 import { Button, Header, HelperText, TextBox } from "@/components/components";
+import { ScriptRegister } from "@/scripts/register.script";
 import { styles } from "@/styles/theme";
-import { LoginValidator } from "@/utils/loginVerify";
+import { LoginValidator, updateField } from "@/utils/loginVerify";
 import { router } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, ScrollView, View } from "react-native";
 
 export default function Register() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorText, setErrorText] = useState("");
 
-  async function sendRegisterRequest() {
-    setIsSubmitted(true);
-    setErrorText("");
-
-    const isEmailValid = LoginValidator.isEmailValid(email);
-    const isPasswordValid = LoginValidator.isPasswordValid(password);
-    const doPasswordsMatch = LoginValidator.doPasswordsMatch(
-      password,
-      confirmPassword,
-    );
-
-    if (!isEmailValid || !isPasswordValid || !doPasswordsMatch) {
-      setErrorText("Por favor, corrija os erros no formulário.");
-      return;
-    }
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-    try {
-      const user = {
-        name: name,
-        email: email,
-        password: password,
-      };
-
-      const response = await fetch("http://192.168.18.75:6969/User/Register", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(user),
-      });
-
-      clearTimeout(timeoutId);
-
-      if (response.ok) {
-        console.log("Usuário registrado com sucesso!");
-        const data = await response.json();
-        console.log("Resposta do servidor:", data);
-        router.push(`/verify?userId=${data.userId}`);
-      } else {
-        setErrorText(
-          "Falha ao registrar usuário. Verifique se o e-mail já existe.",
-        );
-      }
-    } catch (error: any) {
-      if (error.name === "AbortError") {
-        setErrorText("O servidor demorou muito para responder (Timeout).");
-      } else {
-        setErrorText("Erro de conexão com o servidor.");
-      }
-    }
-  }
-
   return (
-    <KeyboardAvoidingView style={styles.key_board_avoid} behavior={"height"}>
+    <KeyboardAvoidingView style={styles.container} behavior={"height"}>
       <ScrollView
-        style={styles.scroll_view}
+        style={styles.container}
         contentContainerStyle={styles.scroll_content}
         keyboardShouldPersistTaps="handled"
       >
-        <Header title="Crie sua conta" style={styles.header} />
+        <Header title="Crie sua conta" />
 
         <View style={[styles.content]}>
           <HelperText message={errorText} visible={!!errorText} />
-          <TextBox placeholder="Nome" value={name} onChangeText={setName} />
+          <TextBox
+            placeholder="Nome"
+            value={form.name}
+            onChangeText={(value: string) =>
+              updateField(setForm, "name", value)
+            }
+          />
 
-          <TextBox placeholder="Email" value={email} onChangeText={setEmail} />
+          <TextBox
+            placeholder="Email"
+            value={form.email}
+            onChangeText={(value: string) =>
+              updateField(setForm, "email", value)
+            }
+          />
           <HelperText
             message="E-mail incorreto ou não preenchido"
-            visible={!!email && !LoginValidator.isEmailValid(email)}
+            visible={!!form.email && !LoginValidator.isEmailValid(form.email)}
           />
 
           <TextBox
             placeholder="Senha"
-            value={password}
-            onChangeText={setPassword}
+            value={form.password}
+            onChangeText={(value: string) =>
+              updateField(setForm, "password", value)
+            }
             secureTextEntry
           />
           <HelperText
             message="A senha deve ter 6+ caracteres, maiúsculas, números e símbolos."
             visible={
-              (isSubmitted || !!password) &&
-              !LoginValidator.isPasswordValid(password)
+              (isSubmitted || !!form.password) &&
+              !LoginValidator.isPasswordValid(form.password)
             }
           />
 
           <TextBox
             placeholder="Confirmar senha"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
+            value={form.confirmPassword}
+            onChangeText={(value: string) =>
+              updateField(setForm, "confirmPassword", value)
+            }
             secureTextEntry
           />
           <HelperText
             message="As senhas não coincidem."
             visible={
-              !!confirmPassword &&
-              !LoginValidator.doPasswordsMatch(password, confirmPassword)
+              !!form.confirmPassword &&
+              !LoginValidator.doPasswordsMatch(
+                form.password,
+                form.confirmPassword,
+              )
             }
           />
 
           <Button
             title="Criar conta"
-            onPress={sendRegisterRequest}
+            onPress={async () => {
+              setIsSubmitted(true);
+
+              var response = await ScriptRegister.sendRegisterRequest(form);
+
+              setErrorText(response.error);
+
+              if (response.success) {
+                router.push(`/verify?userId=${response.userId}`);
+              }
+            }}
             style={{ marginTop: 20 }}
           />
         </View>

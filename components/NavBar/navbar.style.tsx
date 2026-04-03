@@ -1,34 +1,40 @@
+import { Colors } from "@/styles/theme";
 import { StyleSheet } from "react-native";
 
 export const stylesNav = StyleSheet.create({
   container: {
+    flex: 1,
+    flexGrow: 1,
     flexDirection: "row",
-    height: 70,
-    backgroundColor: "#1A1A1A", // Exemplo de cor do Rediter
+    width: "100%",
+    backgroundColor: "#1A1A1A",
     borderTopWidth: 1,
     borderTopColor: "#333",
     justifyContent: "space-around",
     alignItems: "center",
-    paddingBottom: 10,
   },
   navItem: {
     alignItems: "center",
     justifyContent: "center",
   },
   iconContainer: {
-    padding: 8,
+    width: 40,
+    height: 40,
     borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
   },
   activeIcon: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: Colors.primary,
   },
   label: {
     fontSize: 12,
-    color: "#888",
+    color: Colors.perimary,
     marginTop: 4,
   },
   activeLabel: {
     color: "#FFF",
     fontWeight: "bold",
+    borderRadius: 8,
   },
 });

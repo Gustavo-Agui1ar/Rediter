@@ -1,30 +1,27 @@
-import { styles } from "@/styles/theme";
-import { router } from "expo-router";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { stylesNav } from "./navbar.style";
 
-// types/navigation.ts
 export interface NavItem {
   id: string;
   label: string;
   icon: React.ReactNode;
-  route: string;
 }
 
 interface NavBarProps {
   items: NavItem[];
   activeId: string;
+  onPress: (id: string) => void;
 }
 
-export const NavBar = ({ items, activeId }: NavBarProps) => {
+export const NavBar = ({ items, activeId, onPress }: NavBarProps) => {
   return (
-    <View style={styles.container}>
+    <View style={stylesNav.container}>
       {items.map((item) => (
         <TouchableOpacity
           key={item.id}
           style={stylesNav.navItem}
-          onPress={() => router.push(item.route as any)}
+          onPress={() => onPress(item.id)}
         >
           <View
             style={[

@@ -1,6 +1,3 @@
-import { saveTokens } from "@/utils/storage";
-import { router } from "expo-router";
-
 export class LoginValidator {
   static isEmailValid(email: string) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -20,11 +17,21 @@ export class LoginValidator {
     return password === confirmPassword;
   }
 
-  static async EnterInRediter(response: Response) {
+  static async ParseTokens(response: Response) {
     var tokens = await response.json();
     var refresh = tokens.refreshToken;
     var access = tokens.accessToken;
-    await saveTokens(access, refresh);
-    router.push("/main");
+    return { refresh, access };
   }
+}
+
+export function updateField<T>(
+  setState: React.Dispatch<React.SetStateAction<T>>,
+  field: keyof T,
+  value: any,
+) {
+  setState((prev) => ({
+    ...prev,
+    [field]: value,
+  }));
 }
