@@ -9,4 +9,12 @@ export const stylesPerfil = StyleSheet.create({
     borderColor: "#333",
     objectFit: "contain",
   },
+
+  containeractionprofile: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: -30,
+    paddingHorizontal: 16,
+  },
 });

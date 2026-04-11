@@ -11,8 +11,8 @@ export default function Verify() {
   const [code, setCode] = useState("");
 
   return (
-    <KeyboardAvoidingView style={[styles.container]} behavior="padding">
-      <View style={[styles.container, { gap: 10, width: "100%" }]}>
+    <KeyboardAvoidingView style={[styles.content]} behavior="padding">
+      <View style={[styles.content, { width: "80%" }]}>
         <Image
           source={require("@/assets/images/verify.png")}
           style={styles.large_icon}

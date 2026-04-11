@@ -43,7 +43,6 @@ export const styles = StyleSheet.create({
 
   content: {
     flex: 1,
-    flexGrow: 0.75,
     width: "100%",
     gap: 20,
     alignItems: "center",
@@ -51,8 +50,7 @@ export const styles = StyleSheet.create({
   },
 
   footer: {
-    flex: 1,
-    flexGrow: 0.1,
+    aspectRatio: 4,
     width: "100%",
     justifyContent: "center",
     alignItems: "center",

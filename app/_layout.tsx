@@ -13,6 +13,7 @@ export default function Layout() {
       <Stack.Screen name="register" />
       <Stack.Screen name="verify" />
       <Stack.Screen name="main" />
+      <Stack.Screen name="configs" />
     </Stack>
   );
 }

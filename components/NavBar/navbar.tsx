@@ -2,35 +2,38 @@ import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { stylesNav } from "./navbar.style";
 
-export interface NavItem {
-  id: string;
+export interface NavItem<T = string> {
+  id: T;
   label: string;
   icon: React.ReactNode;
 }
 
-interface NavBarProps {
-  items: NavItem[];
-  activeId: string;
-  onPress: (id: string) => void;
+interface NavBarProps<T> {
+  items: NavItem<T>[];
+  activeId: T;
+  onPress: (id: T) => void;
 }
 
-export const NavBar = ({ items, activeId, onPress }: NavBarProps) => {
+export function NavBar<T>({ items, activeId, onPress }: NavBarProps<T>) {
   return (
     <View style={stylesNav.container}>
       {items.map((item) => (
         <TouchableOpacity
-          key={item.id}
+          key={String(item.id)}
           style={stylesNav.navItem}
           onPress={() => onPress(item.id)}
         >
-          <View
-            style={[
-              stylesNav.iconContainer,
-              activeId === item.id && stylesNav.activeIcon,
-            ]}
-          >
-            {item.icon}
-          </View>
+          {item.icon ? (
+            <View
+              style={[
+                stylesNav.iconContainer,
+                activeId === item.id && stylesNav.activeIcon,
+              ]}
+            >
+              {item.icon}
+            </View>
+          ) : null}
+
           <Text
             style={[
               stylesNav.label,
@@ -43,4 +46,4 @@ export const NavBar = ({ items, activeId, onPress }: NavBarProps) => {
       ))}
     </View>
   );
-};
+}

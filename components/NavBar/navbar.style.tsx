@@ -7,7 +7,7 @@ export const stylesNav = StyleSheet.create({
     flexGrow: 1,
     flexDirection: "row",
     width: "100%",
-    backgroundColor: "#1A1A1A",
+    backgroundColor: Colors.primary,
     borderTopWidth: 1,
     borderTopColor: "#333",
     justifyContent: "space-around",
