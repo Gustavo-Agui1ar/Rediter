@@ -1,5 +1,8 @@
 import { configs } from "@/utils/configs";
 import { LoginValidator } from "@/utils/loginVerify";
+import { useRequest } from "@/utils/request";
+
+const { request } = useRequest();
 
 interface RegisterForm {
   name: string;
@@ -42,13 +45,12 @@ export class ScriptRegister {
         password: form.password,
       };
 
-      const serverResponse = await fetch(`${configs.apiUrl}/User/Register`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(user),
-      });
+      const serverResponse = await request(
+        "/User/Register",
+        "PUT",
+        user,
+        controller.signal,
+      );
 
       clearTimeout(timeoutId);
 

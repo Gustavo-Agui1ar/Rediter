@@ -1,6 +1,8 @@
 import { configs } from "@/utils/configs";
 import { LoginValidator } from "@/utils/loginVerify";
+import { useRequest } from "@/utils/request";
 
+const { request } = useRequest();
 export class ScriptVerify {
   static async verifyCode(userId: string, code: string) {
     var response = {
@@ -19,15 +21,11 @@ export class ScriptVerify {
     const timeoutId = setTimeout(() => controller.abort(), configs.timeout);
 
     try {
-      var serverResponse = await fetch(
-        `${configs.apiUrl}/Auth/Code?code=${code}&userId=${userId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          signal: controller.signal,
-        },
+      const serverResponse = await request(
+        `/Auth/Code?code=${code}&userId=${userId}`,
+        "GET",
+        undefined,
+        controller.signal,
       );
 
       clearTimeout(timeoutId);

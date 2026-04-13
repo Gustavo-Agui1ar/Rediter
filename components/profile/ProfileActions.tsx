@@ -1,3 +1,4 @@
+import { useLoading } from "@/context/loadingContext";
 import { router } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
@@ -11,6 +12,7 @@ interface ProfileActionsProps {
 export default function ProfileActions({
   canFollow = true,
 }: ProfileActionsProps) {
+  const { setLoading } = useLoading();
   const [isFollowing, setIsFollowing] = useState(false);
   return (
     <View
@@ -42,8 +44,7 @@ export default function ProfileActions({
     setIsFollowing((prev) => !prev);
   }
 
-  function Config() {
-    console.log("Config: ", canFollow);
+  async function Config() {
     if (!canFollow) {
       router.push("/configs");
     }

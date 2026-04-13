@@ -7,6 +7,7 @@ import { Colors, styles } from "@/styles/theme";
 import { JSX } from "react";
 
 import { LoadingOverlay } from "@/components/Loading/loading";
+import { useLoading } from "@/context/loadingContext";
 import Feed from "./Views/feed";
 import Message from "./Views/message";
 import Perfil from "./Views/perfil";
@@ -15,7 +16,7 @@ export default function Main() {
   type Tab = "home" | "messages" | "profile";
 
   const [currentTab, setCurrentTab] = useState<Tab>("home");
-  const [loading, setLoading] = useState(false);
+  const { loading } = useLoading();
 
   const screens: Record<Tab, JSX.Element> = {
     home: <Feed />,

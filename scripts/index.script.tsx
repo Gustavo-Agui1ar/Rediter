@@ -1,10 +1,11 @@
 import {
-    GoogleSignin,
-    isSuccessResponse,
+  GoogleSignin,
+  isSuccessResponse,
 } from "@react-native-google-signin/google-signin";
 
 import { configs } from "@/utils/configs";
 import { LoginValidator } from "@/utils/loginVerify";
+import { useRequest } from "@/utils/request";
 
 GoogleSignin.configure({
   webClientId:
@@ -12,6 +13,7 @@ GoogleSignin.configure({
   offlineAccess: true,
 });
 
+const { request } = useRequest();
 export class ScriptIndex {
   static async signInWithGoogle() {
     try {
@@ -45,14 +47,12 @@ export class ScriptIndex {
     };
 
     try {
-      const response = await fetch(`${configs.apiUrl}/Auth/Rediter`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(user),
-        signal: controller.signal,
-      });
+      const response = await request(
+        "/Auth/Rediter",
+        "POST",
+        user,
+        controller.signal,
+      );
 
       if (!response.ok) {
         return { success: false, error: "api_error" };
