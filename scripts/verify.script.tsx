@@ -1,8 +1,7 @@
-import { configs } from "@/utils/configs";
+import { useLoading } from "@/context/loadingContext";
 import { LoginValidator } from "@/utils/loginVerify";
-import { useRequest } from "@/utils/request";
+import { request } from "@/utils/request";
 
-const { request } = useRequest();
 export class ScriptVerify {
   static async verifyCode(userId: string, code: string) {
     var response = {
@@ -17,18 +16,12 @@ export class ScriptVerify {
       return;
     }
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), configs.timeout);
-
     try {
-      const serverResponse = await request(
-        `/Auth/Code?code=${code}&userId=${userId}`,
-        "GET",
-        undefined,
-        controller.signal,
-      );
-
-      clearTimeout(timeoutId);
+      const serverResponse = await request({
+        urlComplement: `/Auth/Code?code=${code}&userId=${userId}`,
+        method: "GET",
+        setLoading: useLoading,
+      });
 
       if (serverResponse.ok) {
         {

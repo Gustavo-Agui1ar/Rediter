@@ -2,6 +2,7 @@ import { buttonStyles } from "@/components/Button/button.style";
 import { Colors } from "@/styles/theme";
 import {
   ArrowLeft,
+  EditIcon,
   MessageCircle,
   MoreHorizontal,
   Settings,
@@ -9,7 +10,7 @@ import {
 import { ReactNode } from "react";
 import { TouchableOpacity, TouchableOpacityProps, View } from "react-native";
 
-type IconName = "message" | "more" | "configuration" | "back-row";
+type IconName = "message" | "more" | "configuration" | "back-row" | "edit";
 
 interface IconButtonProps extends TouchableOpacityProps {
   icon: IconName;
@@ -34,6 +35,8 @@ export default function IconButton({
         return <Settings size={20} color={Colors.secondary} />;
       case "back-row":
         return <ArrowLeft size={20} color={Colors.secondary} />;
+      case "edit":
+        return <EditIcon size={20} color={Colors.secondary} />;
       default:
         return null;
     }

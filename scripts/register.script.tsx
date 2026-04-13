@@ -1,8 +1,5 @@
-import { configs } from "@/utils/configs";
 import { LoginValidator } from "@/utils/loginVerify";
-import { useRequest } from "@/utils/request";
-
-const { request } = useRequest();
+import { request } from "@/utils/request";
 
 interface RegisterForm {
   name: string;
@@ -35,9 +32,6 @@ export class ScriptRegister {
       return response;
     }
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), configs.timeout);
-
     try {
       const user = {
         name: form.name,
@@ -45,14 +39,11 @@ export class ScriptRegister {
         password: form.password,
       };
 
-      const serverResponse = await request(
-        "/User/Register",
-        "PUT",
-        user,
-        controller.signal,
-      );
-
-      clearTimeout(timeoutId);
+      const serverResponse = await request({
+        urlComplement: "/User/Register",
+        method: "PUT",
+        body: user,
+      });
 
       if (serverResponse.ok) {
         console.log("Usuário registrado com sucesso!");
