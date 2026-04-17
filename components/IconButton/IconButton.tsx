@@ -8,14 +8,22 @@ import {
   Settings,
 } from "lucide-react-native";
 import { ReactNode } from "react";
-import { TouchableOpacity, TouchableOpacityProps, View } from "react-native";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  TouchableOpacity,
+  TouchableOpacityProps,
+  View,
+} from "react-native";
 
 type IconName = "message" | "more" | "configuration" | "back-row" | "edit";
 
 interface IconButtonProps extends TouchableOpacityProps {
   icon: IconName;
   size?: number;
-  type?: "fill" | "border";
+  type?: "fill" | "border" | "none";
+  fullSize?: boolean;
+  loading?: boolean;
 }
 
 export default function IconButton({
@@ -23,20 +31,34 @@ export default function IconButton({
   size = 44,
   type = "border",
   style,
+  disabled,
+  fullSize = false,
+  loading,
   ...rest
 }: IconButtonProps) {
+  const isInactive = loading || disabled;
+  const currentColor =
+    type === "none" || fullSize
+      ? Colors.perimary
+      : isInactive
+        ? Colors.disabled
+        : Colors.secondary;
+
   function renderIcon(): ReactNode {
+    if (loading) return <ActivityIndicator size="small" color={currentColor} />;
+
+    const props = { size: fullSize ? 28 : size / 2, color: currentColor };
     switch (icon) {
       case "message":
-        return <MessageCircle size={20} color={Colors.secondary} />;
+        return <MessageCircle {...props} />;
       case "more":
-        return <MoreHorizontal size={20} color={Colors.secondary} />;
+        return <MoreHorizontal {...props} />;
       case "configuration":
-        return <Settings size={20} color={Colors.secondary} />;
+        return <Settings {...props} />;
       case "back-row":
-        return <ArrowLeft size={20} color={Colors.secondary} />;
+        return <ArrowLeft {...props} />;
       case "edit":
-        return <EditIcon size={20} color={Colors.secondary} />;
+        return <EditIcon {...props} />;
       default:
         return null;
     }
@@ -45,16 +67,19 @@ export default function IconButton({
   return (
     <TouchableOpacity
       activeOpacity={0.7}
+      disabled={isInactive}
       style={[
+        fullSize
+          ? StyleSheet.absoluteFillObject
+          : { width: size, height: size, borderRadius: size / 2 },
         buttonStyles.base,
-        buttonStyles[type],
+        type !== "none" && buttonStyles[type],
         {
-          width: size,
-          height: size,
-          borderRadius: size / 2,
           alignItems: "center",
           justifyContent: "center",
+          backgroundColor: type === "none" ? "rgba(0,0,0,0.4)" : undefined,
         },
+        isInactive && !fullSize && { opacity: 0.6 },
         style,
       ]}
       {...rest}

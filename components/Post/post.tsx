@@ -13,11 +13,7 @@ export default function Post() {
         marginBottom: 16,
       }}
     >
-      <ProfileImage
-        imageUrl="https://avatars.githubusercontent.com/u/12345678?v=4"
-        size={60}
-        wrapper={false}
-      />
+      <ProfileImage size={60} wrapper={false} />
       <Image
         source={{
           uri: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cHJvZmlsZSUyMGNvdmVyfGVufDB8fDB8fHww&w=1000&q=80",

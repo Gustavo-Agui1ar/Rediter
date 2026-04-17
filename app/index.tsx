@@ -18,6 +18,7 @@ import {
   View,
 } from "react-native";
 
+import { useLoading } from "@/context/loadingContext";
 import { ScriptIndex } from "@/scripts/index.script";
 import { indexStyle } from "@/styles/index.style";
 import * as StorageUtils from "@/utils/storage";
@@ -25,16 +26,7 @@ import { useEffect } from "react";
 
 export default function Index() {
   useEffect(() => {
-    async function checkTokens() {
-      const accessToken = await StorageUtils.getStoreageItem("user_token");
-      const refreshToken = await StorageUtils.getStoreageItem("refresh_token");
-      if (accessToken && refreshToken) {
-        console.log("Tokens encontrados, redirecionando para main...");
-        router.push("/main"); // TODO terminar segurança e validação dos tokens: se o tempo do acesstokem tiver expirado, usar o refresh token para obter um novo access token. Se o refresh token também tiver expirado, redirecionar para a tela de login.
-      }
-    }
-
-    checkTokens();
+    ScriptIndex.checkTokens();
   }, []);
 
   const [Submitted, setSubmitted] = useState(false);
@@ -43,6 +35,8 @@ export default function Index() {
     email: "",
     password: "",
   });
+
+  const { setLoading } = useLoading();
 
   return (
     <KeyboardAvoidingView style={[styles.container]} behavior="padding">
@@ -73,12 +67,7 @@ export default function Index() {
             }}
             secureTextEntry
           />
-          <HelperText
-            message="A senha deve conter pelo menos 6 caracteres"
-            visible={
-              Submitted && !LoginValidator.isPasswordValid(form.password)
-            }
-          />
+          <HelperText />
           <LinkText
             text="Esqueceu sua senha?"
             style={{ alignSelf: "flex-end" }}
@@ -94,6 +83,7 @@ export default function Index() {
               const result = await ScriptIndex.authenticate(
                 form.email,
                 form.password,
+                setLoading,
               );
 
               if (!result.success) return;

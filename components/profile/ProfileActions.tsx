@@ -14,7 +14,7 @@ interface ProfileActionsProps {
 export default function ProfileActions({
   canFollow = true,
 }: ProfileActionsProps) {
-  const { setLoading } = useLoading();
+  const { setLoading, loading } = useLoading();
   const [isFollowing, setIsFollowing] = useState(false);
   return (
     <View
@@ -38,7 +38,7 @@ export default function ProfileActions({
           <IconButton icon="message" />
         </>
       )}
-      <IconButton icon="configuration" onPress={Config} />
+      <IconButton icon="configuration" onPress={Config} disabled={loading} />
     </View>
   );
 
@@ -70,6 +70,8 @@ export default function ProfileActions({
           params: {
             name: json.name,
             email: json.email,
+            imageName: json.imageName,
+            coverName: json.imageCover,
           },
         });
       }

@@ -47,11 +47,11 @@ export default function FeedProfile() {
   }
 
   return (
-    <View style={{ width: "100%", flex: 1 }}>
+    <View style={{ width: "100%" }}>
       <View
         style={{
           width: "100%",
-          flex: 0.15,
+          minHeight: 50,
         }}
       >
         <NavBar<Tab>
@@ -60,10 +60,7 @@ export default function FeedProfile() {
           onPress={setCurrentTab}
         />
       </View>
-      <ScrollView
-        style={{ width: "100%", flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 16 }}
-      >
+      <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
         {renderContent()}
       </ScrollView>
     </View>

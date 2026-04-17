@@ -6,7 +6,11 @@ import { styles } from "./loading.style";
 export function LoadingOverlay() {
   return (
     <View style={styles.overlay}>
-      <ActivityIndicator size="large" color={Colors.secondary} />
+      <ActivityIndicator
+        size="large"
+        color={Colors.secondary}
+        style={{ transform: [{ scale: 2 }] }}
+      />
     </View>
   );
 }

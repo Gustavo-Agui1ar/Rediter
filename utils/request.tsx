@@ -13,20 +13,30 @@ interface RequestOptions {
 export async function request({
   urlComplement,
   method,
-  headers,
   body,
+  headers = {}, // Inicializa os headers
   signal,
   setLoading,
 }: RequestOptions) {
+  const isFormData = body instanceof FormData;
+
   const optionsBase: RequestInit = {
     method,
-    headers: {
-      "Content-Type": "application/json",
-    },
+    signal,
+    headers: { ...headers },
   };
 
   if (body && method !== "GET") {
-    optionsBase.body = JSON.stringify(body);
+    if (isFormData) {
+      optionsBase.body = body;
+    } else {
+      optionsBase.body = JSON.stringify(body);
+
+      optionsBase.headers = {
+        ...optionsBase.headers,
+        "Content-Type": "application/json",
+      };
+    }
   }
 
   let lastError: any;

@@ -5,7 +5,6 @@ interface ProfileImageProps {
   size?: number;
   wrapper?: boolean;
 }
-const defaultImage = "https://cdn-icons-png.flaticon.com/512/149/149071.png"; // avatar genérico
 
 export function ProfileImage({
   imageUrl,
@@ -14,7 +13,11 @@ export function ProfileImage({
 }: ProfileImageProps) {
   return (
     <Image
-      source={{ uri: imageUrl || defaultImage }}
+      source={
+        imageUrl
+          ? { uri: imageUrl }
+          : require("@/assets/images/default_user.png")
+      }
       style={{
         width: size,
         height: size,

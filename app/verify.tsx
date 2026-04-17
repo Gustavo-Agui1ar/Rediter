@@ -1,4 +1,5 @@
 import { Button, Code, LinkText } from "@/components/components";
+import { useLoading } from "@/context/loadingContext";
 import { ScriptVerify } from "@/scripts/verify.script";
 import { styles } from "@/styles/theme";
 import { saveTokens } from "@/utils/storage";
@@ -9,7 +10,7 @@ import { Image, KeyboardAvoidingView, Text, View } from "react-native";
 export default function Verify() {
   const { userId } = useLocalSearchParams();
   const [code, setCode] = useState("");
-
+  const { setLoading } = useLoading();
   return (
     <KeyboardAvoidingView style={[styles.content]} behavior="padding">
       <View style={[styles.content, { width: "80%" }]}>
@@ -39,9 +40,11 @@ export default function Verify() {
         <Button
           title="Verificar"
           onPress={async () => {
+            console.log("Starting code verification...", { userId, code });
             var response = await ScriptVerify.verifyCode(
               userId as string,
               code,
+              setLoading,
             );
 
             if (response?.success) {

@@ -1,41 +1,125 @@
 import { Button, Header, TextBox } from "@/components/components";
 import IconButton from "@/components/IconButton/IconButton";
+import { ProfileCover } from "@/components/profile/ProfileCover";
 import { ProfileImage } from "@/components/profile/ProfileImage";
 import { useLoading } from "@/context/loadingContext";
+import { handleSave, pickImage } from "@/scripts/configs.script";
 import { configsStyles } from "@/styles/configs.style";
 import { styles } from "@/styles/theme";
-import { request } from "@/utils/request";
-import { getStoreageItem } from "@/utils/storage";
-import * as ImagePicker from "expo-image-picker";
+import { configs } from "@/utils/configs";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { View } from "react-native";
 
 export default function Configs() {
-  const { email, name } = useLocalSearchParams();
-  const [nameState, setNameState] = useState(name as string);
-  const [emailState, setEmailState] = useState(email as string);
-  const [image, setImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
+  const { email, name, imageName, coverName } = useLocalSearchParams();
+  const { loading, setLoading } = useLoading();
+
+  const [form, setForm] = useState({
+    name: (name as string) || "",
+    email: (email as string) || "",
+    password: "",
+  });
+
+  const [profileImage, setProfileImage] = useState<{
+    local?: any;
+    remote?: string;
+    changed?: boolean;
+  }>({});
+  const [coverImage, setCoverImage] = useState<{
+    local?: any;
+    remote?: string;
+    changed?: boolean;
+  }>({});
+
+  useEffect(() => {
+    if (imageName) {
+      setProfileImage((prev) => ({
+        ...prev,
+        remote: `${configs.apiUrls[0]}/Picture/GetPicture?name=${encodeURIComponent(imageName as string)}`,
+      }));
+    }
+    if (coverName) {
+      setCoverImage((prev) => ({
+        ...prev,
+        remote: `${configs.apiUrls[0]}/Picture/GetPicture?name=${encodeURIComponent(coverName as string)}`,
+      }));
+    }
+  }, []);
+
   return (
     <View style={styles.container}>
       <Header title="Configurações" />
       <View style={[styles.content, configsStyles.contentFix]}>
         <View style={configsStyles.iconButtonFix}>
-          <IconButton icon="back-row" onPress={() => router.back()} />
+          <IconButton
+            icon="back-row"
+            onPress={() => router.back()}
+            disabled={loading}
+          />
         </View>
 
-        <View style={{ alignItems: "center" }}>
-          <View>
-            <ProfileImage imageUrl={image?.uri} size={120} />
+        <View>
+          {/* 🔹 COVER COM OVERLAY */}
+          <View
+            style={{
+              position: "relative",
+              overflow: "hidden",
+              borderRadius: 10,
+            }}
+          >
+            <ProfileCover
+              imageUrl={
+                coverImage.changed ? coverImage.local?.uri : coverImage.remote
+              }
+            />
+            <IconButton
+              icon="edit"
+              type="none"
+              fullSize
+              loading={loading}
+              onPress={() =>
+                pickImage(false).then(
+                  (img) => img && setCoverImage({ local: img, changed: true }),
+                )
+              }
+            />
+          </View>
 
+          {/* 🔹 PROFILE IMAGE COM OVERLAY REDONDO */}
+          <View
+            style={{ alignItems: "flex-start", marginTop: -60, marginLeft: 20 }}
+          >
             <View
               style={{
-                position: "absolute",
-                bottom: 0,
-                right: 0,
+                width: 120,
+                height: 120,
+                borderRadius: 60,
+                overflow: "hidden",
+                position: "relative",
+                backgroundColor: "#222",
               }}
             >
-              <IconButton icon="edit" onPress={handlePickImage} />
+              <ProfileImage
+                imageUrl={
+                  profileImage.changed
+                    ? profileImage.local?.uri
+                    : profileImage.remote
+                }
+                size={120}
+              />
+              <IconButton
+                icon="edit"
+                type="none"
+                fullSize
+                loading={loading}
+                onPress={() =>
+                  pickImage(true).then(
+                    (img) =>
+                      img && setProfileImage({ local: img, changed: true }),
+                  )
+                }
+              />
             </View>
           </View>
         </View>
@@ -43,70 +127,39 @@ export default function Configs() {
         <View style={configsStyles.textFix}>
           <TextBox
             placeholder="Nome"
-            value={nameState}
-            onChangeText={setNameState}
+            value={form.name}
+            onChangeText={(text: string) => setForm({ ...form, name: text })}
+            editable={!loading}
           />
           <TextBox
             placeholder="Email"
-            value={emailState}
-            onChangeText={setEmailState}
+            value={form.email}
+            onChangeText={(text: string) => setForm({ ...form, email: text })}
+            editable={!loading}
           />
-          <TextBox placeholder="Senha" />
-          <Button title="Salvar" onPress={handleSave} />
+          <TextBox
+            placeholder="Senha"
+            value={form.password}
+            onChangeText={(text: string) =>
+              setForm({ ...form, password: text })
+            }
+            secureTextEntry
+            editable={!loading}
+          />
+          <Button
+            title="Salvar"
+            disabled={loading}
+            onPress={() =>
+              handleSave({
+                form,
+                profileImage,
+                profileCover: coverImage,
+                setLoading,
+              })
+            }
+          />
         </View>
       </View>
     </View>
   );
-
-  async function handlePickImage() {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (!permission.granted) {
-      alert("Permissão necessária para acessar as fotos");
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-      allowsEditing: true,
-      aspect: [1, 1],
-    });
-
-    if (!result.canceled) {
-      setImage(result.assets[0]);
-    }
-  }
-
-  async function handleSave() {
-    const formData = new FormData();
-
-    if (image) {
-      formData.append("file", {
-        uri: image.uri,
-        name: image.fileName ?? "profile.jpg",
-        type: image.mimeType ?? "image/jpeg",
-      } as any);
-    }
-
-    var refresh_token = await getStoreageItem("refresh_token");
-
-    formData.append("name", nameState);
-    formData.append("email", emailState);
-    formData.append("RefreshToken", refresh_token ?? "");
-
-    try {
-      const response = await request({
-        urlComplement: "/User/UpdateProfile",
-        method: "POST",
-        body: formData,
-        setLoading: useLoading,
-      });
-
-      const data = await response.json();
-      console.log("Sucesso:", data);
-    } catch (err) {
-      console.log("Erro:", err);
-    }
-  }
 }

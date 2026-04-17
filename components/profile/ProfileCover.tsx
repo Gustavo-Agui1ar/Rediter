@@ -1,7 +1,7 @@
 import { Image, View } from "react-native";
 
 interface ProfileCoverProps {
-  imageUrl: string;
+  imageUrl?: string;
 }
 
 export function ProfileCover({ imageUrl }: ProfileCoverProps) {
@@ -14,7 +14,11 @@ export function ProfileCover({ imageUrl }: ProfileCoverProps) {
       }}
     >
       <Image
-        source={{ uri: imageUrl }}
+        source={
+          imageUrl
+            ? { uri: imageUrl }
+            : require("@/assets/images/default_cover_user.jpg")
+        }
         style={{ width: "100%", height: "100%" }}
       />
     </View>

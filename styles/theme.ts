@@ -6,6 +6,7 @@ export const Colors = {
   terciary: "#948979",
   quaternary: "#DFD0B8",
   perimary: "#ffffff",
+  disabled: "#524577",
 };
 
 export const TextSize = {
@@ -29,7 +30,9 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-
+  disabledOverlay: {
+    opacity: 0.6,
+  },
   TextAlignCenter: {
     textAlign: "center",
     color: Colors.perimary,

@@ -3,10 +3,8 @@ import { StyleSheet } from "react-native";
 
 export const buttonStyles = StyleSheet.create({
   base: {
-    borderRadius: 8,
     paddingVertical: 16,
     paddingHorizontal: 20,
-    width: "100%",
   },
 
   fill: {

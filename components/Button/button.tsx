@@ -1,3 +1,4 @@
+import { styles } from "@/styles/theme";
 import { ReactNode } from "react"; // Importe o ReactNode
 import {
   Text,
@@ -18,11 +19,13 @@ export default function Button({
   title,
   type = "fill",
   style,
-  icon, // Pegamos o ícone das props
+  disabled,
+  icon,
   ...rest
 }: ButtonProps) {
   return (
     <TouchableOpacity
+      disabled={disabled}
       activeOpacity={0.7}
       style={[
         buttonStyles.base,
@@ -32,6 +35,7 @@ export default function Button({
           alignItems: "center",
           justifyContent: "center",
         },
+        disabled && styles.disabledOverlay,
         style,
       ]}
       {...rest}
