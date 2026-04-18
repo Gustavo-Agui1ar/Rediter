@@ -2,6 +2,7 @@ import { configs } from "@/utils/configs";
 import { request } from "@/utils/request";
 import { getStoreageItem } from "@/utils/storage";
 import * as ImagePicker from "expo-image-picker";
+import { router } from "expo-router";
 
 // 🔹 carregar imagem do backend
 interface Config {
@@ -93,6 +94,8 @@ export async function handleSave({
       body: formData,
       setLoading: setLoading,
     });
+
+    router.back();
   } catch (err) {
     console.log("Erro ao salvar:", err);
   }

@@ -1,8 +1,9 @@
+import { Colors } from "@/styles/theme";
 import { StyleSheet } from "react-native";
 
 export const linkTextStyles = StyleSheet.create({
   link: {
-    color: "#1DA1F2",
+    color: Colors.link,
     fontSize: 14,
   },
 });

@@ -18,14 +18,14 @@ export const Divider = ({ text, style, ...rest }: DividerProps) => (
     {...rest}
   >
     {/* Linha da Esquerda */}
-    <View style={{ flex: 1, height: 1, backgroundColor: Colors.terciary }} />
+    <View style={{ flex: 1, height: 1, backgroundColor: Colors.divider }} />
 
     {/* Texto Central (opcional) */}
     {text ? (
       <Text
         style={{
           marginHorizontal: 10,
-          color: Colors.quaternary,
+          color: Colors.white,
           fontSize: 14,
           fontWeight: "500",
         }}
@@ -35,6 +35,6 @@ export const Divider = ({ text, style, ...rest }: DividerProps) => (
     ) : null}
 
     {/* Linha da Direita */}
-    <View style={{ flex: 1, height: 1, backgroundColor: Colors.terciary }} />
+    <View style={{ flex: 1, height: 1, backgroundColor: Colors.divider }} />
   </View>
 );

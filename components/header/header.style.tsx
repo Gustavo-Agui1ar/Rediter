@@ -1,3 +1,4 @@
+import { Colors } from "@/styles/theme";
 import { StyleSheet } from "react-native";
 
 export const stylesHeader = StyleSheet.create({
@@ -11,6 +12,6 @@ export const stylesHeader = StyleSheet.create({
 
   divider: {
     borderBottomWidth: 1,
-    borderBottomColor: "#333",
+    borderBottomColor: Colors.divider,
   },
 });

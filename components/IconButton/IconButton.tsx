@@ -1,12 +1,5 @@
-import { buttonStyles } from "@/components/Button/button.style";
+import { iconMapping } from "@/styles/icons";
 import { Colors } from "@/styles/theme";
-import {
-  ArrowLeft,
-  EditIcon,
-  MessageCircle,
-  MoreHorizontal,
-  Settings,
-} from "lucide-react-native";
 import { ReactNode } from "react";
 import {
   ActivityIndicator,
@@ -16,14 +9,20 @@ import {
   View,
 } from "react-native";
 
-type IconName = "message" | "more" | "configuration" | "back-row" | "edit";
+import { useLoading } from "@/context/loadingContext";
+import {
+  iconButtonStyles,
+  IconButtonType,
+  iconColorByType,
+} from "./iconButton.style";
 
+type IconName = keyof typeof iconMapping;
 interface IconButtonProps extends TouchableOpacityProps {
   icon: IconName;
   size?: number;
-  type?: "fill" | "border" | "none";
+  type?: IconButtonType;
   fullSize?: boolean;
-  loading?: boolean;
+  circle?: boolean;
 }
 
 export default function IconButton({
@@ -33,35 +32,23 @@ export default function IconButton({
   style,
   disabled,
   fullSize = false,
-  loading,
+  circle = true,
   ...rest
 }: IconButtonProps) {
+  const { loading } = useLoading();
   const isInactive = loading || disabled;
-  const currentColor =
-    type === "none" || fullSize
-      ? Colors.perimary
-      : isInactive
-        ? Colors.disabled
-        : Colors.secondary;
+  const currentColor = isInactive ? Colors.disabled : iconColorByType[type];
 
   function renderIcon(): ReactNode {
-    if (loading) return <ActivityIndicator size="small" color={currentColor} />;
-
-    const props = { size: fullSize ? 28 : size / 2, color: currentColor };
-    switch (icon) {
-      case "message":
-        return <MessageCircle {...props} />;
-      case "more":
-        return <MoreHorizontal {...props} />;
-      case "configuration":
-        return <Settings {...props} />;
-      case "back-row":
-        return <ArrowLeft {...props} />;
-      case "edit":
-        return <EditIcon {...props} />;
-      default:
-        return null;
+    if (loading) {
+      return <ActivityIndicator size="small" color={currentColor} />;
     }
+
+    const Icon = iconMapping[icon];
+
+    if (!Icon) return null;
+
+    return <Icon size={fullSize ? 28 : size / 2} color={currentColor} />;
   }
 
   return (
@@ -71,14 +58,16 @@ export default function IconButton({
       style={[
         fullSize
           ? StyleSheet.absoluteFillObject
-          : { width: size, height: size, borderRadius: size / 2 },
-        buttonStyles.base,
-        type !== "none" && buttonStyles[type],
-        {
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: type === "none" ? "rgba(0,0,0,0.4)" : undefined,
-        },
+          : [
+              { width: size, height: size },
+              { borderRadius: circle ? size / 2 : 8 },
+            ],
+
+        iconButtonStyles.base,
+        iconButtonStyles[type],
+
+        type === "none" && iconButtonStyles.overlay,
+
         isInactive && !fullSize && { opacity: 0.6 },
         style,
       ]}

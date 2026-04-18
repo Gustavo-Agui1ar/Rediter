@@ -1,5 +1,5 @@
 import { styles } from "@/styles/theme";
-import { ReactNode } from "react"; // Importe o ReactNode
+import { ReactNode } from "react";
 import {
   Text,
   TouchableOpacity,

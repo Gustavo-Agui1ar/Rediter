@@ -26,8 +26,8 @@ export function ReloadableContainer({ children, onRefresh }: Props) {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={handleRefresh}
-          tintColor={Colors.secondary}
-          colors={[Colors.secondary]}
+          tintColor={Colors.primary}
+          colors={[Colors.primary]}
         />
       }
     >

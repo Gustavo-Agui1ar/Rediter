@@ -8,10 +8,10 @@ export const textboxStyles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
-    borderColor: Colors.perimary,
+    borderColor: Colors.primaryLight,
   },
   base: {
     height: 45,
-    color: Colors.perimary,
+    color: Colors.white,
   },
 });

@@ -1,12 +1,40 @@
 import { StyleSheet } from "react-native";
 
 export const Colors = {
-  primary: "#121417",
-  secondary: "#4a1bcb",
-  terciary: "#948979",
-  quaternary: "#DFD0B8",
-  perimary: "#ffffff",
-  disabled: "#524577",
+  // Base
+  background: "#0D0F14",
+  surface: "#151821",
+  surfaceAlt: "#1C1F2B",
+
+  // Brand (roxo principal)
+  primary: "#5A189A",
+  primaryLight: "#8c2fde",
+  primaryDark: "#34085d",
+
+  // Texto
+  textPrimary: "#FFFFFF",
+  textSecondary: "#C9C9D1",
+  textMuted: "#8F90A6",
+
+  // Bordas / separadores
+  border: "#2A2E3D",
+  divider: "#232634",
+
+  // Estados
+  disabled: "#4A4D5A",
+  overlay: "rgba(0,0,0,0.4)",
+
+  // Feedback (já deixa pronto pro futuro)
+  success: "#2DC653",
+  warning: "#F4A261",
+  error: "#E63946",
+
+  //Links
+  link: "#1DA1F2",
+
+  // Extras neutros
+  white: "#FFFFFF",
+  black: "#000000",
 };
 
 export const TextSize = {
@@ -32,10 +60,12 @@ export const styles = StyleSheet.create({
   },
   disabledOverlay: {
     opacity: 0.6,
+    backgroundColor: Colors.disabled,
+    color: Colors.white,
   },
   TextAlignCenter: {
     textAlign: "center",
-    color: Colors.perimary,
+    color: Colors.white,
   },
 
   base: {
@@ -47,7 +77,7 @@ export const styles = StyleSheet.create({
   content: {
     flex: 1,
     width: "100%",
-    gap: 20,
+    gap: 50,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -64,12 +94,12 @@ export const styles = StyleSheet.create({
     fontSize: TextSize.large,
     fontWeight: "bold",
     fontFamily: "sans-serif",
-    color: Colors.perimary,
+    color: Colors.white,
   },
 
   subtitle: {
     fontSize: TextSize.medium,
-    color: Colors.perimary,
+    color: Colors.white,
   },
 
   logo: {
@@ -95,7 +125,7 @@ export const styles = StyleSheet.create({
 
   paragraph: {
     fontSize: TextSize.medium,
-    color: Colors.perimary,
+    color: Colors.white,
     marginBottom: 10,
     marginTop: 10,
     textAlign: "justify",

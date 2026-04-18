@@ -1,8 +1,9 @@
+import { Colors } from "@/styles/theme";
 import { StyleSheet } from "react-native";
 
 export const helperTextStyles = StyleSheet.create({
   text: {
-    color: "#ff4d4f",
+    color: Colors.error,
     fontSize: 12,
     paddingLeft: 10,
   },

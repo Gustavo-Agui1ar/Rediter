@@ -1,4 +1,4 @@
-import { NavBar, NavItem } from "@/components/components";
+import { NavBar, NavItem, ProfileCover } from "@/components/components";
 import Post from "@/components/Post/post";
 import { useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -13,21 +13,20 @@ export default function FeedProfile() {
       {
         id: "posts",
         label: "Posts",
-        icon: null,
       },
       {
         id: "media",
         label: "Mídia",
-        icon: null,
       },
       {
         id: "likes",
         label: "Curtidas",
-        icon: null,
       },
     ],
     [],
   );
+
+  const items = Array.from({ length: 20 });
 
   function renderContent() {
     switch (currentTab) {
@@ -40,9 +39,31 @@ export default function FeedProfile() {
           </View>
         );
       case "media":
-        return <View>{/* Grid de mídia */}</View>;
+        return (
+          <View
+            style={{
+              width: "100%",
+              padding: 8,
+              flexDirection: "row",
+              flexWrap: "wrap",
+              gap: 8,
+            }}
+          >
+            {items.map((_, index) => (
+              <View key={index} style={{ width: "49%" }}>
+                <ProfileCover />
+              </View>
+            ))}
+          </View>
+        );
       case "likes":
-        return <View>{/* Posts curtidos */}</View>;
+        return (
+          <View style={{ width: "100%", padding: 16 }}>
+            <Post></Post>
+            <Post></Post>
+            <Post></Post>
+          </View>
+        );
     }
   }
 

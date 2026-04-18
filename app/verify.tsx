@@ -8,7 +8,7 @@ import { useState } from "react";
 import { Image, KeyboardAvoidingView, Text, View } from "react-native";
 
 export default function Verify() {
-  const { userId } = useLocalSearchParams();
+  const { userEmail } = useLocalSearchParams();
   const [code, setCode] = useState("");
   const { setLoading } = useLoading();
   return (
@@ -40,19 +40,20 @@ export default function Verify() {
         <Button
           title="Verificar"
           onPress={async () => {
-            console.log("Starting code verification...", { userId, code });
+            console.log("Starting code verification...", { userEmail, code });
             var response = await ScriptVerify.verifyCode(
-              userId as string,
+              userEmail as string,
               code,
               setLoading,
             );
 
-            if (response?.success) {
-              await saveTokens(response.access, response.refresh);
-              router.push("/main");
-            } else {
+            if (!response?.success) {
               alert(response?.error || "Código incorreto. Tente novamente.");
+              return;
             }
+
+            await saveTokens(response.access, response.refresh);
+            router.push("/main");
           }}
           type="fill"
         />

@@ -3,7 +3,7 @@ import { request } from "@/utils/request";
 
 export class ScriptVerify {
   static async verifyCode(
-    userId: string,
+    userEmail: string,
     code: string,
     setLoading?: (loading: boolean) => void,
   ) {
@@ -20,9 +20,8 @@ export class ScriptVerify {
     }
 
     try {
-      console.log("Verifying code with server...", { userId, code });
       const serverResponse = await request({
-        urlComplement: `/Auth/Code?code=${code}&userId=${userId}`,
+        urlComplement: `/Auth/Code?code=${code}&userEmail=${userEmail}`,
         method: "GET",
         setLoading: setLoading,
       });

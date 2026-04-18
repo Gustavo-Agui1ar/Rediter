@@ -8,7 +8,7 @@ export function LoadingOverlay() {
     <View style={styles.overlay}>
       <ActivityIndicator
         size="large"
-        color={Colors.secondary}
+        color={Colors.primary}
         style={{ transform: [{ scale: 2 }] }}
       />
     </View>

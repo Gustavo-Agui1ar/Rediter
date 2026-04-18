@@ -1,20 +1,21 @@
-import { Home, MessageCircle, User } from "lucide-react-native";
-import React, { useMemo, useState } from "react";
+import { Header, IconButton, NavBar, NavItem } from "@/components/components";
+import { styles } from "@/styles/theme";
+import { useLocalSearchParams } from "expo-router";
+import React, { JSX, useEffect, useMemo, useState } from "react";
 import { KeyboardAvoidingView, View } from "react-native";
-
-import { Header, NavBar, NavItem } from "@/components/components";
-import { Colors, styles } from "@/styles/theme";
-import { JSX } from "react";
 
 import { LoadingOverlay } from "@/components/Loading/loading";
 import { useLoading } from "@/context/loadingContext";
+import { stylesMain } from "@/styles/main.style";
 import Feed from "./Views/feed";
 import Message from "./Views/message";
 import Perfil from "./Views/perfil";
 
-export default function Main() {
-  type Tab = "home" | "messages" | "profile";
+const validTabs: Tab[] = ["home", "messages", "profile"];
+type Tab = "home" | "messages" | "profile";
 
+export default function Main() {
+  const { screen } = useLocalSearchParams<{ screen: Tab }>();
   const [currentTab, setCurrentTab] = useState<Tab>("home");
   const { loading } = useLoading();
 
@@ -29,40 +30,27 @@ export default function Main() {
       {
         id: "home",
         label: "Início",
-        icon: (
-          <Home
-            size={24}
-            color={currentTab === "home" ? Colors.secondary : Colors.perimary}
-          />
-        ),
+        icon: "home",
       },
       {
         id: "messages",
         label: "Mensagens",
-        icon: (
-          <MessageCircle
-            size={24}
-            color={
-              currentTab === "messages" ? Colors.secondary : Colors.perimary
-            }
-          />
-        ),
+        icon: "message",
       },
       {
         id: "profile",
         label: "Perfil",
-        icon: (
-          <User
-            size={24}
-            color={
-              currentTab === "profile" ? Colors.secondary : Colors.perimary
-            }
-          />
-        ),
+        icon: "profile",
       },
     ],
     [currentTab],
   );
+
+  useEffect(() => {
+    if (screen && validTabs.includes(screen as Tab)) {
+      setCurrentTab(screen);
+    }
+  }, [screen]);
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior="height">
@@ -70,13 +58,16 @@ export default function Main() {
       {currentTab !== "profile" && <Header />}
 
       {screens[currentTab]}
-
       <View style={styles.footer}>
         <NavBar<Tab>
           items={navItems}
           activeId={currentTab}
           onPress={setCurrentTab}
         />
+
+        <View style={stylesMain.floatingButton}>
+          <IconButton size={56} circle={false} icon="post" onPress={() => {}} />
+        </View>
       </View>
     </KeyboardAvoidingView>
   );

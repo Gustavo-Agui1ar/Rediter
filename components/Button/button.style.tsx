@@ -5,26 +5,33 @@ export const buttonStyles = StyleSheet.create({
   base: {
     paddingVertical: 16,
     paddingHorizontal: 20,
+    width: "100%",
+    borderRadius: 8,
+  },
+
+  baseWithIcon: {
+    paddingVertical: 16,
+    paddingHorizontal: 20,
   },
 
   fill: {
-    backgroundColor: Colors.secondary,
+    backgroundColor: Colors.primary,
   },
 
   border: {
     borderWidth: 2,
-    borderColor: Colors.secondary,
+    borderColor: Colors.primary,
     backgroundColor: "transparent" as const,
   },
 
   buttonText: {
-    color: Colors.perimary,
+    color: Colors.white,
     textTransform: "uppercase" as const,
     textAlign: "center" as const,
     fontFamily: "sans-serif",
   },
 
   textBorder: {
-    color: Colors.perimary,
+    color: Colors.white,
   },
 });

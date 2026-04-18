@@ -1,11 +1,11 @@
+import { default as Button } from "@/components/Button/button";
+import IconButton from "@/components/IconButton/IconButton";
 import { useLoading } from "@/context/loadingContext";
 import { request } from "@/utils/request";
 import { getStoreageItem } from "@/utils/storage";
 import { router } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
-import { Button } from "../components";
-import IconButton from "../IconButton/IconButton";
 
 interface ProfileActionsProps {
   canFollow?: boolean;
@@ -14,7 +14,7 @@ interface ProfileActionsProps {
 export default function ProfileActions({
   canFollow = true,
 }: ProfileActionsProps) {
-  const { setLoading, loading } = useLoading();
+  const { setLoading } = useLoading();
   const [isFollowing, setIsFollowing] = useState(false);
   return (
     <View
@@ -38,7 +38,7 @@ export default function ProfileActions({
           <IconButton icon="message" />
         </>
       )}
-      <IconButton icon="configuration" onPress={Config} disabled={loading} />
+      <IconButton icon="configuration" onPress={Config} />
     </View>
   );
 

@@ -93,7 +93,7 @@ export default function Register() {
               setErrorText(response.error);
 
               if (response.success) {
-                router.push(`/verify?userId=${response.userId}`);
+                router.push(`/verify?userEmail=${form.email}`);
               }
             }}
             style={{ marginTop: 20 }}

@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { Colors } from "./theme";
 
 export const stylesPerfil = StyleSheet.create({
   imageProfile: {
@@ -6,7 +7,7 @@ export const stylesPerfil = StyleSheet.create({
     height: 100,
     borderRadius: 60,
     borderWidth: 2,
-    borderColor: "#333",
+    borderColor: Colors.divider,
     objectFit: "contain",
   },
 

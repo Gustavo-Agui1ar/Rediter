@@ -14,14 +14,12 @@ export const configsStyles = StyleSheet.create({
     marginBottom: 20,
   },
 
-  textFix: {
-    paddingTop: 50,
-    gap: 20,
-    width: "100%",
+  contentTextFix: {
+    gap: 25,
+    width: "90%",
   },
 
   contentFix: {
     justifyContent: "flex-start",
-    padding: 20,
   },
 });

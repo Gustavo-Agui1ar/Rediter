@@ -15,7 +15,7 @@ export default function TextBox(props: any) {
         style={[textboxStyles.base, { flex: 1 }]}
         {...props}
         secureTextEntry={isPassword ? secure : false}
-        placeholderTextColor={Colors.perimary}
+        placeholderTextColor={Colors.textMuted}
       />
 
       {isPassword && (
@@ -23,7 +23,7 @@ export default function TextBox(props: any) {
           <Ionicons
             name={secure ? "eye-off" : "eye"}
             size={20}
-            color={Colors.perimary}
+            color={Colors.textMuted}
           />
         </Pressable>
       )}

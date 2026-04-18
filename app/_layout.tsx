@@ -8,7 +8,7 @@ export default function Layout() {
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: Colors.primary },
+          contentStyle: { backgroundColor: Colors.background },
         }}
       >
         <Stack.Screen name="index" />
@@ -16,6 +16,7 @@ export default function Layout() {
         <Stack.Screen name="verify" />
         <Stack.Screen name="main" />
         <Stack.Screen name="configs" />
+        <Stack.Screen name="forgotPassword" />
       </Stack>
     </LoadingProvider>
   );

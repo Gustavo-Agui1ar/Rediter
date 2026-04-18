@@ -11,7 +11,8 @@ import { styles } from "@/styles/theme";
 import { configs } from "@/utils/configs";
 import { request } from "@/utils/request";
 import { getStoreageItem } from "@/utils/storage";
-import { useEffect, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
 
 export default function Perfil() {
@@ -54,6 +55,12 @@ export default function Perfil() {
   useEffect(() => {
     loadProfile();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadProfile();
+    }, []),
+  );
 
   return (
     <ReloadableContainer onRefresh={loadProfile}>

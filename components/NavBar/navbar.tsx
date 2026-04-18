@@ -1,13 +1,16 @@
+import { iconMapping } from "@/styles/icons";
+import { Colors } from "@/styles/theme";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { stylesNav } from "./navbar.style";
 
+type IconName = keyof typeof iconMapping;
+
 export interface NavItem<T = string> {
   id: T;
-  label: string;
-  icon: React.ReactNode;
+  label?: string;
+  icon?: IconName;
 }
-
 interface NavBarProps<T> {
   items: NavItem<T>[];
   activeId: T;
@@ -30,7 +33,18 @@ export function NavBar<T>({ items, activeId, onPress }: NavBarProps<T>) {
                 activeId === item.id && stylesNav.activeIcon,
               ]}
             >
-              {item.icon}
+              {(() => {
+                const Icon = iconMapping[item.icon];
+
+                return (
+                  <Icon
+                    size={24}
+                    color={
+                      activeId === item.id ? Colors.primaryLight : Colors.white
+                    }
+                  />
+                );
+              })()}
             </View>
           ) : null}
 
@@ -40,7 +54,7 @@ export function NavBar<T>({ items, activeId, onPress }: NavBarProps<T>) {
               activeId === item.id && stylesNav.activeLabel,
             ]}
           >
-            {item.label}
+            {item?.label}
           </Text>
         </TouchableOpacity>
       ))}
