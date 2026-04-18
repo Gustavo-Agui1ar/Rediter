@@ -1,20 +1,20 @@
 import { Header, IconButton, NavBar, NavItem } from "@/components/components";
 import { styles } from "@/styles/theme";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { JSX, useEffect, useMemo, useState } from "react";
 import { KeyboardAvoidingView, View } from "react-native";
 
 import { LoadingOverlay } from "@/components/Loading/loading";
 import { useLoading } from "@/context/loadingContext";
 import { stylesMain } from "@/styles/main.style";
-import Feed from "./Views/feed";
-import Message from "./Views/message";
-import Perfil from "./Views/perfil";
+import Feed from "../components/Views/feed";
+import Message from "../components/Views/message";
+import Perfil from "../components/Views/perfil";
 
 const validTabs: Tab[] = ["home", "messages", "profile"];
 type Tab = "home" | "messages" | "profile";
 
-export default function Main() {
+export default function Main() { 
   const { screen } = useLocalSearchParams<{ screen: Tab }>();
   const [currentTab, setCurrentTab] = useState<Tab>("home");
   const { loading } = useLoading();
@@ -66,7 +66,14 @@ export default function Main() {
         />
 
         <View style={stylesMain.floatingButton}>
-          <IconButton size={56} circle={false} icon="post" onPress={() => {}} />
+          <IconButton
+            size={56}
+            circle={false}
+            icon="post"
+            onPress={() => {
+              router.push("/newPost");
+            }}
+          />
         </View>
       </View>
     </KeyboardAvoidingView>

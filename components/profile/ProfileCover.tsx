@@ -20,7 +20,7 @@ export function ProfileCover({ imageUrl, ...props }: ProfileCoverProps) {
             ? { uri: imageUrl }
             : require("@/assets/images/default_cover_user.jpg")
         }
-        style={{ width: "100%", height: "100%" }}
+        style={{ width: "100%", height: "100%", objectFit: "cover" }}
         {...props}
       />
     </View>

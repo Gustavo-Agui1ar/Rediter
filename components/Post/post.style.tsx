@@ -2,10 +2,15 @@ import { Colors } from "@/styles/theme";
 import { StyleSheet } from "react-native";
 
 export const postStyles = StyleSheet.create({
-  tittle: {
-    fontSize: 16,
-    fontWeight: "bold",
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
+  },
+
+  username: {
+    marginLeft: 12,
+    fontSize: 14,
     color: Colors.textPrimary,
   },
 
@@ -28,5 +33,6 @@ export const postStyles = StyleSheet.create({
   description: {
     fontSize: 14,
     color: Colors.textSecondary,
+    paddingVertical: 8,
   },
 });

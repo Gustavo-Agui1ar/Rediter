@@ -7,7 +7,7 @@
     "icon": "./assets/logo/black_r.png",
     "scheme": "rediter",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.Rediter.ios"
@@ -39,7 +39,13 @@
         }
       ],
       "@react-native-google-signin/google-signin",
-      "expo-build-properties"
+      "expo-build-properties",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Permita o Rediter acessar sua localização para fazer check-in nos seus posts."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

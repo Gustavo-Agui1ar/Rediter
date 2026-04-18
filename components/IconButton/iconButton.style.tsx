@@ -24,7 +24,7 @@ export const iconButtonStyles = StyleSheet.create({
   },
 
   overlay: {
-    backgroundColor: Colors.black,
+    backgroundColor: Colors.overlay,
   },
 });
 

@@ -3,10 +3,11 @@ import IconButton from "@/components/IconButton/IconButton";
 import { ProfileCover } from "@/components/profile/ProfileCover";
 import { ProfileImage } from "@/components/profile/ProfileImage";
 import { useLoading } from "@/context/loadingContext";
-import { handleSave, pickImage } from "@/scripts/configs.script";
+import { handleSave } from "@/scripts/configs.script";
 import { configsStyles } from "@/styles/configs.style";
-import { Colors, styles } from "@/styles/theme";
+import { styles } from "@/styles/theme";
 import { configs } from "@/utils/configs";
+import { pickImage } from "@/utils/filePicker";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { KeyboardAvoidingView, ScrollView, View } from "react-native";
@@ -57,13 +58,7 @@ export default function Configs() {
         <View style={[styles.content, configsStyles.contentFix]}>
           <View>
             {/* 🔹 COVER COM OVERLAY */}
-            <View
-              style={{
-                position: "relative",
-                overflow: "hidden",
-                borderRadius: 10,
-              }}
-            >
+            <View style={configsStyles.coverOverlay}>
               <ProfileCover
                 imageUrl={
                   coverImage.changed ? coverImage.local?.uri : coverImage.remote
@@ -83,21 +78,8 @@ export default function Configs() {
             </View>
 
             {/* 🔹 PROFILE IMAGE COM OVERLAY REDONDO */}
-            <View
-              style={{
-                alignItems: "flex-start",
-                marginTop: -60,
-                marginLeft: 20,
-              }}
-            >
-              <View
-                style={{
-                  borderRadius: 60,
-                  overflow: "hidden",
-                  position: "relative",
-                  backgroundColor: Colors.background,
-                }}
-              >
+            <View style={configsStyles.profileImageOverlay}>
+              <View style={configsStyles.profileImageFix}>
                 <ProfileImage
                   imageUrl={
                     profileImage.changed

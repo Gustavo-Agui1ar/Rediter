@@ -17,8 +17,12 @@ import { View } from "react-native";
 
 export default function Perfil() {
   const { setLoading } = useLoading();
-  const [imageUrl, setImageUrl] = useState<string>();
-  const [coverUrl, setCoverUrl] = useState<string>();
+
+  const [form, setForm] = useState({
+    imageUrl: "",
+    coverUrl: "",
+    userName: "UserName",
+  });
 
   async function loadProfile() {
     var refresh_token = await getStoreageItem("refresh_token");
@@ -38,17 +42,16 @@ export default function Perfil() {
     if (response.ok) {
       var json = await response.json();
 
-      setImageUrl(
-        `${configs.apiUrls[0]}/Picture/GetPicture?name=${encodeURIComponent(
+      setForm((prev) => ({
+        ...prev,
+        imageUrl: `${configs.apiUrls[0]}/Picture/GetPicture?name=${encodeURIComponent(
           json.imageName,
         )}`,
-      );
-
-      setCoverUrl(
-        `${configs.apiUrls[0]}/Picture/GetPicture?name=${encodeURIComponent(
+        coverUrl: `${configs.apiUrls[0]}/Picture/GetPicture?name=${encodeURIComponent(
           json.imageCover,
         )}`,
-      );
+        userName: json.name,
+      }));
     }
   }
 
@@ -75,19 +78,19 @@ export default function Perfil() {
         <View
           style={{ position: "relative", width: "100%", alignItems: "center" }}
         >
-          <ProfileCover imageUrl={coverUrl} />
-          <ProfileImage imageUrl={imageUrl} size={120} wrapper={true} />
+          <ProfileCover imageUrl={form.coverUrl} />
+          <ProfileImage imageUrl={form.imageUrl} size={120} wrapper={true} />
         </View>
         <View style={stylesPerfil.containeractionprofile}>
-          <View style={{ flex: 0.6 }} />
-
           <View
             style={{
               flex: 1,
               alignItems: "flex-end",
+              position: "relative",
+              top: 20,
             }}
           >
-            <ProfileActions canFollow={false} />
+            <ProfileActions canFollow={false} userName={form.userName} />
           </View>
         </View>
         <FeedProfile />

@@ -12,7 +12,7 @@ interface ButtonProps extends TouchableOpacityProps {
   title: string;
   type?: "fill" | "border";
   fullWidth?: boolean;
-  icon?: ReactNode; // Adicionamos a prop de ícone aqui
+  icon?: ReactNode;
 }
 
 export default function Button({

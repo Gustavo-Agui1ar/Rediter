@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { Colors } from "./theme";
 
 export const configsStyles = StyleSheet.create({
   imageFix: {
@@ -21,5 +22,24 @@ export const configsStyles = StyleSheet.create({
 
   contentFix: {
     justifyContent: "flex-start",
+  },
+
+  coverOverlay: {
+    position: "relative",
+    overflow: "hidden",
+    borderRadius: 10,
+  },
+
+  profileImageOverlay: {
+    alignItems: "flex-start",
+    marginTop: -60,
+    marginLeft: 20,
+  },
+
+  profileImageFix: {
+    borderRadius: 60,
+    overflow: "hidden",
+    position: "relative",
+    backgroundColor: Colors.background,
   },
 });

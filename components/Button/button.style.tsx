@@ -16,6 +16,8 @@ export const buttonStyles = StyleSheet.create({
 
   fill: {
     backgroundColor: Colors.primary,
+    borderWidth: 2,
+    borderColor: Colors.primary,
   },
 
   border: {

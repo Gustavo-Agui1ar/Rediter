@@ -1,7 +1,6 @@
 import { configs } from "@/utils/configs";
 import { request } from "@/utils/request";
 import { getStoreageItem } from "@/utils/storage";
-import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 
 // 🔹 carregar imagem do backend
@@ -30,21 +29,6 @@ export function loadProfileImage(imageName?: string) {
   return `${configs.apiUrls[0]}/Picture/GetPicture?name=${encodeURIComponent(
     imageName,
   )}`;
-}
-
-export async function pickImage(isSquare: boolean = true) {
-  const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (!permission.granted) throw new Error("Sem permissão");
-
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    quality: 1,
-    allowsEditing: true,
-    aspect: isSquare ? [1, 1] : [16, 9],
-  });
-
-  if (result.canceled) return null;
-  return result.assets[0];
 }
 
 const createFileData = (imageAsset: any) => {

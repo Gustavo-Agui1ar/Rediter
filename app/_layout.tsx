@@ -17,6 +17,7 @@ export default function Layout() {
         <Stack.Screen name="main" />
         <Stack.Screen name="configs" />
         <Stack.Screen name="forgotPassword" />
+        <Stack.Screen name="newPost" />
       </Stack>
     </LoadingProvider>
   );

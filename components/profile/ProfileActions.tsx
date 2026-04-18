@@ -1,18 +1,20 @@
 import { default as Button } from "@/components/Button/button";
 import IconButton from "@/components/IconButton/IconButton";
 import { useLoading } from "@/context/loadingContext";
+import { Colors } from "@/styles/theme";
 import { request } from "@/utils/request";
 import { getStoreageItem } from "@/utils/storage";
 import { router } from "expo-router";
 import { useState } from "react";
-import { View } from "react-native";
-
+import { Text, View } from "react-native";
 interface ProfileActionsProps {
   canFollow?: boolean;
+  userName?: string;
 }
 
 export default function ProfileActions({
   canFollow = true,
+  userName = "Usuário",
 }: ProfileActionsProps) {
   const { setLoading } = useLoading();
   const [isFollowing, setIsFollowing] = useState(false);
@@ -24,8 +26,29 @@ export default function ProfileActions({
         width: "100%",
         alignItems: "flex-end",
         justifyContent: "flex-end",
+        gap: 10,
       }}
     >
+      <View
+        style={{
+          flex: 1,
+          marginTop: 8,
+          marginLeft: 16,
+          justifyContent: "center",
+          alignItems: "flex-start",
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 20,
+            fontWeight: "bold",
+            color: Colors.primaryLight,
+            flexWrap: "wrap",
+          }}
+        >
+          {userName}
+        </Text>
+      </View>
       {canFollow && (
         <>
           <View style={{ flex: 1, marginRight: 10 }}>

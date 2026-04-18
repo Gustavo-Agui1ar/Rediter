@@ -3,15 +3,15 @@ import { StyleSheet } from "react-native";
 
 export const textboxStyles = StyleSheet.create({
   container: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: "column",
+    width: "100%",
     borderWidth: 1,
     borderRadius: 8,
-    paddingHorizontal: 10,
+    padding: 8,
     borderColor: Colors.primaryLight,
   },
+
   base: {
-    height: 45,
-    color: Colors.white,
+    width: "100%",
   },
 });

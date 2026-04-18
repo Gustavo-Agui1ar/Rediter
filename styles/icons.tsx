@@ -1,12 +1,18 @@
 import {
-    ArrowLeft,
-    CirclePlus,
-    EditIcon,
-    Home,
-    MessageCircle,
-    MoreHorizontal,
-    Settings,
-    User,
+  ArrowLeft,
+  CirclePlus,
+  CircleX,
+  EditIcon,
+  Heart,
+  Home,
+  Image,
+  MapPin,
+  MessageCircle,
+  MoreHorizontal,
+  Repeat2,
+  Settings,
+  SmilePlus,
+  User,
 } from "lucide-react-native";
 
 export const iconMapping = {
@@ -18,4 +24,10 @@ export const iconMapping = {
   post: CirclePlus,
   home: Home,
   profile: User,
+  like: Heart,
+  repeat: Repeat2,
+  image: Image,
+  close: CircleX,
+  emoji: SmilePlus,
+  location: MapPin,
 };
