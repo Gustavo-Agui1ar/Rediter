@@ -1,7 +1,11 @@
 import { Button, Header, IconButton, TextBox } from "@/components/components";
+import { useLoading } from "@/context/loadingContext";
 import { styles } from "@/styles/theme";
 import { pickImage } from "@/utils/filePicker";
+import { request } from "@/utils/request";
+import { getStoreageItem } from "@/utils/storage";
 import * as Location from "expo-location";
+import { router } from "expo-router";
 import { useState } from "react";
 import {
   Alert,
@@ -20,8 +24,8 @@ export default function NewPost() {
   const [showEmoji, setShowEmoji] = useState(false);
   const [text, setText] = useState("");
 
-  // Novo estado para armazenar a localização
   const [locationName, setLocationName] = useState<string | null>(null);
+  const { setLoading } = useLoading();
 
   const getColumns = (length: number) => {
     if (length === 1) return 1;
@@ -72,6 +76,56 @@ export default function NewPost() {
         "Erro",
         "Não foi possível obter a localização. Verifique se o GPS está ligado.",
       );
+    }
+  };
+
+  const handlePublish = async () => {
+    // Validação básica
+    if (!text.trim() && files.length === 0) {
+      Alert.alert("Aviso", "Escreva algo ou adicione uma foto para publicar.");
+      return;
+    }
+
+    setLoading(true);
+    const formData = new FormData();
+
+    try {
+      const refresh_token = await getStoreageItem("refresh_token");
+      formData.append("RefreshToken", refresh_token ?? "");
+
+      formData.append("Text", text);
+
+      if (locationName) {
+        formData.append("LocationName", locationName);
+      }
+
+      files.forEach((fileAsset) => {
+        if (!fileAsset.uri) return;
+
+        const uriParts = fileAsset.uri.split("/");
+        const fileName = fileAsset.fileName || uriParts[uriParts.length - 1];
+        const type = fileAsset.mimeType || "image/jpeg";
+
+        formData.append("Pictures", {
+          uri: fileAsset.uri,
+          name: fileName,
+          type: type,
+        } as any);
+      });
+
+      await request({
+        urlComplement: "/Post/NewPost",
+        method: "POST",
+        body: formData,
+        setLoading: setLoading,
+      });
+
+      router.back();
+    } catch (err: any) {
+      console.error("Erro ao publicar post:", err.response?.data || err);
+      Alert.alert("Erro", "Houve um problema ao publicar seu post.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -196,7 +250,7 @@ export default function NewPost() {
               </View>
             </View>
           </TextBox>
-          <Button title="Publicar" />
+          <Button title="Publicar" onPress={handlePublish} />
         </View>
       </ScrollView>
 

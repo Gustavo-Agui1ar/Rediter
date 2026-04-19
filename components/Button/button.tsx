@@ -1,10 +1,10 @@
-import { styles } from "@/styles/theme";
+import { useLoading } from "@/context/loadingContext";
 import { ReactNode } from "react";
 import {
   Text,
   TouchableOpacity,
   TouchableOpacityProps,
-  View,
+  View
 } from "react-native";
 import { buttonStyles } from "./button.style";
 
@@ -23,9 +23,13 @@ export default function Button({
   icon,
   ...rest
 }: ButtonProps) {
+  const { loading } = useLoading();
+
+  const isDisabled = disabled || loading;
+
   return (
     <TouchableOpacity
-      disabled={disabled}
+      disabled={isDisabled}
       activeOpacity={0.7}
       style={[
         buttonStyles.base,
@@ -34,22 +38,27 @@ export default function Button({
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
+          opacity: isDisabled ? 0.6 : 1,
         },
-        disabled && styles.disabledOverlay,
         style,
       ]}
       {...rest}
     >
-      {icon && <View style={{ marginRight: 10 }}>{icon}</View>}
+      {" "}
+      (
+      <>
+        {icon && <View style={{ marginRight: 10 }}>{icon}</View>}
 
-      <Text
-        style={[
-          buttonStyles.buttonText,
-          type === "border" && buttonStyles.textBorder,
-        ]}
-      >
-        {title}
-      </Text>
+        <Text
+          style={[
+            buttonStyles.buttonText,
+            type === "border" && buttonStyles.textBorder,
+          ]}
+        >
+          {title}
+        </Text>
+      </>
+      )
     </TouchableOpacity>
   );
 }
