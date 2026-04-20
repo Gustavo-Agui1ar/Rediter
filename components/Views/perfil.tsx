@@ -8,7 +8,6 @@ import FeedProfile from "@/components/profile/FeedProfile";
 import { useLoading } from "@/context/loadingContext";
 import { stylesPerfil } from "@/styles/perfil.style";
 import { styles } from "@/styles/theme";
-import { configs } from "@/utils/configs";
 import { request } from "@/utils/request";
 import { getStoreageItem } from "@/utils/storage";
 import { useFocusEffect } from "expo-router";
@@ -44,12 +43,8 @@ export default function Perfil() {
 
       setForm((prev) => ({
         ...prev,
-        imageUrl: `${configs.apiUrls[0]}/Picture/GetPicture?name=${encodeURIComponent(
-          json.imageName,
-        )}`,
-        coverUrl: `${configs.apiUrls[0]}/Picture/GetPicture?name=${encodeURIComponent(
-          json.imageCover,
-        )}`,
+        imageUrl: json.imageName,
+        coverUrl: json.imageCover,
         userName: json.name,
       }));
     }
@@ -78,8 +73,8 @@ export default function Perfil() {
         <View
           style={{ position: "relative", width: "100%", alignItems: "center" }}
         >
-          <ProfileCover imageUrl={form.coverUrl} />
-          <ProfileImage imageUrl={form.imageUrl} size={120} wrapper={true} />
+          <ProfileCover imageName={form.coverUrl} />
+          <ProfileImage imageName={form.imageUrl} size={120} wrapper={true} />
         </View>
         <View style={stylesPerfil.containeractionprofile}>
           <View

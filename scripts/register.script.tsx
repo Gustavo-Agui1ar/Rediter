@@ -46,7 +46,6 @@ export class ScriptRegister {
       });
 
       if (serverResponse.ok) {
-        console.log("Usuário registrado com sucesso!");
         const data = await serverResponse.json();
         response.success = true;
         response.userId = data.userId;

@@ -40,7 +40,6 @@ export default function Verify() {
         <Button
           title="Verificar"
           onPress={async () => {
-            console.log("Starting code verification...", { userEmail, code });
             var response = await ScriptVerify.verifyCode(
               userEmail as string,
               code,

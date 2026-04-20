@@ -4,5 +4,5 @@ export const configs = {
     // "http://10.182.2.217:6969",
     // "http://192.168.137.79:6969",
   ],
-  timeout: 10000,
+  timeout: 20000,
 };

@@ -1,34 +1,123 @@
 import { ProfileImage } from "@/components/profile/ProfileImage";
-import { Image, Text, View } from "react-native";
+import { styles } from "@/styles/theme";
+import { router } from "expo-router";
+import { useState } from "react";
+import { Text, TouchableOpacity, View } from "react-native";
 import { IconButton } from "../components";
+import { DisplayImages } from "../DisplayImages/displayImage";
 import { postStyles } from "./post.style";
 
-export default function Post() {
+interface PostProps {
+  text: string;
+  imageProfileUrl?: string;
+  userName: string;
+  postImageUrl?: string[];
+  postId: string;
+  Location?: string;
+  edited?: boolean;
+  myProfile?: boolean;
+}
+
+export default function Post({
+  text,
+  imageProfileUrl,
+  userName,
+  postImageUrl,
+  postId,
+  Location,
+  edited = false,
+  myProfile = true,
+}: PostProps) {
+  const [id] = useState(postId);
+
+  const [showOptions, setShowOptions] = useState(false);
+
+  const handleEditPost = () => {
+    setShowOptions(false);
+
+    router.push({
+      pathname: "/newPost",
+      params: {
+        isEditing: "true",
+        postId: id,
+        text: text,
+        location: Location || "",
+        imageUrls: JSON.stringify(postImageUrl || []),
+      },
+    });
+  };
+
   return (
     <View style={postStyles.container}>
-      <View style={postStyles.header}>
-        <ProfileImage size={60} wrapper={false} />
-        <Text style={postStyles.username}>Username</Text>
+      {/* HEADER */}
+      <View style={[postStyles.header]}>
+        {/* Lado Esquerdo do Header: Foto e Nome */}
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <ProfileImage size={60} wrapper={false} imageName={imageProfileUrl} />
+          <Text style={postStyles.username}>
+            {userName}{" "}
+            {edited && <Text style={postStyles.edited}> - Editado</Text>}
+          </Text>
+        </View>
+
+        {/* Lado Direito do Header: Botão 3 pontinhos */}
+        <View style={{ position: "relative" }}>
+          <IconButton
+            type="none"
+            icon="more-vertical"
+            size={28}
+            circle={false}
+            onPress={() => setShowOptions((prev) => !prev)}
+          />
+
+          {showOptions && (
+            <View style={styles.editorContainer}>
+              {myProfile && (
+                <>
+                  <TouchableOpacity
+                    onPress={handleEditPost}
+                    style={postStyles.itemOptionsContainer}
+                  >
+                    <Text style={{ color: "white", fontSize: 16 }}>
+                      Editar Post
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => {
+                      /* Handle Delete */
+                    }}
+                    style={postStyles.itemOptionsContainer}
+                  >
+                    <Text style={{ color: "white", fontSize: 16 }}>
+                      Excluir Post
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              )}
+              <TouchableOpacity
+                onPress={() => {}}
+                style={[
+                  postStyles.itemOptionsContainer,
+                  postStyles.itemOptionsContainerLast,
+                ]}
+              >
+                <Text style={{ color: "white", fontSize: 16 }}>
+                  Dowload Imagens
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
       </View>
 
-      <Text style={postStyles.description}>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vel
-        sapien nec ipsum fermentum commodo. Curabitur ac ligula quis metus
-        efficitur tincidunt.
-      </Text>
-      <Image
-        source={{
-          uri: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cHJvZmlsZSUyMGNvdmVyfGVufDB8fDB8fHww&w=1000&q=80",
-        }}
-        style={postStyles.image}
-      />
-      <View
-        style={{
-          flexDirection: "row",
-          marginTop: 16,
-          justifyContent: "space-around",
-        }}
-      >
+      <View style={{ zIndex: 1 }}>
+        <Text style={postStyles.description}>{text}</Text>
+        <DisplayImages files={postImageUrl || []} />
+        {Location && <Text style={postStyles.location}>📍 Em {Location}</Text>}
+      </View>
+      {/* BARRAS DE AÇÃO */}
+      <View style={postStyles.buttonContainer}>
         <IconButton
           type="none"
           icon="repeat"

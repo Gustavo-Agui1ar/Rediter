@@ -6,6 +6,28 @@ export const postStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 8,
+    justifyContent: "space-between",
+    zIndex: 10,
+  },
+
+  buttonContainer: {
+    flexDirection: "row",
+    marginTop: 16,
+    justifyContent: "space-around",
+    zIndex: 1,
+  },
+
+  location: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: Colors.textMuted,
+    marginTop: 4,
+  },
+
+  edited: {
+    fontSize: 12,
+    color: Colors.textMuted,
+    marginTop: 4,
   },
 
   username: {
@@ -16,7 +38,8 @@ export const postStyles = StyleSheet.create({
 
   image: {
     width: "100%",
-    height: 200,
+    aspectRatio: 2,
+    objectFit: "cover",
     borderRadius: 8,
     marginVertical: 16,
   },
@@ -34,5 +57,16 @@ export const postStyles = StyleSheet.create({
     fontSize: 14,
     color: Colors.textSecondary,
     paddingVertical: 8,
+  },
+
+  itemOptionsContainer: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.divider,
+  },
+
+  itemOptionsContainerLast: {
+    borderBottomWidth: 0,
   },
 });

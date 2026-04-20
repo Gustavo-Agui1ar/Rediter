@@ -151,4 +151,19 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 10,
   },
+
+  editorContainer: {
+    position: "absolute",
+    top: 30,
+    right: 0,
+    backgroundColor: Colors.primaryDark,
+    borderRadius: 8,
+    minWidth: 180,
+    padding: 4,
+    elevation: 5,
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    zIndex: 99,
+  },
 });

@@ -31,7 +31,6 @@ export class ScriptIndex {
     const accessToken = await StorageUtils.getStoreageItem("user_token");
     const refreshToken = await StorageUtils.getStoreageItem("refresh_token");
     if (accessToken && refreshToken) {
-      console.log("Tokens encontrados, redirecionando para main...");
       router.push("/main"); // TODO terminar segurança e validação dos tokens: se o tempo do acesstokem tiver expirado, usar o refresh token para obter um novo access token. Se o refresh token também tiver expirado, redirecionar para a tela de login.
     }
   }

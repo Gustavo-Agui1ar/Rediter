@@ -1,16 +1,13 @@
 import { Button, Header, IconButton, TextBox } from "@/components/components";
+import { DisplayImages } from "@/components/DisplayImages/displayImage";
 import { useLoading } from "@/context/loadingContext";
-import { styles } from "@/styles/theme";
+import { NewPostScript } from "@/scripts/newPost.script";
+import { Colors, styles } from "@/styles/theme";
 import { pickImage } from "@/utils/filePicker";
-import { request } from "@/utils/request";
-import { getStoreageItem } from "@/utils/storage";
-import * as Location from "expo-location";
-import { router } from "expo-router";
-import { useState } from "react";
+import { handleGetLocation } from "@/utils/location";
+import { useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
 import {
-  Alert,
-  DimensionValue,
-  Image,
   Keyboard,
   KeyboardAvoidingView,
   ScrollView,
@@ -23,111 +20,42 @@ export default function NewPost() {
   const [files, setFiles] = useState<any[]>([]);
   const [showEmoji, setShowEmoji] = useState(false);
   const [text, setText] = useState("");
-
   const [locationName, setLocationName] = useState<string | null>(null);
   const { setLoading } = useLoading();
+  const [postId, setPostId] = useState<string | null>(null);
 
-  const getColumns = (length: number) => {
-    if (length === 1) return 1;
-    if (length <= 4) return 2;
-    return 3;
-  };
+  const params = useLocalSearchParams();
 
-  const numColumns = getColumns(files.length);
-  const size: DimensionValue = `${100 / numColumns}%`;
+  const isEditingParam = params.isEditing;
+  const postIdParam = params.postId;
+  const textParam = params.text;
+  const locationParam = params.location;
+  const imageUrlsParam = params.imageUrls;
 
-  const handleGetLocation = async () => {
-    try {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert(
-          "Aviso",
-          "Precisamos de permissão para acessar sua localização.",
-        );
-        return;
+  useEffect(() => {
+    if (isEditingParam === "true") {
+      if (postIdParam && typeof postIdParam === "string") {
+        setPostId(postIdParam);
       }
 
-      let currentPosition = await Location.getLastKnownPositionAsync({});
-
-      if (!currentPosition) {
-        currentPosition = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Lowest,
-          timeInterval: 10000,
-        });
+      if (textParam && typeof textParam === "string") {
+        setText(textParam);
       }
 
-      if (!currentPosition) {
-        Alert.alert("Aviso", "Ligue o GPS do seu celular para fazer check-in.");
-        return;
+      if (locationParam && typeof locationParam === "string") {
+        setLocationName(locationParam);
       }
 
-      let address = await Location.reverseGeocodeAsync(currentPosition.coords);
-
-      console.log("Endereço obtido:", address);
-
-      if (address.length > 0) {
-        const city = address[0].city || address[0].subregion;
-        const region = address[0].region;
-        setLocationName(`${city}, ${region}`);
+      if (imageUrlsParam && typeof imageUrlsParam === "string") {
+        try {
+          const parsedImages = JSON.parse(imageUrlsParam);
+          setFiles(parsedImages);
+        } catch (e) {
+          console.error("Erro ao fazer parse das imagens", e);
+        }
       }
-    } catch (error) {
-      console.error("Erro ao obter localização:", error);
-      Alert.alert(
-        "Erro",
-        "Não foi possível obter a localização. Verifique se o GPS está ligado.",
-      );
     }
-  };
-
-  const handlePublish = async () => {
-    // Validação básica
-    if (!text.trim() && files.length === 0) {
-      Alert.alert("Aviso", "Escreva algo ou adicione uma foto para publicar.");
-      return;
-    }
-
-    setLoading(true);
-    const formData = new FormData();
-
-    try {
-      const refresh_token = await getStoreageItem("refresh_token");
-      formData.append("RefreshToken", refresh_token ?? "");
-
-      formData.append("Text", text);
-
-      if (locationName) {
-        formData.append("LocationName", locationName);
-      }
-
-      files.forEach((fileAsset) => {
-        if (!fileAsset.uri) return;
-
-        const uriParts = fileAsset.uri.split("/");
-        const fileName = fileAsset.fileName || uriParts[uriParts.length - 1];
-        const type = fileAsset.mimeType || "image/jpeg";
-
-        formData.append("Pictures", {
-          uri: fileAsset.uri,
-          name: fileName,
-          type: type,
-        } as any);
-      });
-
-      await request({
-        urlComplement: "/Post/NewPost",
-        method: "POST",
-        body: formData,
-        setLoading: setLoading,
-      });
-
-      router.back();
-    } catch (err: any) {
-      console.error("Erro ao publicar post:", err.response?.data || err);
-      Alert.alert("Erro", "Houve um problema ao publicar seu post.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [isEditingParam, postIdParam, textParam, locationParam, imageUrlsParam]);
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={"height"}>
@@ -136,7 +64,7 @@ export default function NewPost() {
         contentContainerStyle={styles.scroll_content}
         keyboardShouldPersistTaps="handled"
       >
-        <Header title="Criar Post" />
+        <Header title={postId ? "Editar Post" : "Criar Post"} />
 
         <View
           style={[
@@ -150,47 +78,15 @@ export default function NewPost() {
             onChangeText={setText}
             onFocus={() => setShowEmoji(false)}
           >
-            {/* IMAGENS */}
-            {files.length > 0 && (
-              <View
-                style={{
-                  flexDirection: "row",
-                  flexWrap: "wrap",
-                  marginHorizontal: -4,
-                  marginTop: 16,
-                }}
-              >
-                {files.map((file, index) => (
-                  <View key={index} style={{ width: size, padding: 4 }}>
-                    <View
-                      style={{
-                        width: "100%",
-                        aspectRatio: 1,
-                        borderRadius: 8,
-                        overflow: "hidden",
-                      }}
-                    >
-                      <Image
-                        source={{ uri: file.uri }}
-                        style={{ width: "100%", height: "100%" }}
-                      />
-                      <View style={{ position: "absolute", top: 8, right: 8 }}>
-                        <IconButton
-                          icon="close"
-                          type="none"
-                          size={32}
-                          onPress={() =>
-                            setFiles((prev) =>
-                              prev.filter((_, i) => i !== index),
-                            )
-                          }
-                        />
-                      </View>
-                    </View>
-                  </View>
-                ))}
-              </View>
-            )}
+            <DisplayImages
+              files={files}
+              onRemoveImage={(index) =>
+                new NewPostScript().handleRemoveImage({
+                  indexToRemove: index,
+                  setFiles,
+                })
+              }
+            />
 
             <View style={{ marginTop: 16, gap: 12 }}>
               {locationName && (
@@ -199,7 +95,7 @@ export default function NewPost() {
                 >
                   <Text
                     style={{
-                      color: "#a0a0a0",
+                      color: Colors.textMuted,
                       fontSize: 14,
                       fontWeight: "bold",
                     }}
@@ -210,7 +106,7 @@ export default function NewPost() {
                     icon="close"
                     type="none"
                     size={20}
-                    onPress={() => setLocationName(null)} // Botão para remover a localização
+                    onPress={() => setLocationName(null)}
                   />
                 </View>
               )}
@@ -245,12 +141,25 @@ export default function NewPost() {
                   icon="location"
                   type="fill"
                   size={28}
-                  onPress={handleGetLocation}
+                  onPress={async () =>
+                    await handleGetLocation({ setLocationName })
+                  }
                 />
               </View>
             </View>
           </TextBox>
-          <Button title="Publicar" onPress={handlePublish} />
+          <Button
+            title={postId ? "Salvar Edição" : "Publicar"}
+            onPress={() =>
+              new NewPostScript().handlePublish({
+                text,
+                files,
+                locationName,
+                setLoading,
+                postId: postId ?? undefined,
+              })
+            }
+          />
         </View>
       </ScrollView>
 
@@ -259,9 +168,8 @@ export default function NewPost() {
         <View
           style={{
             height: 320,
-            backgroundColor: "#fff",
-            borderTopWidth: 1,
-            borderColor: "#e0e0e0",
+            backgroundColor: Colors.background,
+            borderColor: Colors.primary,
           }}
         >
           <EmojiKeyboard

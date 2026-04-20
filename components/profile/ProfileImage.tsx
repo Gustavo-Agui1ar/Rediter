@@ -1,21 +1,34 @@
+import { configs } from "@/utils/configs";
 import { Image } from "react-native";
 
 interface ProfileImageProps {
-  imageUrl?: string;
+  imageName?: string;
   size?: number;
   wrapper?: boolean;
 }
 
 export function ProfileImage({
-  imageUrl,
+  imageName,
   size = 100,
   wrapper,
 }: ProfileImageProps) {
+  const getFullUrl = () => {
+    if (!imageName) return null;
+
+    if (imageName.startsWith("http") || imageName.startsWith("file://")) {
+      return imageName;
+    }
+
+    return `${configs.apiUrls[0]}/Picture/GetPicture?name=${encodeURIComponent(imageName)}`;
+  };
+
+  const finalUri = getFullUrl();
+
   return (
     <Image
       source={
-        imageUrl
-          ? { uri: imageUrl }
+        finalUri
+          ? { uri: finalUri }
           : require("@/assets/images/default_user.png")
       }
       style={{

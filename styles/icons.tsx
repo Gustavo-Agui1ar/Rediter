@@ -3,6 +3,7 @@ import {
   CirclePlus,
   CircleX,
   EditIcon,
+  EllipsisVertical,
   Heart,
   Home,
   Image,
@@ -30,4 +31,5 @@ export const iconMapping = {
   close: CircleX,
   emoji: SmilePlus,
   location: MapPin,
+  "more-vertical": EllipsisVertical,
 };

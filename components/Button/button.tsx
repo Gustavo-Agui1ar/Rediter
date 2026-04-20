@@ -4,7 +4,7 @@ import {
   Text,
   TouchableOpacity,
   TouchableOpacityProps,
-  View
+  View,
 } from "react-native";
 import { buttonStyles } from "./button.style";
 
@@ -44,21 +44,16 @@ export default function Button({
       ]}
       {...rest}
     >
-      {" "}
-      (
-      <>
-        {icon && <View style={{ marginRight: 10 }}>{icon}</View>}
+      {icon && <View style={{ marginRight: 10 }}>{icon}</View>}
 
-        <Text
-          style={[
-            buttonStyles.buttonText,
-            type === "border" && buttonStyles.textBorder,
-          ]}
-        >
-          {title}
-        </Text>
-      </>
-      )
+      <Text
+        style={[
+          buttonStyles.buttonText,
+          type === "border" && buttonStyles.textBorder,
+        ]}
+      >
+        {title}
+      </Text>
     </TouchableOpacity>
   );
 }

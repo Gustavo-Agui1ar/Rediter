@@ -1,7 +1,7 @@
 import { NavBar, NavItem, ProfileCover } from "@/components/components";
-import Post from "@/components/Post/post";
 import { useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
+import Posts from "./Posts";
 
 type Tab = "posts" | "media" | "likes";
 
@@ -28,45 +28,6 @@ export default function FeedProfile() {
 
   const items = Array.from({ length: 20 });
 
-  function renderContent() {
-    switch (currentTab) {
-      case "posts":
-        return (
-          <View style={{ width: "100%", padding: 16 }}>
-            <Post></Post>
-            <Post></Post>
-            <Post></Post>
-          </View>
-        );
-      case "media":
-        return (
-          <View
-            style={{
-              width: "100%",
-              padding: 8,
-              flexDirection: "row",
-              flexWrap: "wrap",
-              gap: 8,
-            }}
-          >
-            {items.map((_, index) => (
-              <View key={index} style={{ width: "49%" }}>
-                <ProfileCover />
-              </View>
-            ))}
-          </View>
-        );
-      case "likes":
-        return (
-          <View style={{ width: "100%", padding: 16 }}>
-            <Post></Post>
-            <Post></Post>
-            <Post></Post>
-          </View>
-        );
-    }
-  }
-
   return (
     <View style={{ width: "100%" }}>
       <View
@@ -82,7 +43,38 @@ export default function FeedProfile() {
         />
       </View>
       <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
-        {renderContent()}
+        <View style={{ display: currentTab === "posts" ? "flex" : "none" }}>
+          <Posts />
+        </View>
+
+        <View style={{ display: currentTab === "media" ? "flex" : "none" }}>
+          <View
+            style={{
+              width: "100%",
+              flex: 1,
+              padding: 8,
+              flexDirection: "row",
+              flexWrap: "wrap",
+              gap: 8,
+            }}
+          >
+            {items.map((_, index) => (
+              <View key={index} style={{ width: "49%" }}>
+                <ProfileCover />
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View
+          style={{
+            display: currentTab === "likes" ? "flex" : "none",
+            width: "100%",
+            padding: 16,
+            flex: 1,
+            gap: 16,
+          }}
+        ></View>
       </ScrollView>
     </View>
   );

@@ -6,7 +6,6 @@ import { useLoading } from "@/context/loadingContext";
 import { handleSave } from "@/scripts/configs.script";
 import { configsStyles } from "@/styles/configs.style";
 import { styles } from "@/styles/theme";
-import { configs } from "@/utils/configs";
 import { pickImage } from "@/utils/filePicker";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
@@ -37,13 +36,13 @@ export default function Configs() {
     if (imageName) {
       setProfileImage((prev) => ({
         ...prev,
-        remote: `${configs.apiUrls[0]}/Picture/GetPicture?name=${encodeURIComponent(imageName as string)}`,
+        remote: imageName as string,
       }));
     }
     if (coverName) {
       setCoverImage((prev) => ({
         ...prev,
-        remote: `${configs.apiUrls[0]}/Picture/GetPicture?name=${encodeURIComponent(coverName as string)}`,
+        remote: coverName as string,
       }));
     }
   }, []);
@@ -60,7 +59,7 @@ export default function Configs() {
             {/* 🔹 COVER COM OVERLAY */}
             <View style={configsStyles.coverOverlay}>
               <ProfileCover
-                imageUrl={
+                imageName={
                   coverImage.changed ? coverImage.local?.uri : coverImage.remote
                 }
               />
@@ -81,7 +80,7 @@ export default function Configs() {
             <View style={configsStyles.profileImageOverlay}>
               <View style={configsStyles.profileImageFix}>
                 <ProfileImage
-                  imageUrl={
+                  imageName={
                     profileImage.changed
                       ? profileImage.local?.uri
                       : profileImage.remote
