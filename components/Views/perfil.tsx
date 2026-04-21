@@ -9,7 +9,6 @@ import { useLoading } from "@/context/loadingContext";
 import { stylesPerfil } from "@/styles/perfil.style";
 import { styles } from "@/styles/theme";
 import { request } from "@/utils/request";
-import { getStoreageItem } from "@/utils/storage";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
@@ -24,16 +23,8 @@ export default function Perfil() {
   });
 
   async function loadProfile() {
-    var refresh_token = await getStoreageItem("refresh_token");
-    var access_token = await getStoreageItem("user_token");
-
-    const query = new URLSearchParams({
-      AccessToken: access_token ?? "",
-      RefreshToken: refresh_token ?? "",
-    }).toString();
-
     var response = await request({
-      urlComplement: `/User/GetUser?${query}`,
+      urlComplement: `/User/GetUser`,
       method: "GET",
       setLoading,
     });

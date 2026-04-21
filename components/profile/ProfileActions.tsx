@@ -3,7 +3,6 @@ import IconButton from "@/components/IconButton/IconButton";
 import { useLoading } from "@/context/loadingContext";
 import { Colors } from "@/styles/theme";
 import { request } from "@/utils/request";
-import { getStoreageItem } from "@/utils/storage";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Text, View } from "react-native";
@@ -71,16 +70,8 @@ export default function ProfileActions({
 
   async function Config() {
     if (!canFollow) {
-      var refresh_token = await getStoreageItem("refresh_token");
-      var access_token = await getStoreageItem("user_token");
-
-      const query = new URLSearchParams({
-        AccessToken: access_token ?? "",
-        RefreshToken: refresh_token ?? "",
-      }).toString();
-
       var response = await request({
-        urlComplement: `/User/GetUser?${query}`,
+        urlComplement: `/User/GetUser`,
         method: "GET",
         setLoading,
       });

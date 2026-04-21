@@ -9,5 +9,10 @@ export async function getStoreageItem(key: string) {
   return await SecureStore.getItemAsync(key);
 }
 
+export async function deleteTokens() {
+  await SecureStore.deleteItemAsync("user_token");
+  await SecureStore.deleteItemAsync("refresh_token");
+}
+
 // Para recuperar depois em outras telas:
 // const token = await SecureStore.getItemAsync('user_token');

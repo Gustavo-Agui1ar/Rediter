@@ -1,8 +1,9 @@
 import { ProfileImage } from "@/components/profile/ProfileImage";
 import { styles } from "@/styles/theme";
+import { request } from "@/utils/request";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { DeviceEventEmitter, Text, TouchableOpacity, View } from "react-native";
 import { IconButton } from "../components";
 import { DisplayImages } from "../DisplayImages/displayImage";
 import { postStyles } from "./post.style";
@@ -47,11 +48,21 @@ export default function Post({
     });
   };
 
+  const handleDeletePost = async () => {
+    var response = await request({
+      urlComplement: `/Post/DeletePost/${id}`,
+      method: "DELETE",
+    });
+
+    if (response.ok) {
+      DeviceEventEmitter.emit("refresh_posts");
+    }
+  };
+
   return (
     <View style={postStyles.container}>
       {/* HEADER */}
       <View style={[postStyles.header]}>
-        {/* Lado Esquerdo do Header: Foto e Nome */}
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <ProfileImage size={60} wrapper={false} imageName={imageProfileUrl} />
           <Text style={postStyles.username}>
@@ -60,7 +71,6 @@ export default function Post({
           </Text>
         </View>
 
-        {/* Lado Direito do Header: Botão 3 pontinhos */}
         <View style={{ position: "relative" }}>
           <IconButton
             type="none"
@@ -84,8 +94,8 @@ export default function Post({
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    onPress={() => {
-                      /* Handle Delete */
+                    onPress={async () => {
+                      handleDeletePost();
                     }}
                     style={postStyles.itemOptionsContainer}
                   >
@@ -116,6 +126,7 @@ export default function Post({
         <DisplayImages files={postImageUrl || []} />
         {Location && <Text style={postStyles.location}>📍 Em {Location}</Text>}
       </View>
+
       {/* BARRAS DE AÇÃO */}
       <View style={postStyles.buttonContainer}>
         <IconButton
