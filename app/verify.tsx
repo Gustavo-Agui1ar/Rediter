@@ -2,7 +2,7 @@ import { Button, Code, LinkText } from "@/components/components";
 import { useLoading } from "@/context/loadingContext";
 import { ScriptVerify } from "@/scripts/verify.script";
 import { styles } from "@/styles/theme";
-import { saveTokens } from "@/utils/storage";
+import { saveTokens } from "@/utils/storage.utils";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Image, KeyboardAvoidingView, Text, View } from "react-native";

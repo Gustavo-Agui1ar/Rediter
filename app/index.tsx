@@ -7,7 +7,7 @@ import {
   TextBox,
 } from "@/components/components";
 import { styles } from "@/styles/theme";
-import { LoginValidator, updateField } from "@/utils/loginVerify";
+import { LoginValidator, updateField } from "@/utils/login.utils";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
@@ -21,7 +21,7 @@ import {
 import { useLoading } from "@/context/loadingContext";
 import { ScriptIndex } from "@/scripts/index.script";
 import { indexStyle } from "@/styles/index.style";
-import * as StorageUtils from "@/utils/storage";
+import * as StorageUtils from "@/utils/storage.utils";
 import { useEffect } from "react";
 
 export default function Index() {

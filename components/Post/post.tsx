@@ -1,6 +1,6 @@
 import { ProfileImage } from "@/components/profile/ProfileImage";
 import { styles } from "@/styles/theme";
-import { request } from "@/utils/request";
+import { request } from "@/utils/request.utils";
 import { router } from "expo-router";
 import { useState } from "react";
 import { DeviceEventEmitter, Text, TouchableOpacity, View } from "react-native";

@@ -10,7 +10,7 @@ import { buttonStyles } from "./button.style";
 
 interface ButtonProps extends TouchableOpacityProps {
   title: string;
-  type?: "fill" | "border";
+  type?: "fill" | "border" | "remove_fill" | "remove_border";
   fullWidth?: boolean;
   icon?: ReactNode;
 }

@@ -2,7 +2,7 @@ import { default as Button } from "@/components/Button/button";
 import IconButton from "@/components/IconButton/IconButton";
 import { useLoading } from "@/context/loadingContext";
 import { Colors } from "@/styles/theme";
-import { request } from "@/utils/request";
+import { request } from "@/utils/request.utils";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Text, View } from "react-native";

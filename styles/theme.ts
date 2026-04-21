@@ -24,7 +24,7 @@ export const Colors = {
   disabled: "#4A4D5A",
   overlay: "rgba(0,0,0,0.4)",
 
-  // Feedback (já deixa pronto pro futuro)
+  // Feedback
   success: "#2DC653",
   warning: "#F4A261",
   error: "#E63946",

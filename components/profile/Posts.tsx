@@ -1,14 +1,13 @@
 import Post from "@/components/Post/post";
 import { useLoading } from "@/context/loadingContext";
 import { Colors } from "@/styles/theme";
-import { request } from "@/utils/request";
-import * as StorageUtils from "@/utils/storage";
+import { request } from "@/utils/request.utils";
 import { useEffect, useState } from "react";
 import {
-    DeviceEventEmitter,
-    RefreshControl,
-    ScrollView,
-    Text,
+  DeviceEventEmitter,
+  RefreshControl,
+  ScrollView,
+  Text,
 } from "react-native";
 
 export default function Posts() {
@@ -25,14 +24,8 @@ export default function Posts() {
       if (!refreshing) setLoading(true);
 
       const pageSize = 10;
-      const refreshToken = await StorageUtils.getStoreageItem("refresh_token");
 
-      if (!refreshToken) {
-        throw new Error("Token de atualização não encontrado");
-      }
-
-      const safeToken = encodeURIComponent(refreshToken);
-      const url = `/Post/GetPostUser?RefreshToken=${safeToken}&pageSize=${pageSize}`;
+      const url = `/Post/GetPostUser?pageSize=${pageSize}`;
 
       const response = await request({
         urlComplement: url,

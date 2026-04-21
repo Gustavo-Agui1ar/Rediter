@@ -20,6 +20,18 @@ export const buttonStyles = StyleSheet.create({
     borderColor: Colors.primary,
   },
 
+  remove_fill: {
+    backgroundColor: Colors.error,
+    borderWidth: 2,
+    borderColor: Colors.error,
+  },
+
+  remove_border: {
+    borderWidth: 2,
+    borderColor: Colors.error,
+    backgroundColor: "transparent" as const,
+  },
+
   border: {
     borderWidth: 2,
     borderColor: Colors.primary,

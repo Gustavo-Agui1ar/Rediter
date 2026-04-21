@@ -1,4 +1,4 @@
-import { Button, TextBox } from "@/components/components";
+import { Button, Divider, HelperText, TextBox } from "@/components/components";
 import IconButton from "@/components/IconButton/IconButton";
 import { ProfileCover } from "@/components/profile/ProfileCover";
 import { ProfileImage } from "@/components/profile/ProfileImage";
@@ -6,7 +6,8 @@ import { useLoading } from "@/context/loadingContext";
 import { handleSave } from "@/scripts/configs.script";
 import { configsStyles } from "@/styles/configs.style";
 import { styles } from "@/styles/theme";
-import { pickImage } from "@/utils/filePicker";
+import { pickImage } from "@/utils/filePicker.utils";
+import { deleteAccount, logOut } from "@/utils/login.utils";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { KeyboardAvoidingView, ScrollView, View } from "react-native";
@@ -14,6 +15,7 @@ import { KeyboardAvoidingView, ScrollView, View } from "react-native";
 export default function Configs() {
   const { email, name, imageName, coverName } = useLocalSearchParams();
   const { loading, setLoading } = useLoading();
+  const [error, setError] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     name: (name as string) || "",
@@ -56,7 +58,7 @@ export default function Configs() {
       >
         <View style={[styles.content, configsStyles.contentFix]}>
           <View>
-            {/* 🔹 COVER COM OVERLAY */}
+            {/* COVER COM OVERLAY */}
             <View style={configsStyles.coverOverlay}>
               <ProfileCover
                 imageName={
@@ -76,7 +78,7 @@ export default function Configs() {
               />
             </View>
 
-            {/* 🔹 PROFILE IMAGE COM OVERLAY REDONDO */}
+            {/* PROFILE IMAGE COM OVERLAY */}
             <View style={configsStyles.profileImageOverlay}>
               <View style={configsStyles.profileImageFix}>
                 <ProfileImage
@@ -103,6 +105,8 @@ export default function Configs() {
           </View>
 
           <View style={configsStyles.contentTextFix}>
+            <Divider text="Informações da Conta" />
+            <HelperText message={error || undefined} visible={!!error} />
             <TextBox
               placeholder="Nome"
               value={form.name}
@@ -127,14 +131,29 @@ export default function Configs() {
             <Button
               title="Salvar"
               disabled={loading}
-              onPress={() =>
-                handleSave({
+              onPress={async () => {
+                setError(null);
+                var error = await handleSave({
                   form,
                   profileImage,
                   profileCover: coverImage,
                   setLoading,
-                })
-              }
+                });
+                if (error) setError(error);
+              }}
+            />
+            <Divider text="Log-out" />
+            <Button
+              title="Excluir Conta"
+              type="remove_border"
+              onPress={async () => deleteAccount()}
+              disabled={loading}
+            />
+            <Button
+              title="Sair"
+              type="remove_fill"
+              onPress={async () => logOut()}
+              disabled={loading}
             />
           </View>
         </View>

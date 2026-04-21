@@ -1,5 +1,4 @@
-import { request } from "@/utils/request";
-import { getStoreageItem } from "@/utils/storage";
+import { request } from "@/utils/request.utils";
 import { router } from "expo-router";
 import { Alert, DeviceEventEmitter } from "react-native";
 interface NewPostData {
@@ -36,10 +35,6 @@ export class NewPostScript {
     const formData = new FormData();
 
     try {
-      if (!postId) {
-        const refresh_token = await getStoreageItem("refresh_token");
-        formData.append("RefreshToken", refresh_token || "");
-      }
       formData.append("Text", text);
       if (locationName) formData.append("LocationName", locationName);
 

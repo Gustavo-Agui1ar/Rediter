@@ -1,4 +1,4 @@
-import { configs } from "@/utils/configs";
+import { configs } from "@/utils/configs.utils";
 import { Image } from "react-native";
 
 interface ProfileImageProps {

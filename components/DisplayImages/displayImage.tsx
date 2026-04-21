@@ -1,5 +1,5 @@
 import { IconButton } from "@/components/components";
-import { configs } from "@/utils/configs";
+import { configs } from "@/utils/configs.utils";
 import { DimensionValue, Image, View } from "react-native";
 
 interface DisplayImagesProps {

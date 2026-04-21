@@ -1,11 +1,11 @@
 import {
-  GoogleSignin,
-  isSuccessResponse,
+    GoogleSignin,
+    isSuccessResponse,
 } from "@react-native-google-signin/google-signin";
 
-import { LoginValidator } from "@/utils/loginVerify";
-import { request } from "@/utils/request";
-import * as StorageUtils from "@/utils/storage";
+import { LoginValidator } from "@/utils/login.utils";
+import { request } from "@/utils/request.utils";
+import * as StorageUtils from "@/utils/storage.utils";
 import { router } from "expo-router";
 
 GoogleSignin.configure({

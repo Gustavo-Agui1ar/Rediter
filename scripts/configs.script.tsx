@@ -1,6 +1,6 @@
-import { configs } from "@/utils/configs";
-import { request } from "@/utils/request";
-import { getStoreageItem } from "@/utils/storage";
+import { configs } from "@/utils/configs.utils";
+import { request } from "@/utils/request.utils";
+import { getStoreageItem } from "@/utils/storage.utils";
 import { router } from "expo-router";
 
 // 🔹 carregar imagem do backend
@@ -80,7 +80,7 @@ export async function handleSave({
     });
 
     router.back();
-  } catch (err) {
-    console.log("Erro ao salvar:", err);
+  } catch (err: any) {
+    return err.response?.data || "Ocorreu um erro ao atualizar o perfil.";
   }
 }

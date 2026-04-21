@@ -1,6 +1,10 @@
-import { deleteTokens, getStoreageItem, saveTokens } from "@/utils/storage";
+import {
+  deleteTokens,
+  getStoreageItem,
+  saveTokens,
+} from "@/utils/storage.utils";
 import { router } from "expo-router";
-import { configs } from "./configs";
+import { configs } from "./configs.utils";
 
 interface RequestOptions {
   urlComplement: string;

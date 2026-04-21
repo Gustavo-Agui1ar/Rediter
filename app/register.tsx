@@ -1,7 +1,7 @@
 import { Button, Header, HelperText, TextBox } from "@/components/components";
 import { ScriptRegister } from "@/scripts/register.script";
 import { styles } from "@/styles/theme";
-import { LoginValidator, updateField } from "@/utils/loginVerify";
+import { LoginValidator, updateField } from "@/utils/login.utils";
 import { router } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, ScrollView, View } from "react-native";

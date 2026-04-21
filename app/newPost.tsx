@@ -3,8 +3,8 @@ import { DisplayImages } from "@/components/DisplayImages/displayImage";
 import { useLoading } from "@/context/loadingContext";
 import { NewPostScript } from "@/scripts/newPost.script";
 import { Colors, styles } from "@/styles/theme";
-import { pickImage } from "@/utils/filePicker";
-import { handleGetLocation } from "@/utils/location";
+import { pickImage } from "@/utils/filePicker.utils";
+import { handleGetLocation } from "@/utils/location.utils";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {

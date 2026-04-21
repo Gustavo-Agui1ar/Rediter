@@ -1,3 +1,8 @@
+import { router } from "expo-router";
+import { Alert } from "react-native";
+import { request } from "./request.utils";
+import { deleteTokens } from "./storage.utils";
+
 export class LoginValidator {
   static isEmailValid(email: string) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -34,4 +39,26 @@ export function updateField<T>(
     ...prev,
     [field]: value,
   }));
+}
+
+export function logOut() {
+  deleteTokens().then(() => {
+    router.replace("/");
+  });
+}
+
+export function deleteAccount() {
+  request({
+    urlComplement: "/User/DeleteAccount",
+    method: "DELETE",
+  })
+    .then(() => {
+      deleteTokens().then(() => {
+        router.replace("/");
+      });
+    })
+    .catch((err) => {
+      console.error("Erro ao deletar conta:", err.response?.data || err);
+      Alert.alert("Erro", "Houve um problema ao deletar sua conta.");
+    });
 }

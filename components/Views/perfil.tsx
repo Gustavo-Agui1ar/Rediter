@@ -8,7 +8,7 @@ import FeedProfile from "@/components/profile/FeedProfile";
 import { useLoading } from "@/context/loadingContext";
 import { stylesPerfil } from "@/styles/perfil.style";
 import { styles } from "@/styles/theme";
-import { request } from "@/utils/request";
+import { request } from "@/utils/request.utils";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { View } from "react-native";

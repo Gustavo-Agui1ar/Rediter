@@ -1,5 +1,5 @@
-import { LoginValidator } from "@/utils/loginVerify";
-import { request } from "@/utils/request";
+import { LoginValidator } from "@/utils/login.utils";
+import { request } from "@/utils/request.utils";
 
 export class ScriptVerify {
   static async verifyCode(

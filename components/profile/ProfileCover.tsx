@@ -1,5 +1,5 @@
 import { Colors } from "@/styles/theme";
-import { configs } from "@/utils/configs";
+import { configs } from "@/utils/configs.utils";
 import { Image, ImageProps, View } from "react-native";
 
 interface ProfileCoverProps extends Omit<ImageProps, "source"> {

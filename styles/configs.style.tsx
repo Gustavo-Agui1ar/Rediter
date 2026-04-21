@@ -17,6 +17,7 @@ export const configsStyles = StyleSheet.create({
 
   contentTextFix: {
     gap: 25,
+    marginTop: -40,
     width: "90%",
   },
 
