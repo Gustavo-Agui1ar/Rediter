@@ -1,5 +1,5 @@
 import { Button, Header, IconButton, TextBox } from "@/components/components";
-import { DisplayImages } from "@/components/DisplayImages/displayImage";
+import { DisplayImages } from "@/components/Feedback/DisplayImages/displayImage";
 import { useLoading } from "@/context/loadingContext";
 import { NewPostScript } from "@/scripts/newPost.script";
 import { Colors, styles } from "@/styles/theme";
@@ -8,11 +8,11 @@ import { handleGetLocation } from "@/utils/location.utils";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Keyboard,
-  KeyboardAvoidingView,
-  ScrollView,
-  Text,
-  View,
+    Keyboard,
+    KeyboardAvoidingView,
+    ScrollView,
+    Text,
+    View,
 } from "react-native";
 import { EmojiKeyboard } from "rn-emoji-keyboard";
 

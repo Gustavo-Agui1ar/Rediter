@@ -77,9 +77,10 @@ export const styles = StyleSheet.create({
   content: {
     flex: 1,
     width: "100%",
-    gap: 50,
+    gap: 40,
+    paddingVertical: 20,
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
   },
 
   footer: {

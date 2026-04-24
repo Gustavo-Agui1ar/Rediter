@@ -34,7 +34,6 @@ export default function TextBox({ children, ...props }: any) {
             style={{
               position: "absolute",
               right: 10,
-              // Sem o `top: 10`, o flexbox do View pai centraliza automaticamente
             }}
             onPress={() => setSecure(!secure)}
           >

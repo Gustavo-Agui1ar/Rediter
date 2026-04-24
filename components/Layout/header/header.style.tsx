@@ -7,7 +7,7 @@ export const stylesHeader = StyleSheet.create({
     width: "100%",
     justifyContent: "center",
     alignItems: "center",
-    paddingTop: 25,
+    paddingTop: 50,
   },
 
   divider: {

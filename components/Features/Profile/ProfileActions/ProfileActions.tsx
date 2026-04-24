@@ -1,11 +1,12 @@
-import { default as Button } from "@/components/Button/button";
-import IconButton from "@/components/IconButton/IconButton";
+import { default as Button } from "@/components/UI/Button/button";
+import IconButton from "@/components/UI/IconButton/IconButton";
 import { useLoading } from "@/context/loadingContext";
-import { Colors } from "@/styles/theme";
 import { request } from "@/utils/request.utils";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Text, View } from "react-native";
+import { styles } from "./profileActions.style";
+
 interface ProfileActionsProps {
   canFollow?: boolean;
   userName?: string;
@@ -18,39 +19,13 @@ export default function ProfileActions({
   const { setLoading } = useLoading();
   const [isFollowing, setIsFollowing] = useState(false);
   return (
-    <View
-      style={{
-        flexDirection: "row",
-        marginTop: 20,
-        width: "100%",
-        alignItems: "flex-end",
-        justifyContent: "flex-end",
-        gap: 10,
-      }}
-    >
-      <View
-        style={{
-          flex: 1,
-          marginTop: 8,
-          marginLeft: 16,
-          justifyContent: "center",
-          alignItems: "flex-start",
-        }}
-      >
-        <Text
-          style={{
-            fontSize: 20,
-            fontWeight: "bold",
-            color: Colors.primaryLight,
-            flexWrap: "wrap",
-          }}
-        >
-          {userName}
-        </Text>
+    <View style={styles.container}>
+      <View style={styles.nameContainer}>
+        <Text style={styles.nameText}>{userName}</Text>
       </View>
       {canFollow && (
         <>
-          <View style={{ flex: 1, marginRight: 10 }}>
+          <View style={styles.buttonWrapper}>
             <Button
               title={isFollowing ? "Seguindo" : "Seguir"}
               type={isFollowing ? "border" : "fill"}

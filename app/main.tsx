@@ -4,7 +4,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import React, { JSX, useEffect, useMemo, useState } from "react";
 import { KeyboardAvoidingView, View } from "react-native";
 
-import { LoadingOverlay } from "@/components/Loading/loading";
+import { LoadingOverlay } from "@/components/Feedback/Loading/loading";
 import { useLoading } from "@/context/loadingContext";
 import { stylesMain } from "@/styles/main.style";
 import Feed from "../components/Views/feed";
@@ -14,7 +14,7 @@ import Perfil from "../components/Views/perfil";
 const validTabs: Tab[] = ["home", "messages", "profile"];
 type Tab = "home" | "messages" | "profile";
 
-export default function Main() { 
+export default function Main() {
   const { screen } = useLocalSearchParams<{ screen: Tab }>();
   const [currentTab, setCurrentTab] = useState<Tab>("home");
   const { loading } = useLoading();

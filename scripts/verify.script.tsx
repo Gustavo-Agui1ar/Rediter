@@ -1,43 +1,52 @@
-import { LoginValidator } from "@/utils/login.utils";
 import { request } from "@/utils/request.utils";
 
+interface VerifyResponse {
+  success: boolean;
+  error?: string;
+  access?: string;
+  refresh?: string;
+}
+
 export class ScriptVerify {
-  static async verifyCode(
+  static async authenticateCode(
     userEmail: string,
     code: string,
     setLoading?: (loading: boolean) => void,
-  ) {
-    var response = {
-      error: "",
-      success: false,
-      refresh: "",
-      access: "",
-    };
-
+  ): Promise<VerifyResponse> {
     if (code.length !== 6) {
-      alert("Código deve conter 6 dígitos.");
-      return;
+      return {
+        success: false,
+        error: "Código deve conter 6 dígitos.",
+      };
     }
 
     try {
       const serverResponse = await request({
         urlComplement: `/Auth/Code?code=${code}&userEmail=${userEmail}`,
         method: "GET",
-        setLoading: setLoading,
+        setLoading,
       });
-      console.log("Server response:", serverResponse);
-      if (serverResponse.ok) {
-        {
-          (response.refresh, response.access);
-        }
-        await LoginValidator.ParseTokens(serverResponse);
-        response.success = true;
-        return response;
+
+      if (!serverResponse.ok) {
+        return {
+          success: false,
+          error: "Código inválido ou expirado.",
+        };
       }
+
+      const data = await serverResponse.json();
+
+      return {
+        success: true,
+        access: data.accessToken,
+        refresh: data.refreshToken,
+      };
     } catch (error) {
       console.error("Error during code verification:", error);
-      response.error = "Erro de rede. Tente novamente.";
-      return response;
+      return {
+        success: false,
+        error: "Erro de rede. Tente novamente.",
+      };
     }
   }
 }

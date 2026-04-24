@@ -48,7 +48,12 @@ export default function IconButton({
 
     if (!Icon) return null;
 
-    return <Icon size={fullSize ? 28 : size / 2} color={currentColor} />;
+    return (
+      <Icon
+        size={type === "overlay" ? size / 1.5 : size / 2}
+        color={currentColor}
+      />
+    );
   }
 
   return (
@@ -66,7 +71,7 @@ export default function IconButton({
         iconButtonStyles.base,
         iconButtonStyles[type],
 
-        type === "none" && iconButtonStyles.overlay,
+        type === "fill_image" && iconButtonStyles.overlay,
 
         isInactive && !fullSize && { opacity: 0.6 },
         style,

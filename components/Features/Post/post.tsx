@@ -1,11 +1,11 @@
-import { ProfileImage } from "@/components/profile/ProfileImage";
+import { ProfileImage } from "@/components/Features/Profile/ProfileImage";
 import { styles } from "@/styles/theme";
 import { request } from "@/utils/request.utils";
 import { router } from "expo-router";
 import { useState } from "react";
 import { DeviceEventEmitter, Text, TouchableOpacity, View } from "react-native";
-import { IconButton } from "../components";
-import { DisplayImages } from "../DisplayImages/displayImage";
+import { IconButton } from "../../components";
+import { DisplayImages } from "../../Feedback/DisplayImages/displayImage";
 import { postStyles } from "./post.style";
 
 interface PostProps {

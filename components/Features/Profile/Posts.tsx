@@ -1,4 +1,4 @@
-import Post from "@/components/Post/post";
+import Post from "@/components/Features/Post/post";
 import { useLoading } from "@/context/loadingContext";
 import { Colors } from "@/styles/theme";
 import { request } from "@/utils/request.utils";

@@ -2,13 +2,14 @@ import { Button, Code, LinkText } from "@/components/components";
 import { useLoading } from "@/context/loadingContext";
 import { ScriptVerify } from "@/scripts/verify.script";
 import { styles } from "@/styles/theme";
+import { request } from "@/utils/request.utils";
 import { saveTokens } from "@/utils/storage.utils";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Image, KeyboardAvoidingView, Text, View } from "react-native";
 
 export default function Verify() {
-  const { userEmail } = useLocalSearchParams();
+  const { userEmail, mode } = useLocalSearchParams();
   const [code, setCode] = useState("");
   const { setLoading } = useLoading();
   return (
@@ -35,12 +36,22 @@ export default function Verify() {
           <Text style={[styles.paragraph, styles.subtitle]}>
             Não recebeu o código?{" "}
           </Text>
-          <LinkText text="Reenviar código" onPress={() => {}} />
+          <LinkText
+            text="Reenviar código"
+            onPress={async () => {
+              await request({
+                method: "POST",
+                urlComplement: "/Auth/GenerateCode",
+                body: userEmail,
+                setLoading: setLoading,
+              });
+            }}
+          />
         </View>
         <Button
           title="Verificar"
           onPress={async () => {
-            var response = await ScriptVerify.verifyCode(
+            const response = await ScriptVerify.authenticateCode(
               userEmail as string,
               code,
               setLoading,
@@ -51,8 +62,18 @@ export default function Verify() {
               return;
             }
 
-            await saveTokens(response.access, response.refresh);
-            router.push("/main");
+            await saveTokens(response.access!, response.refresh!);
+
+            if (mode === "register") {
+              router.replace("/main");
+            }
+
+            if (mode === "reset") {
+              router.push({
+                pathname: "/forgotPassword",
+                params: { userEmail },
+              });
+            }
           }}
           type="fill"
         />

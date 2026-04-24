@@ -26,7 +26,7 @@ export default function Register() {
       >
         <Header title="Crie sua conta" />
 
-        <View style={[styles.content]}>
+        <View style={[styles.content, { width: "80%" }]}>
           <HelperText message={errorText} visible={!!errorText} />
           <TextBox
             placeholder="Nome"
@@ -55,13 +55,6 @@ export default function Register() {
               updateField(setForm, "password", value)
             }
             secureTextEntry
-          />
-          <HelperText
-            message="A senha deve ter 6+ caracteres, maiúsculas, números e símbolos."
-            visible={
-              (isSubmitted || !!form.password) &&
-              !LoginValidator.isPasswordValid(form.password)
-            }
           />
 
           <TextBox
@@ -93,7 +86,10 @@ export default function Register() {
               setErrorText(response.error);
 
               if (response.success) {
-                router.push(`/verify?userEmail=${form.email}`);
+                router.push({
+                  pathname: "/verify",
+                  params: { userEmail: form.email, mode: "register" },
+                });
               }
             }}
             style={{ marginTop: 20 }}

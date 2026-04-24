@@ -17,15 +17,17 @@ export class ScriptRegister {
     };
     response.error = "";
 
+    form.email = form.email.trim().toLowerCase();
+
     if (!LoginValidator.isEmailValid(form.email)) {
       response.error = "Por favor, insira um e-mail válido.";
       return response;
     }
 
-    if (!LoginValidator.isPasswordValid(form.password)) {
-      response.error = "Por favor, insira uma senha válida.";
-      return response;
-    }
+    // if (!LoginValidator.isPasswordValid(form.password)) {
+    //   response.error = "Por favor, insira uma senha válida.";
+    //   return response;
+    // }
 
     if (!LoginValidator.doPasswordsMatch(form.password, form.confirmPassword)) {
       response.error = "Por favor, insira senhas coincidentes.";

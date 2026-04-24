@@ -31,6 +31,7 @@
         {
           "backgroundColor": "#ffffff",
           "image": "./assets/logo/white_r.png",
+          "resizeMode": "contain",
           "dark": {
             "image": "./assets/logo/white_r.png",
             "backgroundColor": "#000000"
@@ -45,7 +46,9 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Permita o Rediter acessar sua localização para fazer check-in nos seus posts."
         }
-      ]
+      ],
+      "expo-font",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -1,7 +1,13 @@
-import { Button, Divider, HelperText, TextBox } from "@/components/components";
-import IconButton from "@/components/IconButton/IconButton";
-import { ProfileCover } from "@/components/profile/ProfileCover";
-import { ProfileImage } from "@/components/profile/ProfileImage";
+import {
+  Button,
+  Divider,
+  HelperText,
+  IconButton,
+  ProfileCover,
+  ProfileImage,
+  TextBox,
+  Toogle,
+} from "@/components/components";
 import { useLoading } from "@/context/loadingContext";
 import { handleSave } from "@/scripts/configs.script";
 import { configsStyles } from "@/styles/configs.style";
@@ -10,7 +16,7 @@ import { pickImage } from "@/utils/filePicker.utils";
 import { deleteAccount, logOut } from "@/utils/login.utils";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-import { KeyboardAvoidingView, ScrollView, View } from "react-native";
+import { KeyboardAvoidingView, ScrollView, Text, View } from "react-native";
 
 export default function Configs() {
   const { email, name, imageName, coverName } = useLocalSearchParams();
@@ -49,6 +55,8 @@ export default function Configs() {
     }
   }, []);
 
+  const [toogleValue] = useState(false);
+
   return (
     <KeyboardAvoidingView style={styles.container} behavior={"height"}>
       <ScrollView
@@ -67,7 +75,8 @@ export default function Configs() {
               />
               <IconButton
                 icon="edit"
-                type="none"
+                type="fill_image"
+                size={64}
                 fullSize
                 onPress={() =>
                   pickImage(false).then(
@@ -91,7 +100,7 @@ export default function Configs() {
                 />
                 <IconButton
                   icon="edit"
-                  type="none"
+                  type="fill_image"
                   fullSize
                   onPress={() =>
                     pickImage(true).then(
@@ -142,6 +151,14 @@ export default function Configs() {
                 if (error) setError(error);
               }}
             />
+            <Divider text="Visualização" />
+            <View style={configsStyles.labelContainer}>
+              <View style={configsStyles.iconButtonContainer}>
+                <IconButton icon="moon" type="none" />
+                <Text style={configsStyles.label}>Modo Escuro</Text>
+              </View>
+              <Toogle value={toogleValue} />
+            </View>
             <Divider text="Log-out" />
             <Button
               title="Excluir Conta"

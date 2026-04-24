@@ -9,6 +9,7 @@ import {
   Image,
   MapPin,
   MessageCircle,
+  MoonStar,
   MoreHorizontal,
   Repeat2,
   Settings,
@@ -32,4 +33,5 @@ export const iconMapping = {
   emoji: SmilePlus,
   location: MapPin,
   "more-vertical": EllipsisVertical,
+  moon: MoonStar,
 };

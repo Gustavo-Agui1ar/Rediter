@@ -9,6 +9,25 @@ export const configsStyles = StyleSheet.create({
     top: 10,
   },
 
+  label: {
+    fontSize: 16,
+    color: Colors.textMuted,
+  },
+
+  iconButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  labelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+  },
+
   iconButtonFix: {
     justifyContent: "flex-start",
     width: "100%",

@@ -1,6 +1,5 @@
 import { configs } from "@/utils/configs.utils";
 import { request } from "@/utils/request.utils";
-import { getStoreageItem } from "@/utils/storage.utils";
 import { router } from "expo-router";
 
 // 🔹 carregar imagem do backend
@@ -64,15 +63,12 @@ export async function handleSave({
     if (coverData) formData.append("Cover", coverData);
   }
 
-  const refresh_token = await getStoreageItem("refresh_token");
-
   formData.append("Name", form.name || "");
-  formData.append("Email", form.email || "");
+  formData.append("Email", form.email.trim().toLowerCase() || "");
   formData.append("Password", form.password || "");
-  formData.append("RefreshToken", refresh_token ?? "");
 
   try {
-    const response = await request({
+    await request({
       urlComplement: "/User/UpdateProfile",
       method: "POST",
       body: formData,

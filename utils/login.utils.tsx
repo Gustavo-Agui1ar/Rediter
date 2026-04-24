@@ -57,7 +57,7 @@ export function deleteAccount() {
         router.replace("/");
       });
     })
-    .catch((err) => {
+    .catch((err: any) => {
       console.error("Erro ao deletar conta:", err.response?.data || err);
       Alert.alert("Erro", "Houve um problema ao deletar sua conta.");
     });

@@ -143,7 +143,20 @@ export async function request({
         // ----------------------------------------
 
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+          let errorMessage = `HTTP ${response.status} - ${response.statusText}`;
+
+          const textResponse = await response.text();
+
+          if (textResponse) {
+            try {
+              const data = JSON.parse(textResponse);
+              errorMessage = data.message || data.error || JSON.stringify(data);
+            } catch {
+              errorMessage = textResponse;
+            }
+          }
+
+          throw new Error(errorMessage);
         }
         return response;
       } catch (err: any) {
@@ -151,7 +164,9 @@ export async function request({
         lastError = err;
         if (err.message.includes("Sessão expirada")) throw err;
 
-        console.log(`Falhou em ${baseUrl}, tentando próximo...`);
+        console.log(
+          `Falhou em ${baseUrl} com erro ${err.message}, tentando próximo...`,
+        );
       }
     }
 

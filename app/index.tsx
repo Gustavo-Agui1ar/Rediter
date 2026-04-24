@@ -1,23 +1,24 @@
 import {
-  Button,
-  Divider,
-  Header,
-  HelperText,
-  LinkText,
-  TextBox,
+    Button,
+    Divider,
+    Header,
+    HelperText,
+    LinkText,
+    TextBox,
 } from "@/components/components";
 import { styles } from "@/styles/theme";
 import { LoginValidator, updateField } from "@/utils/login.utils";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
-  Image,
-  KeyboardAvoidingView,
-  ScrollView,
-  Text,
-  View,
+    Image,
+    KeyboardAvoidingView,
+    ScrollView,
+    Text,
+    View,
 } from "react-native";
 
+import { LoadingOverlay } from "@/components/Feedback/Loading/loading";
 import { useLoading } from "@/context/loadingContext";
 import { ScriptIndex } from "@/scripts/index.script";
 import { indexStyle } from "@/styles/index.style";
@@ -25,8 +26,13 @@ import * as StorageUtils from "@/utils/storage.utils";
 import { useEffect } from "react";
 
 export default function Index() {
+  const { loading, setLoading } = useLoading();
+
   useEffect(() => {
-    ScriptIndex.checkTokens();
+    const check = async () => {
+      await ScriptIndex.checkTokens();
+    };
+    check();
   }, []);
 
   const [Submitted, setSubmitted] = useState(false);
@@ -36,10 +42,9 @@ export default function Index() {
     password: "",
   });
 
-  const { setLoading } = useLoading();
-
   return (
     <KeyboardAvoidingView style={[styles.container]} behavior="padding">
+      {loading && <LoadingOverlay />}
       <ScrollView
         style={[styles.container]}
         contentContainerStyle={styles.scroll_content}
@@ -72,7 +77,7 @@ export default function Index() {
             text="Esqueceu sua senha?"
             style={{ alignSelf: "flex-end" }}
             onPress={() => {
-              console.log("Esqueceu sua senha? pressed");
+              router.push("/sendEmail");
             }}
           />
           <Button
@@ -90,14 +95,14 @@ export default function Index() {
 
               await StorageUtils.saveTokens(result.access, result.refresh);
 
-              router.push("/main");
+              router.replace("/main");
             }}
             type="fill"
           />
           <Divider text="ou" />
           <Button
             title="Entrar com Google"
-            onPress={() => ScriptIndex.signInWithGoogle()}
+            onPress={() => ScriptIndex.signInWithGoogle(setLoading)}
             type="border"
             icon={
               <Image

@@ -4,7 +4,7 @@ import {
   ProfileImage,
   ReloadableContainer,
 } from "@/components/components";
-import FeedProfile from "@/components/profile/FeedProfile";
+import FeedProfile from "@/components/Features/Profile/FeedProfile/FeedProfile";
 import { useLoading } from "@/context/loadingContext";
 import { stylesPerfil } from "@/styles/perfil.style";
 import { styles } from "@/styles/theme";
@@ -15,6 +15,7 @@ import { View } from "react-native";
 
 export default function Perfil() {
   const { setLoading } = useLoading();
+  const [firstLoad, setFirstLoad] = useState(true);
 
   const [form, setForm] = useState({
     imageUrl: "",
@@ -42,7 +43,10 @@ export default function Perfil() {
   }
 
   useEffect(() => {
-    loadProfile();
+    if (firstLoad) {
+      setFirstLoad(false);
+      loadProfile();
+    }
   }, []);
 
   useFocusEffect(
@@ -62,7 +66,11 @@ export default function Perfil() {
         ]}
       >
         <View
-          style={{ position: "relative", width: "100%", alignItems: "center" }}
+          style={{
+            position: "relative",
+            width: "100%",
+            alignItems: "center",
+          }}
         >
           <ProfileCover imageName={form.coverUrl} />
           <ProfileImage imageName={form.imageUrl} size={120} wrapper={true} />

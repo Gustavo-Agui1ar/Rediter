@@ -18,6 +18,7 @@ export default function Layout() {
         <Stack.Screen name="configs" />
         <Stack.Screen name="forgotPassword" />
         <Stack.Screen name="newPost" />
+        <Stack.Screen name="sendEmail" />
       </Stack>
     </LoadingProvider>
   );
