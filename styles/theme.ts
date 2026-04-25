@@ -1,170 +1,213 @@
 import { StyleSheet } from "react-native";
 
-export const Colors = {
-  // Base
-  background: "#0D0F14",
-  surface: "#151821",
-  surfaceAlt: "#1C1F2B",
+/* ---------- DARK MODE (Ajustado) ---------- */
+export const DarkColors = {
+  /* Base - Agora com um subton azulado para alinhar com o Light */
+  background: "#0D0E14",
+  surface: "#161824",
+  surfaceAlt: "#1F2233",
 
-  // Brand (roxo principal)
-  primary: "#5A189A",
-  primaryLight: "#8c2fde",
-  primaryDark: "#34085d",
+  /* Brand - Unificado com os tons da imagem */
+  primary: "#6B66FF", // O mesmo azul vibrante
+  primaryLight: "#8A85FF",
+  primaryDark: "#4D49CC",
 
-  // Texto
-  textPrimary: "#FFFFFF",
-  textSecondary: "#C9C9D1",
-  textMuted: "#8F90A6",
+  /* Text */
+  textPrimary: "#F0F0F7",
+  textSecondary: "#A1A4C1",
+  textMuted: "#6B6E8F",
 
-  // Bordas / separadores
-  border: "#2A2E3D",
-  divider: "#232634",
+  /* UI */
+  border: "#2F334D",
+  divider: "#25283D",
 
-  // Estados
-  disabled: "#4A4D5A",
-  overlay: "rgba(0,0,0,0.4)",
-
-  // Feedback
+  /* States/Feedback - Mantendo consistência */
+  disabled: "#3E4159",
+  overlay: "rgba(0, 0, 0, 0.5)",
   success: "#2DC653",
   warning: "#F4A261",
   error: "#E63946",
+  link: "#8A85FF",
 
-  //Links
-  link: "#1DA1F2",
-
-  // Extras neutros
   white: "#FFFFFF",
   black: "#000000",
 };
 
-export const TextSize = {
-  small: 12,
-  medium: 16,
-  large: 24,
+/* ---------- LIGHT MODE (Ajustado) ---------- */
+export const LightColors = {
+  /* Base */
+  background: "#F5F7FF",
+  surface: "#FFFFFF",
+  surfaceAlt: "#ECECFC",
+
+  /* Brand - Exatamente iguais ao Dark para fixar a marca */
+  primary: "#6B66FF",
+  primaryLight: "#8A85FF",
+  primaryDark: "#4D49CC",
+
+  /* Text */
+  textPrimary: "#151621",
+  textSecondary: "#52547D",
+  textMuted: "#8E91B5",
+
+  /* UI */
+  border: "#D1D5F0",
+  divider: "#E2E5F8",
+
+  /* States/Feedback */
+  disabled: "#C8CADA",
+  overlay: "rgba(0, 0, 0, 0.2)",
+  success: "#28A745", // Leve ajuste de brilho
+  warning: "#E67E22",
+  error: "#DC3545",
+  link: "#4C49ED",
+
+  white: "#FFFFFF",
+  black: "#000000",
 };
 
-export const styles = StyleSheet.create({
-  fill: {
-    flex: 1,
-    flexGrow: 1,
-    width: "100%",
-    borderWidth: 1,
-    borderColor: Colors.primary,
-  },
-  stretch: {
-    alignSelf: "stretch",
-  },
-  centerContent: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  disabledOverlay: {
-    opacity: 0.6,
-    backgroundColor: Colors.disabled,
-    color: Colors.white,
-  },
-  TextAlignCenter: {
-    textAlign: "center",
-    color: Colors.white,
-  },
+/* ---------- TYPOGRAPHY ---------- */
+export const TextSize = {
+  xs: 12,
+  sm: 14,
+  md: 16,
+  lg: 20,
+  xl: 24,
+};
 
-  base: {
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+/* ---------- GLOBAL STYLES ---------- */
+export const createdStyles = (colors: any) =>
+  StyleSheet.create({
+    /* Layout */
+    container: {
+      flex: 1,
+      width: "100%",
+      backgroundColor: colors.background,
+    },
 
-  content: {
-    flex: 1,
-    width: "100%",
-    gap: 40,
-    paddingVertical: 20,
-    alignItems: "center",
-    justifyContent: "flex-start",
-  },
+    content: {
+      flex: 1,
+      width: "100%",
+      alignItems: "center",
+      gap: 32,
+    },
 
-  footer: {
-    aspectRatio: 4,
-    width: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 10,
-  },
+    scroll_content: {
+      flexGrow: 1,
+      width: "100%",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 20,
+    },
 
-  title: {
-    fontSize: TextSize.large,
-    fontWeight: "bold",
-    fontFamily: "sans-serif",
-    color: Colors.white,
-  },
+    /* Flex helpers */
+    fill: {
+      flex: 1,
+      width: "100%",
+    },
 
-  subtitle: {
-    fontSize: TextSize.medium,
-    color: Colors.white,
-  },
+    stretch: {
+      alignSelf: "stretch",
+    },
 
-  logo: {
-    width: 100,
-    height: 100,
-    objectFit: "contain" as const,
-  },
+    center: {
+      justifyContent: "center",
+      alignItems: "center",
+    },
 
-  small_icon: {
-    width: 40,
-    height: 40,
-  },
+    centerRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 10,
+    },
 
-  medium_icon: {
-    width: 80,
-    height: 80,
-  },
+    /* Text */
+    title: {
+      fontSize: TextSize.xl,
+      fontWeight: "700",
+      color: colors.textPrimary,
+    },
 
-  large_icon: {
-    width: 120,
-    height: 120,
-  },
+    subtitle: {
+      fontSize: TextSize.md,
+      color: colors.textSecondary,
+    },
 
-  paragraph: {
-    fontSize: TextSize.medium,
-    color: Colors.white,
-    marginBottom: 10,
-    marginTop: 10,
-    textAlign: "justify",
-  },
+    paragraph: {
+      fontSize: TextSize.md,
+      color: colors.textSecondary,
+      textAlign: "justify",
+      marginVertical: 8,
+    },
 
-  container: {
-    flex: 1,
-    width: "100%",
-  },
+    textCenter: {
+      textAlign: "center",
+      color: colors.textPrimary,
+    },
 
-  scroll_content: {
-    flexGrow: 1,
-    gap: 20,
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 40,
-  },
+    /* UI blocks */
+    base: {
+      borderRadius: 12,
+      alignItems: "center",
+      justifyContent: "center",
+    },
 
-  centerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-  },
+    disabled: {
+      opacity: 0.6,
+    },
 
-  editorContainer: {
-    position: "absolute",
-    top: 30,
-    right: 0,
-    backgroundColor: Colors.primaryDark,
-    borderRadius: 8,
-    minWidth: 180,
-    padding: 4,
-    elevation: 5,
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    zIndex: 99,
-  },
-});
+    /* Footer */
+    footer: {
+      width: "100%",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 10,
+      paddingVertical: 16,
+    },
+
+    /* Icons */
+    icon_sm: {
+      width: 40,
+      height: 40,
+    },
+
+    icon_md: {
+      width: 80,
+      height: 80,
+    },
+
+    icon_lg: {
+      width: 120,
+      height: 120,
+    },
+
+    logo: {
+      width: 100,
+      height: 100,
+      objectFit: "contain" as const,
+    },
+
+    /* Floating menu */
+    editorContainer: {
+      position: "absolute",
+      top: 30,
+      right: 0,
+      minWidth: 180,
+
+      backgroundColor: colors.surface,
+      borderRadius: 12,
+      padding: 6,
+
+      borderWidth: 1,
+      borderColor: colors.border,
+
+      elevation: 5,
+      shadowColor: colors.black,
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      shadowOffset: { width: 0, height: 2 },
+
+      zIndex: 99,
+    },
+  });

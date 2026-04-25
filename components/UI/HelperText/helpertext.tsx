@@ -1,13 +1,16 @@
+import { useTheme } from "@/context/ThemeContext";
 import { Text } from "react-native";
-import { helperTextStyles } from "./helpertext.style";
-
+import { createHelperTextStyles } from "./helpertext.style";
 interface HelperTextProps {
   message?: string;
   visible?: boolean;
 }
 
-export function HelperText({ message, visible }: HelperTextProps) {
+export default function HelperText({ message, visible }: HelperTextProps) {
   if (!visible || !message) return null;
 
-  return <Text style={[helperTextStyles.text]}>{message}</Text>;
+  const { colors } = useTheme();
+  const styles = createHelperTextStyles(colors);
+
+  return <Text style={[styles.text]}>{message}</Text>;
 }

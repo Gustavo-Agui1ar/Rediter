@@ -1,7 +1,8 @@
 import { Button, Header, TextBox } from "@/components/components";
 import { useLoading } from "@/context/loadingContext";
+import { useTheme } from "@/context/ThemeContext";
 import { forgotPasswordStyle } from "@/styles/forgotPassword.style";
-import { styles } from "@/styles/theme";
+import { createdStyles } from "@/styles/theme";
 import { request } from "@/utils/request.utils";
 import { deleteTokens } from "@/utils/storage.utils";
 import { router } from "expo-router";
@@ -15,6 +16,8 @@ export default function ForgotPassword() {
   });
 
   const { setLoading } = useLoading();
+  const { colors } = useTheme();
+  const styles = createdStyles(colors);
 
   return (
     <KeyboardAvoidingView style={[styles.content]} behavior="padding">

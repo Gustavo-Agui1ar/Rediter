@@ -1,12 +1,20 @@
-import { ProfileImage } from "@/components/Features/Profile/ProfileImage";
-import { styles } from "@/styles/theme";
-import { request } from "@/utils/request.utils";
 import { router } from "expo-router";
-import { useState } from "react";
-import { DeviceEventEmitter, Text, TouchableOpacity, View } from "react-native";
-import { IconButton } from "../../components";
-import { DisplayImages } from "../../Feedback/DisplayImages/displayImage";
-import { postStyles } from "./post.style";
+import React, { useState } from "react";
+import {
+  Alert,
+  DeviceEventEmitter,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+import ProfileImage from "@/components/Features/Profile/ProfileImage";
+import DisplayImages from "@/components/Feedback/DisplayImages/displayImage";
+import IconButton from "@/components/UI/IconButton/IconButton";
+import { useTheme } from "@/context/ThemeContext";
+import { createdStyles } from "@/styles/theme";
+import { request } from "@/utils/request.utils";
+import { createdPostStyles } from "./post.style";
 
 interface PostProps {
   text: string;
@@ -29,18 +37,19 @@ export default function Post({
   edited = false,
   myProfile = true,
 }: PostProps) {
-  const [id] = useState(postId);
-
   const [showOptions, setShowOptions] = useState(false);
+  const { colors } = useTheme();
+
+  const styles = createdStyles(colors);
+  const postStyles = createdPostStyles(colors);
 
   const handleEditPost = () => {
     setShowOptions(false);
-
     router.push({
       pathname: "/newPost",
       params: {
         isEditing: "true",
-        postId: id,
+        postId: postId,
         text: text,
         location: Location || "",
         imageUrls: JSON.stringify(postImageUrl || []),
@@ -48,30 +57,46 @@ export default function Post({
     });
   };
 
-  const handleDeletePost = async () => {
-    var response = await request({
-      urlComplement: `/Post/DeletePost/${id}`,
-      method: "DELETE",
-    });
-
-    if (response.ok) {
-      DeviceEventEmitter.emit("refresh_posts");
-    }
+  const handleDeletePost = () => {
+    Alert.alert(
+      "Excluir Publicação",
+      "Deseja realmente apagar este post? Esta ação não pode ser desfeita.",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+          onPress: () => setShowOptions(false),
+        },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: async () => {
+            const response = await request({
+              urlComplement: `/Post/DeletePost/${postId}`,
+              method: "DELETE",
+            });
+            if (response.ok) {
+              DeviceEventEmitter.emit("refresh_posts");
+            }
+          },
+        },
+      ],
+    );
   };
 
   return (
     <View style={postStyles.container}>
       {/* HEADER */}
-      <View style={[postStyles.header]}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <ProfileImage size={60} wrapper={false} imageName={imageProfileUrl} />
-          <Text style={postStyles.username}>
-            {userName}{" "}
-            {edited && <Text style={postStyles.edited}> - Editado</Text>}
-          </Text>
+      <View style={postStyles.header}>
+        <View style={postStyles.userInfo}>
+          <ProfileImage size={50} wrapper={false} imageName={imageProfileUrl} />
+          <View style={{ marginLeft: 12 }}>
+            <Text style={postStyles.username}>{userName}</Text>
+            {edited && <Text style={postStyles.edited}>• Editado</Text>}
+          </View>
         </View>
 
-        <View style={{ position: "relative" }}>
+        <View style={postStyles.optionsWrapper}>
           <IconButton
             type="none"
             icon="more-vertical"
@@ -81,75 +106,64 @@ export default function Post({
           />
 
           {showOptions && (
-            <View style={styles.editorContainer}>
+            <View style={[styles.editorContainer, postStyles.dropdownMenu]}>
               {myProfile && (
                 <>
                   <TouchableOpacity
                     onPress={handleEditPost}
                     style={postStyles.itemOptionsContainer}
                   >
-                    <Text style={{ color: "white", fontSize: 16 }}>
-                      Editar Post
-                    </Text>
+                    <Text style={postStyles.optionText}>Editar Post</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    onPress={async () => {
-                      handleDeletePost();
-                    }}
+                    onPress={handleDeletePost}
                     style={postStyles.itemOptionsContainer}
                   >
-                    <Text style={{ color: "white", fontSize: 16 }}>
+                    <Text
+                      style={[postStyles.optionText, { color: colors.error }]}
+                    >
                       Excluir Post
                     </Text>
                   </TouchableOpacity>
                 </>
               )}
               <TouchableOpacity
-                onPress={() => {}}
+                onPress={() => setShowOptions(false)}
                 style={[
                   postStyles.itemOptionsContainer,
                   postStyles.itemOptionsContainerLast,
                 ]}
               >
-                <Text style={{ color: "white", fontSize: 16 }}>
-                  Dowload Imagens
-                </Text>
+                <Text style={postStyles.optionText}>Download Imagens</Text>
               </TouchableOpacity>
             </View>
           )}
         </View>
       </View>
 
-      <View style={{ zIndex: 1 }}>
-        <Text style={postStyles.description}>{text}</Text>
+      {/* CONTEÚDO */}
+      <View style={postStyles.contentBody}>
+        {text ? <Text style={postStyles.description}>{text}</Text> : null}
+
         <DisplayImages files={postImageUrl || []} />
-        {Location && <Text style={postStyles.location}>📍 Em {Location}</Text>}
+
+        {Location && <Text style={postStyles.location}>📍 {Location}</Text>}
       </View>
 
       {/* BARRAS DE AÇÃO */}
       <View style={postStyles.buttonContainer}>
-        <IconButton
-          type="none"
-          icon="repeat"
-          circle={false}
-          size={36}
-          onPress={() => {}}
-        />
-        <IconButton
-          type="none"
-          icon="message"
-          circle={false}
-          size={36}
-          onPress={() => {}}
-        />
-        <IconButton
-          type="none"
-          icon="like"
-          circle={false}
-          size={36}
-          onPress={() => {}}
-        />
+        <TouchableOpacity activeOpacity={0.7} style={postStyles.actionButton}>
+          <IconButton type="none" icon="repeat" circle={false} size={40} />
+        </TouchableOpacity>
+
+        <TouchableOpacity activeOpacity={0.7} style={postStyles.actionButton}>
+          <IconButton type="none" icon="message" circle={false} size={40} />
+        </TouchableOpacity>
+
+        <TouchableOpacity activeOpacity={0.7} style={postStyles.actionButton}>
+          <IconButton type="none" icon="like" circle={false} size={40} />
+        </TouchableOpacity>
       </View>
     </View>
   );

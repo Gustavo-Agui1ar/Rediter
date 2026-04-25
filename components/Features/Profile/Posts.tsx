@@ -1,6 +1,6 @@
 import Post from "@/components/Features/Post/post";
 import { useLoading } from "@/context/loadingContext";
-import { Colors } from "@/styles/theme";
+import { useTheme } from "@/context/ThemeContext";
 import { request } from "@/utils/request.utils";
 import { useEffect, useState } from "react";
 import {
@@ -13,6 +13,8 @@ import {
 export default function Posts() {
   const [posts, setPosts] = useState<any[]>([]);
   const { setLoading } = useLoading();
+
+  const { colors } = useTheme();
 
   const [refreshing, setRefreshing] = useState(false);
   const fetchFirstPage = async (isCommand = false) => {
@@ -68,8 +70,8 @@ export default function Posts() {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          tintColor={Colors.primary}
-          colors={[Colors.primary]}
+          tintColor={colors.primary}
+          colors={[colors.primary]}
         />
       }
     >
@@ -78,7 +80,7 @@ export default function Posts() {
           style={{
             textAlign: "center",
             margin: "auto",
-            color: Colors.textMuted,
+            color: colors.textMuted,
             fontSize: 16,
             fontWeight: "bold",
             marginTop: 50,

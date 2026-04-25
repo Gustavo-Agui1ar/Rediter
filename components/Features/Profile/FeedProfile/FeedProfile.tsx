@@ -1,13 +1,19 @@
-import { NavBar, NavItem, ProfileCover } from "@/components/components";
+import Posts from "@/components/Features/Profile/Posts";
+import ProfileCover from "@/components/Features/Profile/ProfileCover";
+import { NavItem } from "@/components/Layout/NavBar/navbar";
+import TabBar from "@/components/Layout/TabBar/TabBar";
+import { useTheme } from "@/context/ThemeContext";
 import { useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
-import Posts from "../Posts";
-import { styles } from "./FeedProfile.style";
+import { createdFeedStyles } from "./FeedProfile.style";
 
 type Tab = "posts" | "media" | "likes";
 
 export default function FeedProfile() {
   const [currentTab, setCurrentTab] = useState<Tab>("posts");
+
+  const { colors } = useTheme();
+  const styles = createdFeedStyles(colors);
 
   const navItems: NavItem<Tab>[] = useMemo(
     () => [
@@ -31,13 +37,7 @@ export default function FeedProfile() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.navBarContainer}>
-        <NavBar<Tab>
-          items={navItems}
-          activeId={currentTab}
-          onPress={setCurrentTab}
-        />
-      </View>
+      <TabBar items={navItems} active={currentTab} onChange={setCurrentTab} />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {currentTab === "posts" && (
@@ -56,7 +56,7 @@ export default function FeedProfile() {
           </View>
         )}
 
-        {currentTab === "likes" && <View style={styles.likesContainer}></View>}
+        {currentTab === "likes" && <View style={styles.likesContainer} />}
       </ScrollView>
     </View>
   );

@@ -1,7 +1,8 @@
 import { Button, Code, LinkText } from "@/components/components";
 import { useLoading } from "@/context/loadingContext";
+import { useTheme } from "@/context/ThemeContext";
 import { ScriptVerify } from "@/scripts/verify.script";
-import { styles } from "@/styles/theme";
+import { createdStyles } from "@/styles/theme";
 import { request } from "@/utils/request.utils";
 import { saveTokens } from "@/utils/storage.utils";
 import { router, useLocalSearchParams } from "expo-router";
@@ -12,12 +13,16 @@ export default function Verify() {
   const { userEmail, mode } = useLocalSearchParams();
   const [code, setCode] = useState("");
   const { setLoading } = useLoading();
+
+  const { colors } = useTheme();
+  const styles = createdStyles(colors);
+
   return (
     <KeyboardAvoidingView style={[styles.content]} behavior="padding">
       <View style={[styles.content, { width: "80%" }]}>
         <Image
           source={require("@/assets/images/verify.png")}
-          style={styles.large_icon}
+          style={styles.icon_lg}
         />
         <Text style={styles.title}>Verifique seu email</Text>
         <Text style={[styles.paragraph, styles.subtitle]}>

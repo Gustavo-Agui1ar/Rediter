@@ -1,5 +1,6 @@
 import { configs } from "@/utils/configs.utils";
-import { Image } from "react-native";
+import { Image } from "expo-image";
+import React, { useMemo } from "react";
 
 interface ProfileImageProps {
   imageName?: string;
@@ -7,12 +8,12 @@ interface ProfileImageProps {
   wrapper?: boolean;
 }
 
-export function ProfileImage({
+export default function ProfileImage({
   imageName,
   size = 100,
   wrapper,
 }: ProfileImageProps) {
-  const getFullUrl = () => {
+  const finalUri = useMemo(() => {
     if (!imageName) return null;
 
     if (imageName.startsWith("http") || imageName.startsWith("file://")) {
@@ -20,9 +21,7 @@ export function ProfileImage({
     }
 
     return `${configs.apiUrls[0]}/Picture/GetPicture?name=${encodeURIComponent(imageName)}`;
-  };
-
-  const finalUri = getFullUrl();
+  }, [imageName]);
 
   return (
     <Image
@@ -31,16 +30,21 @@ export function ProfileImage({
           ? { uri: finalUri }
           : require("@/assets/images/default_user.png")
       }
-      style={{
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-        ...(wrapper && {
+      style={[
+        {
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+        },
+        wrapper && {
           position: "absolute",
           bottom: -(size / 2),
           left: 20,
-        }),
-      }}
+        },
+      ]}
+      contentFit="cover"
+      transition={200}
+      cachePolicy="memory-disk"
     />
   );
 }

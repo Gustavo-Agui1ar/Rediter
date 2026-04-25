@@ -1,51 +1,59 @@
-import { Colors } from "@/styles/theme";
 import { StyleSheet } from "react-native";
 
-export const buttonStyles = StyleSheet.create({
-  base: {
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    width: "100%",
-    borderRadius: 8,
-  },
+export const createButtonStyles = (colors: any) =>
+  StyleSheet.create({
+    base: {
+      paddingVertical: 16,
+      paddingHorizontal: 20,
+      width: "100%",
+      borderRadius: 8,
+    },
 
-  baseWithIcon: {
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-  },
+    baseWithIcon: {
+      paddingVertical: 16,
+      paddingHorizontal: 20,
+    },
 
-  fill: {
-    backgroundColor: Colors.primary,
-    borderWidth: 2,
-    borderColor: Colors.primary,
-  },
+    fill: {
+      backgroundColor: colors.primary,
+      borderWidth: 2,
+      borderColor: colors.primary,
+    },
 
-  remove_fill: {
-    backgroundColor: Colors.error,
-    borderWidth: 2,
-    borderColor: Colors.error,
-  },
+    remove_fill: {
+      backgroundColor: colors.error,
+      color: colors.onError,
+      borderWidth: 2,
+      borderColor: colors.error,
+    },
 
-  remove_border: {
-    borderWidth: 2,
-    borderColor: Colors.error,
-    backgroundColor: "transparent" as const,
-  },
+    remove_border: {
+      borderWidth: 2,
+      borderColor: colors.error,
+      backgroundColor: "transparent" as const,
+    },
 
-  border: {
-    borderWidth: 2,
-    borderColor: Colors.primary,
-    backgroundColor: "transparent" as const,
-  },
+    border: {
+      borderWidth: 2,
+      borderColor: colors.primary,
+      backgroundColor: "transparent" as const,
+    },
 
-  buttonText: {
-    color: Colors.white,
-    textTransform: "uppercase" as const,
-    textAlign: "center" as const,
-    fontFamily: "sans-serif",
-  },
+    buttonText: {
+      color: colors.white,
+      textTransform: "uppercase" as const,
+      textAlign: "center" as const,
+      fontFamily: "sans-serif",
+    },
 
-  textBorder: {
-    color: Colors.white,
-  },
-});
+    textBorder: {
+      color: colors.primary,
+    },
+
+    textOnFill: {
+      color: colors.white,
+    },
+    textRemove: {
+      color: colors.error,
+    },
+  });

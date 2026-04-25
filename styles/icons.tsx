@@ -12,6 +12,7 @@ import {
   MoonStar,
   MoreHorizontal,
   Repeat2,
+  Search,
   Settings,
   SmilePlus,
   User,
@@ -34,4 +35,5 @@ export const iconMapping = {
   location: MapPin,
   "more-vertical": EllipsisVertical,
   moon: MoonStar,
+  search: Search,
 };

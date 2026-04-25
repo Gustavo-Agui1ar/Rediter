@@ -1,4 +1,5 @@
 import { useLoading } from "@/context/loadingContext";
+import { useTheme } from "@/context/ThemeContext";
 import { ReactNode } from "react";
 import {
   Text,
@@ -6,7 +7,7 @@ import {
   TouchableOpacityProps,
   View,
 } from "react-native";
-import { buttonStyles } from "./button.style";
+import { createButtonStyles } from "./button.style";
 
 interface ButtonProps extends TouchableOpacityProps {
   title: string;
@@ -26,14 +27,30 @@ export default function Button({
   const { loading } = useLoading();
 
   const isDisabled = disabled || loading;
+  const { colors } = useTheme();
+  const styles = createButtonStyles(colors);
+
+  const getTextStyle = () => {
+    switch (type) {
+      case "fill":
+      case "remove_fill":
+        return styles.textOnFill;
+      case "remove_border":
+        return styles.textRemove;
+      case "border":
+        return styles.textBorder;
+      default:
+        return {};
+    }
+  };
 
   return (
     <TouchableOpacity
       disabled={isDisabled}
       activeOpacity={0.7}
       style={[
-        buttonStyles.base,
-        buttonStyles[type],
+        styles.base,
+        styles[type],
         {
           flexDirection: "row",
           alignItems: "center",
@@ -46,14 +63,7 @@ export default function Button({
     >
       {icon && <View style={{ marginRight: 10 }}>{icon}</View>}
 
-      <Text
-        style={[
-          buttonStyles.buttonText,
-          type === "border" && buttonStyles.textBorder,
-        ]}
-      >
-        {title}
-      </Text>
+      <Text style={[styles.buttonText, getTextStyle()]}>{title}</Text>
     </TouchableOpacity>
   );
 }

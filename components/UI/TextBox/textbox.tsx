@@ -1,52 +1,50 @@
-import { Colors } from "@/styles/theme";
+import { useTheme } from "@/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
-import { textboxStyles } from "./textbox.style";
-
+import { createTextboxStyles } from "./textbox.style";
 export default function TextBox({ children, ...props }: any) {
   const isPassword = props.secureTextEntry;
+
   const [secure, setSecure] = useState(isPassword);
+  const [focused, setFocused] = useState(false);
+
+  const { colors } = useTheme();
+  const styles = createTextboxStyles(colors);
 
   return (
-    <View style={textboxStyles.container}>
-      <View style={{ justifyContent: "center" }}>
-        {/* TEXTO */}
+    <View style={[styles.container, focused && styles.focused]}>
+      <View style={styles.inputWrapper}>
         <TextInput
           style={[
-            textboxStyles.base,
+            styles.base,
             {
-              color: Colors.white,
-              minHeight: 40,
-              textAlignVertical: isPassword ? "center" : "top",
-              paddingRight: isPassword ? 40 : undefined,
+              paddingRight: isPassword ? 36 : 0,
             },
           ]}
           {...props}
           multiline={!isPassword}
           secureTextEntry={isPassword ? secure : false}
-          placeholderTextColor={Colors.textMuted}
+          placeholderTextColor={colors.textMuted}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
         />
 
-        {/* ÍCONE PASSWORD */}
         {isPassword && (
           <Pressable
-            style={{
-              position: "absolute",
-              right: 10,
-            }}
+            style={styles.icon}
             onPress={() => setSecure(!secure)}
+            hitSlop={10}
           >
             <Ionicons
               name={secure ? "eye-off" : "eye"}
               size={20}
-              color={Colors.textMuted}
+              color={colors.textMuted}
             />
           </Pressable>
         )}
       </View>
 
-      {/* CONTEÚDO EXTRA (IMAGENS, Links e etc.) */}
       {children}
     </View>
   );

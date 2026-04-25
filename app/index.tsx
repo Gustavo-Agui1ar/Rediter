@@ -1,24 +1,25 @@
 import {
-    Button,
-    Divider,
-    Header,
-    HelperText,
-    LinkText,
-    TextBox,
+  Button,
+  Divider,
+  Header,
+  HelperText,
+  LinkText,
+  LoadingOverlay,
+  TextBox,
 } from "@/components/components";
-import { styles } from "@/styles/theme";
+import { useTheme } from "@/context/ThemeContext";
+import { createdStyles } from "@/styles/theme";
 import { LoginValidator, updateField } from "@/utils/login.utils";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
-    Image,
-    KeyboardAvoidingView,
-    ScrollView,
-    Text,
-    View,
+  Image,
+  KeyboardAvoidingView,
+  ScrollView,
+  Text,
+  View,
 } from "react-native";
 
-import { LoadingOverlay } from "@/components/Feedback/Loading/loading";
 import { useLoading } from "@/context/loadingContext";
 import { ScriptIndex } from "@/scripts/index.script";
 import { indexStyle } from "@/styles/index.style";
@@ -27,6 +28,9 @@ import { useEffect } from "react";
 
 export default function Index() {
   const { loading, setLoading } = useLoading();
+
+  const { colors } = useTheme();
+  const styles = createdStyles(colors);
 
   useEffect(() => {
     const check = async () => {
@@ -113,7 +117,7 @@ export default function Index() {
           />
 
           <View style={styles.centerRow}>
-            <Text style={[styles.TextAlignCenter]}>Não possui uma conta? </Text>
+            <Text style={[styles.textCenter]}>Não possui uma conta? </Text>
             <LinkText
               text="Inscreva-se"
               onPress={() => {

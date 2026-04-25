@@ -1,11 +1,11 @@
 import { default as Button } from "@/components/UI/Button/button";
 import IconButton from "@/components/UI/IconButton/IconButton";
 import { useLoading } from "@/context/loadingContext";
-import { request } from "@/utils/request.utils";
+import { useTheme } from "@/context/ThemeContext";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Text, View } from "react-native";
-import { styles } from "./profileActions.style";
+import { createdProfileActionsStyles } from "./profileActions.style";
 
 interface ProfileActionsProps {
   canFollow?: boolean;
@@ -18,52 +18,47 @@ export default function ProfileActions({
 }: ProfileActionsProps) {
   const { setLoading } = useLoading();
   const [isFollowing, setIsFollowing] = useState(false);
-  return (
-    <View style={styles.container}>
-      <View style={styles.nameContainer}>
-        <Text style={styles.nameText}>{userName}</Text>
-      </View>
-      {canFollow && (
-        <>
-          <View style={styles.buttonWrapper}>
-            <Button
-              title={isFollowing ? "Seguindo" : "Seguir"}
-              type={isFollowing ? "border" : "fill"}
-              onPress={updateFollowStatus}
-            />
-          </View>
-          <IconButton icon="message" />
-        </>
-      )}
-      <IconButton icon="configuration" onPress={Config} />
-    </View>
-  );
+
+  const { colors } = useTheme();
+  const styles = createdProfileActionsStyles(colors);
 
   function updateFollowStatus() {
     setIsFollowing((prev) => !prev);
   }
 
-  async function Config() {
+  function goToConfig() {
     if (!canFollow) {
-      var response = await request({
-        urlComplement: `/User/GetUser`,
-        method: "GET",
-        setLoading,
-      });
-
-      if (response.ok) {
-        var json = await response.json();
-
-        router.push({
-          pathname: "/configs",
-          params: {
-            name: json.name,
-            email: json.email,
-            imageName: json.imageName,
-            coverName: json.imageCover,
-          },
-        });
-      }
+      router.push("/configs");
     }
   }
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.nameText} numberOfLines={1}>
+        {userName}
+      </Text>
+
+      <View style={styles.actionsRow}>
+        {canFollow ? (
+          <>
+            <Button
+              title={isFollowing ? "Seguindo" : "Seguir"}
+              type={isFollowing ? "border" : "fill"}
+              onPress={updateFollowStatus}
+              style={styles.followButton}
+            />
+
+            <IconButton icon="message" type="border" size={44} />
+          </>
+        ) : (
+          <IconButton
+            icon="configuration"
+            type="border"
+            size={44}
+            onPress={goToConfig}
+          />
+        )}
+      </View>
+    </View>
+  );
 }

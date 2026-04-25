@@ -1,10 +1,10 @@
-import { styles } from "@/styles/theme";
-import { Text, View } from "react-native";
+import { useTheme } from "@/context/ThemeContext";
+import { createdStyles } from "@/styles/theme";
+import { View } from "react-native";
 
 export default function Feed() {
-  return (
-    <View style={styles.content}>
-      <Text>Bem-vindo à Home!</Text>
-    </View>
-  );
+  const { colors } = useTheme();
+  const styles = createdStyles(colors);
+
+  return <View style={styles.content}></View>;
 }

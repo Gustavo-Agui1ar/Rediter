@@ -1,17 +1,20 @@
-import { Colors } from "@/styles/theme";
+import { useTheme } from "@/context/ThemeContext";
 import React, { useRef } from "react";
 import { Animated, TouchableWithoutFeedback } from "react-native";
-import { styles } from "./toogle.styles";
-
+import { createToggleStyles } from "./toogle.styles";
 interface ToggleProps {
   value: boolean;
+  onValueChange: (newValue: boolean) => void;
 }
 
-export default function Toggle({ value }: ToggleProps) {
+export default function Toggle({
+  value,
+  onValueChange,
+}: ToggleProps & { onValueChange: (newValue: boolean) => void }) {
   const anim = useRef(new Animated.Value(value ? 1 : 0)).current;
 
   function onChange(newValue: boolean) {
-    value = newValue;
+    onValueChange(newValue);
   }
 
   const toggle = () => {
@@ -29,6 +32,9 @@ export default function Toggle({ value }: ToggleProps) {
     outputRange: [0, 22],
   });
 
+  const { colors } = useTheme();
+  const styles = createToggleStyles(colors);
+
   return (
     <TouchableWithoutFeedback onPress={toggle}>
       <Animated.View
@@ -37,7 +43,7 @@ export default function Toggle({ value }: ToggleProps) {
           {
             backgroundColor: anim.interpolate({
               inputRange: [0, 1],
-              outputRange: [Colors.textMuted, Colors.primary],
+              outputRange: [colors.textMuted, colors.primary],
             }),
           },
         ]}

@@ -1,72 +1,90 @@
-import { Colors } from "@/styles/theme";
 import { StyleSheet } from "react-native";
 
-export const postStyles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-    justifyContent: "space-between",
-    zIndex: 10,
-  },
-
-  buttonContainer: {
-    flexDirection: "row",
-    marginTop: 16,
-    justifyContent: "space-around",
-    zIndex: 1,
-  },
-
-  location: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: Colors.textMuted,
-    marginTop: 4,
-  },
-
-  edited: {
-    fontSize: 12,
-    color: Colors.textMuted,
-    marginTop: 4,
-  },
-
-  username: {
-    marginLeft: 12,
-    fontSize: 14,
-    color: Colors.textPrimary,
-  },
-
-  image: {
-    width: "100%",
-    aspectRatio: 2,
-    objectFit: "cover",
-    borderRadius: 8,
-    marginVertical: 16,
-  },
-
-  container: {
-    width: "100%",
-    padding: 16,
-    borderColor: Colors.divider,
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-
-  description: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    paddingVertical: 8,
-  },
-
-  itemOptionsContainer: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.divider,
-  },
-
-  itemOptionsContainerLast: {
-    borderBottomWidth: 0,
-  },
-});
+export const createdPostStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      width: "100%",
+      padding: 16,
+      backgroundColor: colors.background,
+      borderWidth: 1.2,
+      borderRadius: 12,
+      borderColor: colors.disabled,
+      marginBottom: 4,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      zIndex: 100,
+    },
+    userInfo: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    optionsWrapper: {
+      position: "relative",
+    },
+    dropdownMenu: {
+      position: "absolute",
+      right: 0,
+      top: 30,
+      backgroundColor: colors.background,
+      borderRadius: 8,
+      minWidth: 170,
+      borderWidth: 1,
+      borderColor: colors.divider,
+      elevation: 5,
+      shadowColor: colors.black,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+      zIndex: 999,
+    },
+    username: {
+      fontSize: 16,
+      color: colors.textPrimary,
+    },
+    edited: {
+      fontSize: 11,
+      color: colors.textMuted,
+      marginTop: 2,
+    },
+    contentBody: {
+      marginTop: 12,
+      zIndex: 1,
+    },
+    description: {
+      fontSize: 15,
+      lineHeight: 22,
+      color: colors.textSecondary,
+      marginBottom: 10,
+    },
+    location: {
+      fontSize: 12,
+      fontWeight: "600",
+      color: colors.textMuted,
+      marginTop: 8,
+    },
+    buttonContainer: {
+      flexDirection: "row",
+      marginTop: 16,
+      justifyContent: "space-between",
+      paddingHorizontal: 20,
+    },
+    actionButton: {
+      padding: 8,
+    },
+    itemOptionsContainer: {
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.divider,
+    },
+    itemOptionsContainerLast: {
+      borderBottomWidth: 0,
+    },
+    optionText: {
+      color: colors.textPrimary,
+      fontSize: 15,
+    },
+  });

@@ -1,15 +1,18 @@
-import { Colors } from "@/styles/theme";
+import { useTheme } from "@/context/ThemeContext";
 import React from "react";
 import { ActivityIndicator, View } from "react-native";
-import { styles } from "./loading.style";
+import { createdLoadingStyles } from "./loading.style";
 
-export function LoadingOverlay() {
+export default function LoadingOverlay() {
+  const { colors } = useTheme();
+  const styles = createdLoadingStyles(colors);
+
   return (
     <View style={styles.overlay}>
       <ActivityIndicator
         size="large"
-        color={Colors.primary}
-        style={{ transform: [{ scale: 2 }] }}
+        color={colors.primary}
+        style={styles.activityIndicator}
       />
     </View>
   );

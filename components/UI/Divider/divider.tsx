@@ -1,36 +1,22 @@
-import { Colors } from "@/styles/theme";
+import { useTheme } from "@/context/ThemeContext";
 import { Text, View, ViewProps } from "react-native";
+import { createDividerStyles } from "./Divider.styles";
 
 interface DividerProps extends ViewProps {
   text?: string;
 }
 
-export const Divider = ({ text, style, ...rest }: DividerProps) => (
-  <View
-    style={[
-      {
-        flexDirection: "row",
-        alignItems: "center",
-        marginVertical: 20,
-      },
-      style,
-    ]}
-    {...rest}
-  >
-    <View style={{ flex: 1, height: 1, backgroundColor: Colors.divider }} />
+export default function Divider({ text, style, ...rest }: DividerProps) {
+  const { colors } = useTheme();
+  const styles = createDividerStyles(colors);
 
-    {text ? (
-      <Text
-        style={{
-          marginHorizontal: 10,
-          color: Colors.textMuted,
-          fontSize: 14,
-        }}
-      >
-        {text}
-      </Text>
-    ) : null}
+  return (
+    <View style={[styles.container, style]} {...rest}>
+      <View style={styles.line} />
 
-    <View style={{ flex: 1, height: 1, backgroundColor: Colors.divider }} />
-  </View>
-);
+      {text ? <Text style={styles.text}>{text}</Text> : null}
+
+      <View style={styles.line} />
+    </View>
+  );
+}

@@ -1,22 +1,22 @@
 import { iconMapping } from "@/styles/icons";
-import { Colors } from "@/styles/theme";
 import { ReactNode } from "react";
 import {
   ActivityIndicator,
   StyleSheet,
   TouchableOpacity,
   TouchableOpacityProps,
-  View,
 } from "react-native";
 
 import { useLoading } from "@/context/loadingContext";
+import { useTheme } from "@/context/ThemeContext";
 import {
-  iconButtonStyles,
+  createIconButtonStyles,
+  getIconColorByType,
   IconButtonType,
-  iconColorByType,
 } from "./iconButton.style";
 
 type IconName = keyof typeof iconMapping;
+
 interface IconButtonProps extends TouchableOpacityProps {
   icon: IconName;
   size?: number;
@@ -36,49 +36,50 @@ export default function IconButton({
   ...rest
 }: IconButtonProps) {
   const { loading } = useLoading();
-  const isInactive = loading || disabled;
-  const currentColor = isInactive ? Colors.disabled : iconColorByType[type];
+  const { colors } = useTheme();
 
-  function renderIcon(): ReactNode {
+  const isDisabled = disabled || loading;
+  const color = isDisabled
+    ? colors.disabled
+    : getIconColorByType(colors)[type] || colors.textPrimary;
+
+  const Icon = iconMapping[icon];
+  const iconButtonStyles = createIconButtonStyles(colors);
+
+  function renderContent(): ReactNode {
     if (loading) {
-      return <ActivityIndicator size="small" color={currentColor} />;
+      return <ActivityIndicator size="small" color={color} />;
     }
-
-    const Icon = iconMapping[icon];
 
     if (!Icon) return null;
 
-    return (
-      <Icon
-        size={type === "overlay" ? size / 1.5 : size / 2}
-        color={currentColor}
-      />
-    );
+    return <Icon size={size * 0.5} color={color} />;
   }
 
   return (
     <TouchableOpacity
-      activeOpacity={0.7}
-      disabled={isInactive}
+      activeOpacity={0.8}
+      disabled={isDisabled}
       style={[
         fullSize
           ? StyleSheet.absoluteFillObject
-          : [
-              { width: size, height: size },
-              { borderRadius: circle ? size / 2 : 8 },
-            ],
+          : {
+              width: size,
+              height: size,
+              borderRadius: circle ? size / 2 : 12,
+            },
 
         iconButtonStyles.base,
         iconButtonStyles[type],
 
-        type === "fill_image" && iconButtonStyles.overlay,
+        type === "overlay" && iconButtonStyles.overlay,
 
-        isInactive && !fullSize && { opacity: 0.6 },
+        isDisabled && !fullSize && iconButtonStyles.disabled,
         style,
       ]}
       {...rest}
     >
-      <View>{renderIcon()}</View>
+      {renderContent()}
     </TouchableOpacity>
   );
 }

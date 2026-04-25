@@ -1,8 +1,6 @@
 import { configs } from "@/utils/configs.utils";
 import { request } from "@/utils/request.utils";
 import { router } from "expo-router";
-
-// 🔹 carregar imagem do backend
 interface Config {
   form: {
     name: string;
@@ -19,6 +17,7 @@ interface Config {
     remote?: string;
     changed?: boolean;
   };
+
   setLoading?: (loading: boolean) => void;
 }
 

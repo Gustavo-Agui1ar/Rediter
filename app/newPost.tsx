@@ -1,18 +1,24 @@
-import { Button, Header, IconButton, TextBox } from "@/components/components";
-import { DisplayImages } from "@/components/Feedback/DisplayImages/displayImage";
+import {
+  Button,
+  DisplayImages,
+  Header,
+  IconButton,
+  TextBox,
+} from "@/components/components";
 import { useLoading } from "@/context/loadingContext";
+import { useTheme } from "@/context/ThemeContext";
 import { NewPostScript } from "@/scripts/newPost.script";
-import { Colors, styles } from "@/styles/theme";
+import { createdStyles } from "@/styles/theme";
 import { pickImage } from "@/utils/filePicker.utils";
 import { handleGetLocation } from "@/utils/location.utils";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    Keyboard,
-    KeyboardAvoidingView,
-    ScrollView,
-    Text,
-    View,
+  Keyboard,
+  KeyboardAvoidingView,
+  ScrollView,
+  Text,
+  View,
 } from "react-native";
 import { EmojiKeyboard } from "rn-emoji-keyboard";
 
@@ -25,6 +31,9 @@ export default function NewPost() {
   const [postId, setPostId] = useState<string | null>(null);
 
   const params = useLocalSearchParams();
+
+  const { colors } = useTheme();
+  const styles = createdStyles(colors);
 
   const isEditingParam = params.isEditing;
   const postIdParam = params.postId;
@@ -95,7 +104,7 @@ export default function NewPost() {
                 >
                   <Text
                     style={{
-                      color: Colors.textMuted,
+                      color: colors.textMuted,
                       fontSize: 14,
                       fontWeight: "bold",
                     }}
@@ -168,8 +177,8 @@ export default function NewPost() {
         <View
           style={{
             height: 320,
-            backgroundColor: Colors.background,
-            borderColor: Colors.primary,
+            backgroundColor: colors.background,
+            borderColor: colors.primary,
           }}
         >
           <EmojiKeyboard

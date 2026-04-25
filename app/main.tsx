@@ -1,15 +1,21 @@
-import { Header, IconButton, NavBar, NavItem } from "@/components/components";
-import { styles } from "@/styles/theme";
+import {
+  Header,
+  IconButton,
+  LoadingOverlay,
+  NavBar,
+} from "@/components/components";
+import { createdStyles } from "@/styles/theme";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { JSX, useEffect, useMemo, useState } from "react";
 import { KeyboardAvoidingView, View } from "react-native";
 
-import { LoadingOverlay } from "@/components/Feedback/Loading/loading";
+import { NavItem } from "@/components/Layout/NavBar/navbar";
+import Feed from "@/components/Views/feed";
+import Message from "@/components/Views/message";
+import Perfil from "@/components/Views/Perfil/perfil";
 import { useLoading } from "@/context/loadingContext";
-import { stylesMain } from "@/styles/main.style";
-import Feed from "../components/Views/feed";
-import Message from "../components/Views/message";
-import Perfil from "../components/Views/perfil";
+import { useTheme } from "@/context/ThemeContext";
+import { createdStylesMain } from "@/styles/main.style";
 
 const validTabs: Tab[] = ["home", "messages", "profile"];
 type Tab = "home" | "messages" | "profile";
@@ -19,6 +25,10 @@ export default function Main() {
   const [currentTab, setCurrentTab] = useState<Tab>("home");
   const { loading } = useLoading();
 
+  const { colors } = useTheme();
+  const stylesMain = createdStylesMain(colors);
+  const styles = createdStyles(colors);
+
   const screens: Record<Tab, JSX.Element> = {
     home: <Feed />,
     messages: <Message />,
@@ -27,23 +37,11 @@ export default function Main() {
 
   const navItems: NavItem<Tab>[] = useMemo(
     () => [
-      {
-        id: "home",
-        label: "Início",
-        icon: "home",
-      },
-      {
-        id: "messages",
-        label: "Mensagens",
-        icon: "message",
-      },
-      {
-        id: "profile",
-        label: "Perfil",
-        icon: "profile",
-      },
+      { id: "home", label: "Início", icon: "home" },
+      { id: "messages", label: "Mensagens", icon: "message" },
+      { id: "profile", label: "Perfil", icon: "profile" },
     ],
-    [currentTab],
+    [],
   );
 
   useEffect(() => {
@@ -55,10 +53,12 @@ export default function Main() {
   return (
     <KeyboardAvoidingView style={styles.container} behavior="height">
       {loading && <LoadingOverlay />}
+
       {currentTab !== "profile" && <Header />}
 
-      {screens[currentTab]}
-      <View style={styles.footer}>
+      <View style={styles.fill}>{screens[currentTab]}</View>
+
+      <View style={stylesMain.footerContainer}>
         <NavBar<Tab>
           items={navItems}
           activeId={currentTab}
@@ -70,9 +70,7 @@ export default function Main() {
             size={56}
             circle={false}
             icon="post"
-            onPress={() => {
-              router.push("/newPost");
-            }}
+            onPress={() => router.push("/newPost")}
           />
         </View>
       </View>

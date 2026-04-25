@@ -1,4 +1,4 @@
-import { Colors } from "@/styles/theme";
+import { useTheme } from "@/context/ThemeContext";
 import React, { useCallback, useState } from "react";
 import { RefreshControl, ScrollView } from "react-native";
 
@@ -7,8 +7,10 @@ interface Props {
   onRefresh: () => Promise<void>;
 }
 
-export function ReloadableContainer({ children, onRefresh }: Props) {
+export default function ReloadableContainer({ children, onRefresh }: Props) {
   const [refreshing, setRefreshing] = useState(false);
+
+  const { colors } = useTheme();
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -26,8 +28,8 @@ export function ReloadableContainer({ children, onRefresh }: Props) {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={handleRefresh}
-          tintColor={Colors.primary}
-          colors={[Colors.primary]}
+          tintColor={colors.primary}
+          colors={[colors.primary]}
         />
       }
     >

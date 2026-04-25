@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { Alert } from "react-native";
 import { request } from "./request.utils";
-import { deleteTokens } from "./storage.utils";
+import { deleteInfoUser } from "./storage.utils";
 
 export class LoginValidator {
   static isEmailValid(email: string) {
@@ -42,7 +42,7 @@ export function updateField<T>(
 }
 
 export function logOut() {
-  deleteTokens().then(() => {
+  deleteInfoUser().then(() => {
     router.replace("/");
   });
 }
@@ -53,7 +53,7 @@ export function deleteAccount() {
     method: "DELETE",
   })
     .then(() => {
-      deleteTokens().then(() => {
+      deleteInfoUser().then(() => {
         router.replace("/");
       });
     })

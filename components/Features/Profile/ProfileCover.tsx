@@ -1,4 +1,4 @@
-import { Colors } from "@/styles/theme";
+import { useTheme } from "@/context/ThemeContext";
 import { configs } from "@/utils/configs.utils";
 import { Image, ImageProps, View } from "react-native";
 
@@ -6,11 +6,12 @@ interface ProfileCoverProps extends Omit<ImageProps, "source"> {
   imageName?: string;
 }
 
-export function ProfileCover({
+export default function ProfileCover({
   imageName,
   style,
   ...props
 }: ProfileCoverProps) {
+  const { colors } = useTheme();
   const getFullUrl = () => {
     if (!imageName) return null;
 
@@ -28,7 +29,7 @@ export function ProfileCover({
       style={{
         width: "100%",
         aspectRatio: 2,
-        backgroundColor: Colors.divider,
+        backgroundColor: colors.divider,
       }}
     >
       <Image

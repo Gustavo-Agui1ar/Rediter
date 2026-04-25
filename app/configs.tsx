@@ -9,53 +9,79 @@ import {
   Toogle,
 } from "@/components/components";
 import { useLoading } from "@/context/loadingContext";
+import { useTheme } from "@/context/ThemeContext";
 import { handleSave } from "@/scripts/configs.script";
-import { configsStyles } from "@/styles/configs.style";
-import { styles } from "@/styles/theme";
+import { createdConfigsStyles } from "@/styles/configs.style";
+import { createdStyles } from "@/styles/theme";
 import { pickImage } from "@/utils/filePicker.utils";
 import { deleteAccount, logOut } from "@/utils/login.utils";
-import { useLocalSearchParams } from "expo-router";
+import { request } from "@/utils/request.utils";
+import * as Storage from "@/utils/storage.utils";
 import { useEffect, useState } from "react";
 import { KeyboardAvoidingView, ScrollView, Text, View } from "react-native";
 
 export default function Configs() {
-  const { email, name, imageName, coverName } = useLocalSearchParams();
   const { loading, setLoading } = useLoading();
   const [error, setError] = useState<string | null>(null);
 
+  const { colors } = useTheme();
+  const configsStyles = createdConfigsStyles(colors);
+  const styles = createdStyles(colors);
+
   const [form, setForm] = useState({
-    name: (name as string) || "",
-    email: (email as string) || "",
+    name: "",
+    email: "",
     password: "",
   });
 
-  const [profileImage, setProfileImage] = useState<{
-    local?: any;
-    remote?: string;
-    changed?: boolean;
-  }>({});
-  const [coverImage, setCoverImage] = useState<{
-    local?: any;
-    remote?: string;
-    changed?: boolean;
-  }>({});
+  const [profileImage, setProfileImage] = useState<any>({});
+  const [coverImage, setCoverImage] = useState<any>({});
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
-    if (imageName) {
-      setProfileImage((prev) => ({
-        ...prev,
-        remote: imageName as string,
-      }));
-    }
-    if (coverName) {
-      setCoverImage((prev) => ({
-        ...prev,
-        remote: coverName as string,
-      }));
-    }
-  }, []);
+    async function hydrateProfile() {
+      // 1. tenta cache primeiro
+      const cached = await Storage.getProfileBasic();
 
-  const [toogleValue] = useState(false);
+      if (cached) {
+        applyProfile(cached);
+      } else {
+        const response = await request({
+          urlComplement: `/User/GetUser`,
+          method: "GET",
+          setLoading: cached ? undefined : setLoading,
+        });
+
+        if (response.ok) {
+          const json = await response.json();
+
+          const data = {
+            userName: json.name,
+            email: json.email,
+            imageUrl: json.imageName,
+            coverUrl: json.imageCover,
+          };
+
+          applyProfile(data);
+
+          await Storage.saveProfileBasic(data);
+        }
+      }
+    }
+
+    function applyProfile(data: any) {
+      setForm((prev) => ({
+        ...prev,
+        name: data.userName || "",
+        email: data.email || "",
+      }));
+
+      setProfileImage({ remote: data.imageUrl });
+      setCoverImage({ remote: data.coverUrl });
+    }
+
+    hydrateProfile();
+  }, []);
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={"height"}>
@@ -64,9 +90,9 @@ export default function Configs() {
         contentContainerStyle={styles.scroll_content}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={[styles.content, configsStyles.contentFix]}>
+        <View style={[styles.content]}>
           <View>
-            {/* COVER COM OVERLAY */}
+            {/* COVER */}
             <View style={configsStyles.coverOverlay}>
               <ProfileCover
                 imageName={
@@ -75,7 +101,7 @@ export default function Configs() {
               />
               <IconButton
                 icon="edit"
-                type="fill_image"
+                type="overlay"
                 size={64}
                 fullSize
                 onPress={() =>
@@ -87,7 +113,7 @@ export default function Configs() {
               />
             </View>
 
-            {/* PROFILE IMAGE COM OVERLAY */}
+            {/* PROFILE */}
             <View style={configsStyles.profileImageOverlay}>
               <View style={configsStyles.profileImageFix}>
                 <ProfileImage
@@ -100,7 +126,7 @@ export default function Configs() {
                 />
                 <IconButton
                   icon="edit"
-                  type="fill_image"
+                  type="overlay"
                   fullSize
                   onPress={() =>
                     pickImage(true).then(
@@ -116,56 +142,81 @@ export default function Configs() {
           <View style={configsStyles.contentTextFix}>
             <Divider text="Informações da Conta" />
             <HelperText message={error || undefined} visible={!!error} />
+
             <TextBox
               placeholder="Nome"
               value={form.name}
-              onChangeText={(text: string) => setForm({ ...form, name: text })}
+              onChangeText={(text: string) =>
+                setForm((prev) => ({ ...prev, name: text }))
+              }
               editable={!loading}
             />
+
             <TextBox
               placeholder="Email"
               value={form.email}
-              onChangeText={(text: string) => setForm({ ...form, email: text })}
+              onChangeText={(text: string) =>
+                setForm((prev) => ({ ...prev, email: text }))
+              }
               editable={!loading}
             />
+
             <TextBox
               placeholder="Senha"
               value={form.password}
               onChangeText={(text: string) =>
-                setForm({ ...form, password: text })
+                setForm((prev) => ({ ...prev, password: text }))
               }
               secureTextEntry
               editable={!loading}
             />
+
             <Button
               title="Salvar"
               disabled={loading}
               onPress={async () => {
                 setError(null);
-                var error = await handleSave({
+
+                const err = await handleSave({
                   form,
                   profileImage,
                   profileCover: coverImage,
                   setLoading,
                 });
-                if (error) setError(error);
+
+                if (!err) {
+                  // atualiza cache consistente
+                  await Storage.saveProfileBasic({
+                    imageUrl: profileImage.local?.uri || profileImage.remote,
+                    coverUrl: coverImage.local?.uri || coverImage.remote,
+                    userName: form.name,
+                    email: form.email,
+                  });
+                }
+
+                if (err) setError(err);
               }}
             />
+
             <Divider text="Visualização" />
+
             <View style={configsStyles.labelContainer}>
               <View style={configsStyles.iconButtonContainer}>
                 <IconButton icon="moon" type="none" />
                 <Text style={configsStyles.label}>Modo Escuro</Text>
               </View>
-              <Toogle value={toogleValue} />
+              <Toogle value={theme === "dark"} onValueChange={toggleTheme} />
             </View>
+
             <Divider text="Log-out" />
+
             <Button
               title="Excluir Conta"
               type="remove_border"
               onPress={async () => deleteAccount()}
               disabled={loading}
             />
+
             <Button
               title="Sair"
               type="remove_fill"

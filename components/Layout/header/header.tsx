@@ -1,8 +1,7 @@
-import { styles } from "@/styles/theme";
+import { useTheme } from "@/context/ThemeContext";
 import { Image, ImageSourcePropType, Text, View } from "react-native";
 import { ViewProps } from "react-native/Libraries/Components/View/ViewPropTypes";
-import { stylesHeader } from "./header.style";
-
+import { createdStylesHeader } from "./header.style";
 interface HeaderProps extends ViewProps {
   title?: string;
   resource?: ImageSourcePropType;
@@ -10,26 +9,41 @@ interface HeaderProps extends ViewProps {
   divider?: boolean;
 }
 
-export function Header({
+export default function Header({
   title,
   resource,
   children,
-  divider,
+  divider = true,
   style,
   ...rest
 }: HeaderProps) {
   const defaultLogo = require("@/assets/logo/white_r.png");
 
+  const { colors } = useTheme();
+  const stylesHeader = createdStylesHeader(colors);
+
   return (
     <View
-      style={[stylesHeader.header, divider && stylesHeader.divider, style]}
+      style={[stylesHeader.container, divider && stylesHeader.divider, style]}
       {...rest}
     >
-      <Image source={resource ?? defaultLogo} style={styles.logo} />
+      <View style={stylesHeader.left}>
+        <Image
+          source={resource ?? defaultLogo}
+          style={stylesHeader.logo}
+          resizeMode="contain"
+        />
+      </View>
 
-      {title ? <Text style={styles.title}>{title}</Text> : null}
+      <View style={stylesHeader.center}>
+        {title ? (
+          <Text numberOfLines={1} style={stylesHeader.title}>
+            {title}
+          </Text>
+        ) : null}
+      </View>
 
-      {children}
+      <View style={stylesHeader.right}>{children}</View>
     </View>
   );
 }

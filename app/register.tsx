@@ -1,6 +1,7 @@
 import { Button, Header, HelperText, TextBox } from "@/components/components";
+import { useTheme } from "@/context/ThemeContext";
 import { ScriptRegister } from "@/scripts/register.script";
-import { styles } from "@/styles/theme";
+import { createdStyles } from "@/styles/theme";
 import { LoginValidator, updateField } from "@/utils/login.utils";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -16,6 +17,9 @@ export default function Register() {
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorText, setErrorText] = useState("");
+
+  const { colors } = useTheme();
+  const styles = createdStyles(colors);
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={"height"}>
