@@ -25,7 +25,6 @@ function AppStack() {
       <Stack.Screen name="index" />
       <Stack.Screen name="register" />
       <Stack.Screen name="verify" />
-      <Stack.Screen name="main" />
       <Stack.Screen name="configs" />
       <Stack.Screen name="forgotPassword" />
       <Stack.Screen name="newPost" />

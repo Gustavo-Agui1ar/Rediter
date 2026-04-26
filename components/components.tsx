@@ -17,5 +17,4 @@ export { default as IconButton } from "./UI/IconButton/IconButton";
 export { default as LinkText } from "./UI/LinkText/linktext";
 export { default as TextBox } from "./UI/TextBox/textbox";
 export { default as Toogle } from "./UI/Toogle/toogle";
-export { default as Message } from "./Views/message";
 

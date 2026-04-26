@@ -1,8 +1,7 @@
-import React from "react";
-// Importe o ViewProps direto do react-native, a pasta Libraries/Components... é obsoleta
 import { Image } from "expo-image";
+import React from "react";
 import { ImageSourcePropType, Text, View, ViewProps } from "react-native";
-import { useStylesHeader } from "./header.style"; // <-- Importando nosso Hook
+import { useStylesHeader } from "./header.style";
 
 interface HeaderProps extends ViewProps {
   title?: string;

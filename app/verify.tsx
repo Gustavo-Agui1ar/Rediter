@@ -19,7 +19,7 @@ export default function Verify() {
     <KeyboardAvoidingView style={[styles.content]} behavior="padding">
       <View style={[styles.content, { width: "80%" }]}>
         <Image
-          source={require("@/assets/images/verify.png")}
+          source={require("@/assets/images/verify.svg")}
           style={styles.icon_lg}
         />
         <Text style={styles.title}>Verifique seu email</Text>
@@ -68,7 +68,7 @@ export default function Verify() {
             await saveTokens(response.access!, response.refresh!);
 
             if (mode === "register") {
-              router.replace("/main");
+              router.replace("/home");
             }
 
             if (mode === "reset") {

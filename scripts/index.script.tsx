@@ -1,6 +1,6 @@
 import {
-  GoogleSignin,
-  isSuccessResponse,
+    GoogleSignin,
+    isSuccessResponse,
 } from "@react-native-google-signin/google-signin";
 
 import { LoginValidator } from "@/utils/login.utils";
@@ -34,7 +34,7 @@ export class ScriptIndex {
         const tokens = await LoginValidator.ParseTokens(tks);
         await StorageUtils.saveTokens(tokens.access, tokens.refresh);
 
-        router.replace("/main");
+        router.replace("/home");
       } else {
         Alert.alert(
           "Erro",
@@ -53,7 +53,7 @@ export class ScriptIndex {
 
       if (accessToken && refreshToken) {
         console.log("Tokens encontrados, redirecionando para main...");
-        router.replace("/main");
+        router.replace("/home");
       }
     } catch (error) {
       console.error("Erro ao recuperar tokens:", error);

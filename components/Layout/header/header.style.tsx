@@ -5,7 +5,9 @@ export const useStylesHeader = makeStyles((colors: ThemeColors) => ({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 12,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    height: 64,
     backgroundColor: colors.background,
     gap: 12,
   },

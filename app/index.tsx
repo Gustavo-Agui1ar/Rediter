@@ -36,7 +36,6 @@ export default function Index() {
   });
 
   useEffect(() => {
-    // 2. A MÁGICA: Se a navegação raiz ainda não estiver pronta, não faça NADA.
     if (!rootNavigationState?.key) return;
 
     const checkTokens = async () => {
@@ -47,7 +46,7 @@ export default function Index() {
 
         if (accessToken && refreshToken) {
           console.log("Tokens encontrados, redirecionando para main...");
-          router.replace("/main");
+          router.replace("/search");
         }
       } catch (error) {
         console.error("Erro ao recuperar tokens:", error);
@@ -110,7 +109,7 @@ export default function Index() {
 
               await StorageUtils.saveTokens(result.access, result.refresh);
 
-              router.replace("/main");
+              router.replace("/home");
             }}
             type="fill"
           />
