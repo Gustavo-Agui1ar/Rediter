@@ -1,12 +1,10 @@
+import { ThemeColors } from "@/styles/types/theme.types";
 import { makeStyles } from "@/utils/makeStyles.utils";
-import { StyleSheet } from "react-native";
 
-export const createHelperTextStyles = makeStyles((colors: any) =>
-  StyleSheet.create({
-    text: {
-      color: colors.error,
-      fontSize: 12,
-      paddingLeft: 10,
-    },
-  }),
-);
+export const createHelperTextStyles = makeStyles((colors: ThemeColors) => ({
+  text: {
+    color: colors.error,
+    fontSize: 12,
+    paddingLeft: 10,
+  },
+}));

@@ -1,6 +1,7 @@
+import { ThemeColors } from "@/styles/types/theme.types";
 import { makeStyles } from "@/utils/makeStyles.utils";
 
-export const usePostStyles = makeStyles((colors: any) => ({
+export const usePostStyles = makeStyles((colors: ThemeColors) => ({
   container: {
     width: "100%",
     padding: 16,

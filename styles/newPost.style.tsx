@@ -1,6 +1,7 @@
 import { makeStyles } from "@/utils/makeStyles.utils";
+import { ThemeColors } from "./types/theme.types";
 
-export const useNewPostStyles = makeStyles((colors) => ({
+export const useNewPostStyles = makeStyles((colors: ThemeColors) => ({
   contentWrapper: {
     justifyContent: "flex-start",
     paddingTop: 16,

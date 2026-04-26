@@ -1,7 +1,8 @@
 import { useTheme } from "@/context/ThemeContext";
 import React, { useRef } from "react";
 import { Animated, TouchableWithoutFeedback } from "react-native";
-import { createToggleStyles } from "./toogle.styles";
+import { useToggleStyles } from "./toogle.styles";
+
 interface ToggleProps {
   value: boolean;
   onValueChange: (newValue: boolean) => void;
@@ -33,7 +34,7 @@ export default function Toggle({
   });
 
   const { colors } = useTheme();
-  const styles = createToggleStyles();
+  const styles = useToggleStyles();
 
   return (
     <TouchableWithoutFeedback onPress={toggle}>

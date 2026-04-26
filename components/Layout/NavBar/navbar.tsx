@@ -22,7 +22,7 @@ interface AnimatedItemProps<T> {
   item: NavItem<T>;
   isActive: boolean;
   onPress: (id: T) => void;
-  colors: any;
+  colors: ThemeColors;
   stylesNav: any;
 }
 

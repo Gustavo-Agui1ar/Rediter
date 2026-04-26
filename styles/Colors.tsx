@@ -19,6 +19,9 @@ export const DarkColors = {
   border: "#2F334D",
   divider: "#25283D",
 
+  fill_button: "#6B66FF",
+  border_button: "#6B66FF",
+
   /* States/Feedback - Mantendo consistência */
   disabled: "#3E4159",
   overlay: "rgba(0, 0, 0, 0.5)",
@@ -52,6 +55,9 @@ export const LightColors = {
   /* UI */
   border: "#D1D5F0",
   divider: "#E2E5F8",
+
+  fill_button: "#6B66FF",
+  border_button: "#6B66FF",
 
   /* States/Feedback */
   disabled: "#C8CADA",

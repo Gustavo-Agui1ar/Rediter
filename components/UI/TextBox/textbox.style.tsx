@@ -1,40 +1,38 @@
+import { ThemeColors } from "@/styles/types/theme.types";
 import { makeStyles } from "@/utils/makeStyles.utils";
-import { StyleSheet } from "react-native";
 
-export const useTextboxStyles = makeStyles((colors: any) =>
-  StyleSheet.create({
-    container: {
-      width: "100%",
-      borderWidth: 1,
-      borderRadius: 12,
-      borderColor: colors.divider,
-      backgroundColor: colors.surface,
-      paddingHorizontal: 12,
-      paddingVertical: 10,
-      marginBottom: 12,
-    },
+export const useTextboxStyles = makeStyles((colors: ThemeColors) => ({
+  container: {
+    width: "100%",
+    borderWidth: 1,
+    borderRadius: 12,
+    borderColor: colors.divider,
+    backgroundColor: colors.surface,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 12,
+  },
 
-    focused: {
-      borderColor: colors.primary,
-    },
+  focused: {
+    borderColor: colors.primary,
+  },
 
-    base: {
-      width: "100%",
-      color: colors.textPrimary,
-      textAlignVertical: "center",
-      fontSize: 16,
-      lineHeight: 28,
-      padding: 0,
-    },
+  base: {
+    width: "100%",
+    color: colors.textPrimary,
+    textAlignVertical: "center",
+    fontSize: 16,
+    lineHeight: 28,
+    padding: 0,
+  },
 
-    inputWrapper: {
-      justifyContent: "center",
-    },
+  inputWrapper: {
+    justifyContent: "center",
+  },
 
-    icon: {
-      position: "absolute",
-      right: 4,
-      padding: 6,
-    },
-  }),
-);
+  icon: {
+    position: "absolute",
+    right: 4,
+    padding: 6,
+  },
+}));

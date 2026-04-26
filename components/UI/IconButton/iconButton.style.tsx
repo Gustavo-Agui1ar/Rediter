@@ -1,38 +1,39 @@
+import { useTheme } from "@/context/ThemeContext";
+import { ThemeColors } from "@/styles/types/theme.types";
 import { makeStyles } from "@/utils/makeStyles.utils";
-import { StyleSheet } from "react-native";
 
 export type IconButtonType = "border" | "fill" | "none" | "overlay";
 
-export const useIconColorsByType = makeStyles((colors: any) => ({
-  border: colors.primary,
-  fill: colors.primaryDark,
-  none: colors.textPrimary,
-  overlay: colors.white,
-}));
+export const useIconColorsByType = () => {
+  const { colors } = useTheme();
 
-export const useIconButtonStyles = makeStyles((colors: any) =>
-  StyleSheet.create({
-    base: {
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    border: {
-      borderWidth: 2.5,
-      borderColor: colors.primary,
-    },
-    fill: {
-      borderWidth: 1.5,
-      borderColor: colors.primaryDark,
-      backgroundColor: colors.primaryLight,
-    },
-    none: {
-      backgroundColor: "transparent",
-    },
-    overlay: {
-      backgroundColor: colors.overlay,
-    },
-    disabled: {
-      opacity: 0.5,
-    },
-  }),
-);
+  return {
+    border: colors.primary,
+    fill: colors.white,
+    none: colors.textPrimary,
+    overlay: colors.white,
+  };
+};
+
+export const useIconButtonStyles = makeStyles((colors: ThemeColors) => ({
+  base: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  border: {
+    borderWidth: 2.5,
+    borderColor: colors.border_button,
+  },
+  fill: {
+    backgroundColor: colors.fill_button,
+  },
+  none: {
+    backgroundColor: "transparent",
+  },
+  overlay: {
+    backgroundColor: colors.overlay,
+  },
+  disabled: {
+    opacity: 0.5,
+  },
+}));

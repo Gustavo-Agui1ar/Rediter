@@ -1,5 +1,5 @@
 import { makeStyles } from "@/utils/makeStyles.utils";
-import { StyleSheet } from "react-native";
+import { ThemeColors } from "./types/theme.types";
 
 /* ---------- TYPOGRAPHY ---------- */
 export const TextSize = {
@@ -11,139 +11,137 @@ export const TextSize = {
 };
 
 /* ---------- GLOBAL STYLES ---------- */
-export const useGlobalStyles = makeStyles((colors: any) =>
-  StyleSheet.create({
-    /* Layout */
-    container: {
-      flex: 1,
-      width: "100%",
-      backgroundColor: colors.background,
-    },
+export const useGlobalStyles = makeStyles((colors: ThemeColors) => ({
+  /* Layout */
+  container: {
+    flex: 1,
+    width: "100%",
+    backgroundColor: colors.background,
+  },
 
-    content: {
-      flex: 1,
-      width: "100%",
-      alignItems: "center",
-      gap: 32,
-    },
+  content: {
+    flex: 1,
+    width: "100%",
+    alignItems: "center",
+    gap: 32,
+  },
 
-    scroll_content: {
-      flexGrow: 1,
-      width: "100%",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 20,
-    },
+  scroll_content: {
+    flexGrow: 1,
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 20,
+  },
 
-    /* Flex helpers */
-    fill: {
-      flex: 1,
-      width: "100%",
-    },
+  /* Flex helpers */
+  fill: {
+    flex: 1,
+    width: "100%",
+  },
 
-    stretch: {
-      alignSelf: "stretch",
-    },
+  stretch: {
+    alignSelf: "stretch",
+  },
 
-    center: {
-      justifyContent: "center",
-      alignItems: "center",
-    },
+  center: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-    centerRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 10,
-    },
+  centerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+  },
 
-    /* Text */
-    title: {
-      fontSize: TextSize.xl,
-      fontWeight: "700",
-      color: colors.textPrimary,
-    },
+  /* Text */
+  title: {
+    fontSize: TextSize.xl,
+    fontWeight: "700",
+    color: colors.textPrimary,
+  },
 
-    subtitle: {
-      fontSize: TextSize.md,
-      color: colors.textSecondary,
-    },
+  subtitle: {
+    fontSize: TextSize.md,
+    color: colors.textSecondary,
+  },
 
-    paragraph: {
-      fontSize: TextSize.md,
-      color: colors.textSecondary,
-      textAlign: "justify",
-      marginVertical: 8,
-    },
+  paragraph: {
+    fontSize: TextSize.md,
+    color: colors.textSecondary,
+    textAlign: "justify",
+    marginVertical: 8,
+  },
 
-    textCenter: {
-      textAlign: "center",
-      color: colors.textPrimary,
-    },
+  textCenter: {
+    textAlign: "center",
+    color: colors.textPrimary,
+  },
 
-    /* UI blocks */
-    base: {
-      borderRadius: 12,
-      alignItems: "center",
-      justifyContent: "center",
-    },
+  /* UI blocks */
+  base: {
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
-    disabled: {
-      opacity: 0.6,
-    },
+  disabled: {
+    opacity: 0.6,
+  },
 
-    /* Footer */
-    footer: {
-      width: "100%",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 10,
-      paddingVertical: 16,
-    },
+  /* Footer */
+  footer: {
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    paddingVertical: 16,
+  },
 
-    /* Icons */
-    icon_sm: {
-      width: 40,
-      height: 40,
-    },
+  /* Icons */
+  icon_sm: {
+    width: 40,
+    height: 40,
+  },
 
-    icon_md: {
-      width: 80,
-      height: 80,
-    },
+  icon_md: {
+    width: 80,
+    height: 80,
+  },
 
-    icon_lg: {
-      width: 120,
-      height: 120,
-    },
+  icon_lg: {
+    width: 120,
+    height: 120,
+  },
 
-    logo: {
-      width: 100,
-      height: 100,
-      objectFit: "contain" as const,
-    },
+  logo: {
+    width: 100,
+    height: 100,
+    objectFit: "contain" as const,
+  },
 
-    /* Floating menu */
-    editorContainer: {
-      position: "absolute",
-      top: 30,
-      right: 0,
-      minWidth: 180,
+  /* Floating menu */
+  editorContainer: {
+    position: "absolute",
+    top: 30,
+    right: 0,
+    minWidth: 180,
 
-      backgroundColor: colors.surface,
-      borderRadius: 12,
-      padding: 6,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: 6,
 
-      borderWidth: 1,
-      borderColor: colors.border,
+    borderWidth: 1,
+    borderColor: colors.border,
 
-      elevation: 5,
-      shadowColor: colors.black,
-      shadowOpacity: 0.25,
-      shadowRadius: 4,
-      shadowOffset: { width: 0, height: 2 },
+    elevation: 5,
+    shadowColor: colors.black,
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
 
-      zIndex: 99,
-    },
-  }),
-);
+    zIndex: 99,
+  },
+}));

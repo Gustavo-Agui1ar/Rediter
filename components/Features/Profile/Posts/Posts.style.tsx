@@ -1,5 +1,5 @@
+import { ThemeColors } from "@/styles/types/theme.types";
 import { makeStyles } from "@/utils/makeStyles.utils";
-import { StyleSheet } from "react-native";
 
 const constValues = {
   gap: 20,
@@ -19,72 +19,70 @@ const constValues = {
   skeletonImageMarginTop: 15,
 };
 
-export const useStylesPosts = makeStyles((colors: any) =>
-  StyleSheet.create({
-    listContent: {
-      flexGrow: 1,
-      width: "100%",
-      paddingBottom: 20,
-      gap: constValues.gap,
-    },
-    footerLoading: {
-      paddingVertical: 20,
-    },
-    emptyText: {
-      textAlign: "center",
-      marginTop: 50,
-      color: colors.textMuted,
-      fontSize: 16,
-      fontWeight: "bold",
-    },
+export const useStylesPosts = makeStyles((colors: ThemeColors) => ({
+  listContent: {
+    flexGrow: 1,
+    width: "100%",
+    paddingBottom: 20,
+    gap: constValues.gap,
+  },
+  footerLoading: {
+    paddingVertical: 20,
+  },
+  emptyText: {
+    textAlign: "center",
+    marginTop: 50,
+    color: colors.textMuted,
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 
-    emptyContainer: {
-      flex: 1,
-      alignItems: "center",
-      justifyContent: "center",
-    },
+  emptyContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
-    headerContainer: {
-      position: "relative",
-      bottom: -14,
-    },
+  headerContainer: {
+    position: "relative",
+    bottom: -14,
+  },
 
-    // --- Estilos do Skeleton e Container ---
-    postContainer: {
-      backgroundColor: colors.background,
-      padding: constValues.postContainerPadding,
-      marginBottom: constValues.postContainerMarginBottom,
-      borderRadius: constValues.postContainerBorderRadius,
-    },
-    skeletonHeader: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginBottom: constValues.skeletonHeaderMarginBottom,
-    },
-    skeletonAvatar: {
-      width: constValues.skeletonAvatarSize,
-      height: constValues.skeletonAvatarSize,
-      borderRadius: constValues.skeletonAvatarBorderRadius,
-      backgroundColor: colors.border || "#E1E9EE",
-      opacity: constValues.opacity,
-    },
-    skeletonNameInfo: {
-      marginLeft: constValues.skeletonNameInfoMarginLeft,
-      gap: constValues.skeletonNameInfoGap,
-    },
-    skeletonTextBar: {
-      height: constValues.skeletonTextBarHeight,
-      backgroundColor: colors.border || "#E1E9EE",
-      borderRadius: constValues.skeletonTextBarBorderRadius,
-      opacity: constValues.opacity,
-    },
-    skeletonImage: {
-      width: "100%",
-      height: constValues.skeletonImageHeight,
-      backgroundColor: colors.border || "#E1E9EE",
-      borderRadius: constValues.skeletonImageBorderRadius,
-      marginTop: constValues.skeletonImageMarginTop,
-      opacity: constValues.opacity,
-    },
-  }),
-);
+  // --- Estilos do Skeleton e Container ---
+  postContainer: {
+    backgroundColor: colors.background,
+    padding: constValues.postContainerPadding,
+    marginBottom: constValues.postContainerMarginBottom,
+    borderRadius: constValues.postContainerBorderRadius,
+  },
+  skeletonHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: constValues.skeletonHeaderMarginBottom,
+  },
+  skeletonAvatar: {
+    width: constValues.skeletonAvatarSize,
+    height: constValues.skeletonAvatarSize,
+    borderRadius: constValues.skeletonAvatarBorderRadius,
+    backgroundColor: colors.border || "#E1E9EE",
+    opacity: constValues.opacity,
+  },
+  skeletonNameInfo: {
+    marginLeft: constValues.skeletonNameInfoMarginLeft,
+    gap: constValues.skeletonNameInfoGap,
+  },
+  skeletonTextBar: {
+    height: constValues.skeletonTextBarHeight,
+    backgroundColor: colors.border || "#E1E9EE",
+    borderRadius: constValues.skeletonTextBarBorderRadius,
+    opacity: constValues.opacity,
+  },
+  skeletonImage: {
+    width: "100%",
+    height: constValues.skeletonImageHeight,
+    backgroundColor: colors.border || "#E1E9EE",
+    borderRadius: constValues.skeletonImageBorderRadius,
+    marginTop: constValues.skeletonImageMarginTop,
+    opacity: constValues.opacity,
+  },
+}));

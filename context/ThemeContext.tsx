@@ -1,4 +1,5 @@
 import { DarkColors, LightColors } from "@/styles/Colors";
+import { ThemeColors } from "@/styles/types/theme.types";
 import { getColorTheme, saveColorTheme } from "@/utils/storage.utils";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
@@ -6,7 +7,7 @@ type ThemeType = "dark" | "light";
 
 interface ThemeContextProps {
   theme: ThemeType;
-  colors: typeof DarkColors | typeof LightColors;
+  colors: ThemeColors;
   toggleTheme: () => void;
   setTheme: (theme: ThemeType) => void;
 }
