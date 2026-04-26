@@ -1,12 +1,7 @@
 import React from "react";
 // Importe o ViewProps direto do react-native, a pasta Libraries/Components... é obsoleta
-import {
-  Image,
-  ImageSourcePropType,
-  Text,
-  View,
-  ViewProps,
-} from "react-native";
+import { Image } from "expo-image";
+import { ImageSourcePropType, Text, View, ViewProps } from "react-native";
 import { useStylesHeader } from "./header.style"; // <-- Importando nosso Hook
 
 interface HeaderProps extends ViewProps {
@@ -25,7 +20,7 @@ export default function Header({
   ...rest
 }: HeaderProps) {
   const stylesHeader = useStylesHeader();
-  const defaultLogo = require("@/assets/logo/white_r.png");
+  const defaultLogo = require("@/assets/logo/white_r.svg");
 
   return (
     <View
@@ -36,7 +31,7 @@ export default function Header({
         <Image
           source={resource ?? defaultLogo}
           style={stylesHeader.logo}
-          resizeMode="contain"
+          contentFit="contain"
         />
       </View>
 

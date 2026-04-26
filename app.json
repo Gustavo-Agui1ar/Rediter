@@ -10,15 +10,16 @@
     "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.Rediter.ios"
+      "bundleIdentifier": "com.Rediter.ios",
+      "backgroundColor": "#ffffff"
     },
     "android": {
       "package": "com.Rediter.android",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/logo/black_r.png"
+        "foregroundImage": "./assets/logo/black_r.png",
+        "backgroundColor": "#000000"
       },
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "edgeToEdgeEnabled": true
     },
     "web": {
       "output": "static",
@@ -30,21 +31,24 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#ffffff",
-          "image": "./assets/logo/white_r.png",
+          "image": "./assets/logo/black_r.png",
           "resizeMode": "contain",
           "dark": {
-            "image": "./assets/logo/white_r.png",
+            "image": "./assets/logo/black_r.png",
             "backgroundColor": "#000000"
           },
-          "imageWidth": 300
+          "imageWidth": 200
         }
       ],
       "@react-native-google-signin/google-signin",
-      "expo-build-properties",
       [
-        "expo-location",
+        "expo-build-properties",
         {
-          "locationAlwaysAndWhenInUsePermission": "Permita o Rediter acessar sua localização para fazer check-in nos seus posts."
+          "android": {
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "buildToolsVersion": "34.0.0"
+          }
         }
       ],
       "expo-font",
