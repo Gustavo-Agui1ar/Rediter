@@ -17,13 +17,13 @@ export const useStylesPerfil = makeStyles((colors: any) =>
 
     actionsContainer: {
       marginTop: 70,
-      paddingHorizontal: 16,
+      paddingHorizontal: 8,
       width: "100%",
     },
 
     feedContainer: {
+      flex: 1,
       width: "100%",
-      marginTop: 10,
     },
   }),
 );

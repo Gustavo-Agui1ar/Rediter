@@ -22,6 +22,7 @@ export const DarkColors = {
   /* States/Feedback - Mantendo consistência */
   disabled: "#3E4159",
   overlay: "rgba(0, 0, 0, 0.5)",
+  overlayDark: "rgba(0, 0, 0, 0.8)",
   success: "#2DC653",
   warning: "#F4A261",
   error: "#E63946",
@@ -55,7 +56,8 @@ export const LightColors = {
   /* States/Feedback */
   disabled: "#C8CADA",
   overlay: "rgba(0, 0, 0, 0.2)",
-  success: "#28A745", // Leve ajuste de brilho
+  overlayDark: "rgba(0, 0, 0, 0.5)",
+  success: "#28A745",
   warning: "#E67E22",
   error: "#DC3545",
   link: "#4C49ED",

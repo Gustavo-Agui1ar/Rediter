@@ -24,31 +24,34 @@ export default function Header({
   style,
   ...rest
 }: HeaderProps) {
-  const styles = useStylesHeader();
+  const stylesHeader = useStylesHeader();
   const defaultLogo = require("@/assets/logo/white_r.png");
 
   return (
     <View
-      style={[styles.container, divider && styles.divider, style]}
+      style={[stylesHeader.container, divider && stylesHeader.divider, style]}
       {...rest}
     >
-      <View style={styles.left}>
+      <View style={stylesHeader.left}>
         <Image
           source={resource ?? defaultLogo}
-          style={styles.logo}
+          style={stylesHeader.logo}
           resizeMode="contain"
         />
       </View>
 
-      <View style={styles.center}>
+      {/* Ocupa todo o meio do header */}
+      <View style={stylesHeader.center}>
         {title ? (
-          <Text numberOfLines={1} style={styles.title}>
+          <Text numberOfLines={1} style={stylesHeader.title}>
             {title}
           </Text>
-        ) : null}
+        ) : (
+          children
+        )}
       </View>
 
-      <View style={styles.right}>{children}</View>
+      {children && title && <View style={stylesHeader.right}>{children}</View>}
     </View>
   );
 }

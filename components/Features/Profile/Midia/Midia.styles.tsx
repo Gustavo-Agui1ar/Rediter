@@ -4,23 +4,23 @@ import { Dimensions, StyleSheet } from "react-native";
 const { width } = Dimensions.get("window");
 
 const GAP = 4;
-const PADDING_HORIZONTAL = 8;
+export const PADDING_HORIZONTAL = 8;
 const AVAILABLE_WIDTH = width - PADDING_HORIZONTAL * 2 - GAP;
 const ITEM_WIDTH = AVAILABLE_WIDTH / 2;
 
 export const useMidiaStyles = makeStyles((colors: any) =>
   StyleSheet.create({
     listContainer: {
-      paddingHorizontal: PADDING_HORIZONTAL,
       paddingBottom: 20,
       gap: GAP,
     },
     columnWrapper: {
       gap: GAP,
+      paddingHorizontal: PADDING_HORIZONTAL,
     },
     imageWrapper: {
       width: ITEM_WIDTH,
-      aspectRatio: 1.3,
+      aspectRatio: 1.0,
       backgroundColor: colors.background,
       borderRadius: 4,
       overflow: "hidden",
@@ -29,7 +29,19 @@ export const useMidiaStyles = makeStyles((colors: any) =>
       width: "100%",
       height: "100%",
     },
-    // --- NOVOS ESTILOS MOVIDOS DO COMPONENTE ---
+
+    skeletonGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      paddingHorizontal: PADDING_HORIZONTAL,
+      gap: GAP,
+      justifyContent: "space-between",
+    },
+    skeletonItem: {
+      backgroundColor: colors.border || "#E0E0E0",
+      marginBottom: GAP,
+    },
+
     loadingContainer: {
       flex: 1,
       justifyContent: "center",
@@ -46,11 +58,12 @@ export const useMidiaStyles = makeStyles((colors: any) =>
     },
     modalSafeArea: {
       flex: 1,
-      backgroundColor: "rgba(0,0,0,0.95)",
+      backgroundColor: colors.overlayDark,
     },
     modalHeader: {
-      alignItems: "flex-end",
-      padding: 16,
+      position: "absolute",
+      top: 0,
+      right: 0,
       zIndex: 10,
     },
     modalCarouselItem: {
@@ -60,8 +73,13 @@ export const useMidiaStyles = makeStyles((colors: any) =>
       alignItems: "center",
     },
     modalCarouselImage: {
+      width: width,
+      flex: 1,
+    },
+
+    headerContainer: {
       width: "100%",
-      height: "80%",
+      padding: 0,
     },
   }),
 );

@@ -1,12 +1,15 @@
+import React, { useCallback } from "react";
+import { DeviceEventEmitter, View } from "react-native";
+import {
+  MaterialTabBar,
+  MaterialTabItem,
+  Tabs,
+} from "react-native-collapsible-tab-view";
+
 import Midiagrid from "@/components/Features/Profile/Midia/Midia";
 import Posts from "@/components/Features/Profile/Posts/Posts";
-import { NavItem } from "@/components/Layout/NavBar/navbar";
-import TabBar from "@/components/Layout/TabBar/TabBar";
-import { useMemo, useState } from "react";
-import { View } from "react-native";
+import { useTheme } from "@/context/ThemeContext";
 import { useFeedStyles } from "./FeedProfile.style";
-
-type Tab = "posts" | "media" | "likes";
 
 interface FeedProfileProps {
   headerComponent: React.ReactNode;
@@ -17,64 +20,53 @@ export default function FeedProfile({
   headerComponent,
   onRefreshProfile,
 }: FeedProfileProps) {
-  const [currentTab, setCurrentTab] = useState<Tab>("posts");
   const styles = useFeedStyles();
+  const { colors } = useTheme();
 
-  const navItems: NavItem<Tab>[] = useMemo(
-    () => [
-      {
-        id: "posts",
-        label: "Posts",
-      },
-      {
-        id: "media",
-        label: "Mídia",
-      },
-      {
-        id: "likes",
-        label: "Curtidas",
-      },
-    ],
-    [],
-  );
+  const handleGlobalRefresh = async () => {
+    await onRefreshProfile();
+    DeviceEventEmitter.emit("refresh_posts");
+    DeviceEventEmitter.emit("refresh_media");
+  };
 
-  const CombinedHeader = (
-    <View>
-      {headerComponent}
-      <TabBar items={navItems} active={currentTab} onChange={setCurrentTab} />
-    </View>
+  const renderHeader = useCallback(
+    () => <View style={styles.headerWrapper}>{headerComponent}</View>,
+    [headerComponent, styles.headerWrapper],
   );
 
   return (
     <View style={styles.container}>
-      <View
-        style={[
-          styles.tabContainer,
-          currentTab !== "posts" && { display: "none" },
-        ]}
+      <Tabs.Container
+        renderHeader={renderHeader}
+        renderTabBar={(props) => (
+          <MaterialTabBar
+            {...props}
+            activeColor={colors.primary}
+            inactiveColor={colors.textMuted}
+            indicatorStyle={styles.tabIndicator}
+            style={styles.tabBar}
+            TabItemComponent={(itemProps) => (
+              <MaterialTabItem
+                {...itemProps}
+                pressColor="transparent"
+                pressOpacity={1}
+              />
+            )}
+          />
+        )}
       >
-        {/* Envia para os posts */}
-        <Posts
-          ListHeaderComponent={CombinedHeader}
-          onRefreshProfile={onRefreshProfile}
-        />
-      </View>
+        <Tabs.Tab name="posts" label="Posts">
+          <Posts />
+        </Tabs.Tab>
 
-      <View
-        style={[
-          styles.mediaContainer,
-          currentTab !== "media" && { display: "none" },
-        ]}
-      >
-        {/* Envia para as mídias */}
-        <Midiagrid
-          isMyProfile={true}
-          ListHeaderComponent={CombinedHeader}
-          onRefreshProfile={onRefreshProfile}
-        />
-      </View>
+        <Tabs.Tab name="media" label="Mídia">
+          <Midiagrid isMyProfile={true} />
+        </Tabs.Tab>
 
-      {/* ... aba de likes */}
+        <Tabs.Tab name="likes" label="Curtidas">
+          <Posts />
+        </Tabs.Tab>
+      </Tabs.Container>
     </View>
   );
 }

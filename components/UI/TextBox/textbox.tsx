@@ -5,7 +5,13 @@ import { Pressable, TextInput, View } from "react-native";
 
 import { useTextboxStyles } from "./textbox.style";
 
-export default function TextBox({ children, ...props }: any) {
+// Extraímos o isSearch e o onSearch das props
+export default function TextBox({
+  children,
+  isSearch,
+  onSearch,
+  ...props
+}: any) {
   // Hooks no topo, sem amarras!
   const { colors } = useTheme();
   const styles = useTextboxStyles();
@@ -14,6 +20,8 @@ export default function TextBox({ children, ...props }: any) {
   const [secure, setSecure] = useState(isPassword);
   const [focused, setFocused] = useState(false);
 
+  const hasRightIcon = isPassword || isSearch;
+
   return (
     <View style={[styles.container, focused && styles.focused]}>
       <View style={styles.inputWrapper}>
@@ -21,7 +29,7 @@ export default function TextBox({ children, ...props }: any) {
           style={[
             styles.base,
             {
-              paddingRight: isPassword ? 36 : 0,
+              paddingRight: hasRightIcon ? 36 : 0,
             },
           ]}
           {...props}
@@ -32,6 +40,7 @@ export default function TextBox({ children, ...props }: any) {
           onBlur={() => setFocused(false)}
         />
 
+        {/* Ícone de Senha */}
         {isPassword && (
           <Pressable
             style={styles.icon}
@@ -43,6 +52,18 @@ export default function TextBox({ children, ...props }: any) {
               size={20}
               color={colors.textMuted}
             />
+          </Pressable>
+        )}
+
+        {/* Ícone de Busca */}
+        {isSearch && !isPassword && (
+          <Pressable
+            style={styles.icon}
+            onPress={onSearch}
+            hitSlop={10}
+            disabled={!onSearch}
+          >
+            <Ionicons name="search" size={20} color={colors.textMuted} />
           </Pressable>
         )}
       </View>

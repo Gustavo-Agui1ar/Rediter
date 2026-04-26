@@ -5,7 +5,7 @@ export type IconButtonType = "border" | "fill" | "none" | "overlay";
 
 export const useIconColorsByType = makeStyles((colors: any) => ({
   border: colors.primary,
-  fill: colors.primary,
+  fill: colors.primaryDark,
   none: colors.textPrimary,
   overlay: colors.white,
 }));
@@ -21,7 +21,9 @@ export const useIconButtonStyles = makeStyles((colors: any) =>
       borderColor: colors.primary,
     },
     fill: {
-      backgroundColor: colors.primaryDark,
+      borderWidth: 1.5,
+      borderColor: colors.primaryDark,
+      backgroundColor: colors.primaryLight,
     },
     none: {
       backgroundColor: "transparent",

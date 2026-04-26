@@ -6,17 +6,12 @@ export const useStylesProfileCover = makeStyles((colors: any) =>
     container: {
       width: "100%",
       aspectRatio: 2,
-      backgroundColor: colors.divider,
+      backgroundColor: colors.textMuted,
+      overflow: "hidden",
     },
     image: {
       width: "100%",
       height: "100%",
-      objectFit: "cover",
-    },
-    avatarWrapper: {
-      position: "absolute",
-      bottom: -60,
-      left: 20,
     },
   }),
 );

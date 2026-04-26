@@ -1,8 +1,8 @@
 import {
   Header,
   IconButton,
-  LoadingOverlay,
   NavBar,
+  TextBox
 } from "@/components/components";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { router, useLocalSearchParams } from "expo-router";
@@ -22,6 +22,7 @@ type Tab = "home" | "messages" | "profile";
 export default function Main() {
   const { screen } = useLocalSearchParams<{ screen: Tab }>();
   const [currentTab, setCurrentTab] = useState<Tab>("home");
+  const [searchQuery, setSearchQuery] = useState(""); // Estado para a pesquisa
   const { loading } = useLoading();
 
   const stylesMain = useStylesMain();
@@ -48,11 +49,31 @@ export default function Main() {
     }
   }, [screen]);
 
+  // Função para disparar a busca
+  const handleSearch = () => {
+    console.log("Buscando por:", searchQuery);
+    // Aqui você pode disparar um evento ou chamar uma função do Feed
+  };
+
   return (
     <View style={{ flex: 1 }}>
-      {loading && <LoadingOverlay />}
-      {currentTab !== "profile" && <Header></Header>}
+      {currentTab !== "profile" && (
+        <Header>
+          {currentTab === "home" && (
+            <TextBox
+              placeholder="Buscar..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              isSearch={true}
+              onSearch={handleSearch}
+              style={{ width: "100%" }}
+            />
+          )}
+        </Header>
+      )}
+
       <View style={styles.fill}>{screens[currentTab]}</View>
+
       <View style={stylesMain.footerContainer}>
         <NavBar<Tab>
           items={navItems}
@@ -65,6 +86,7 @@ export default function Main() {
             size={56}
             circle={false}
             icon="post"
+            type="fill"
             onPress={() => router.push("/newPost")}
           />
         </View>

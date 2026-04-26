@@ -28,7 +28,7 @@ export default function ProfileImage({
       source={
         finalUri
           ? { uri: finalUri }
-          : require("@/assets/images/default_user.png")
+          : require("@/assets/images/default_user.svg")
       }
       style={[
         {

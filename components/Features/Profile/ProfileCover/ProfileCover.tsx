@@ -1,5 +1,7 @@
 import { configs } from "@/utils/configs.utils";
-import { Image, ImageProps, View } from "react-native";
+import { Image, ImageProps } from "expo-image";
+import React, { useMemo } from "react";
+import { View } from "react-native";
 import { useStylesProfileCover } from "./ProfileCover.style";
 
 interface ProfileCoverProps extends Omit<ImageProps, "source"> {
@@ -13,17 +15,12 @@ export default function ProfileCover({
 }: ProfileCoverProps) {
   const styles = useStylesProfileCover();
 
-  const getFullUrl = () => {
+  const finalUri = useMemo(() => {
     if (!imageName) return null;
-
-    if (imageName.startsWith("http") || imageName.startsWith("file://")) {
+    if (imageName.startsWith("http") || imageName.startsWith("file://"))
       return imageName;
-    }
-
     return `${configs.apiUrls[0]}/Picture/GetPicture?name=${encodeURIComponent(imageName)}`;
-  };
-
-  const finalUri = getFullUrl();
+  }, [imageName]);
 
   return (
     <View style={styles.container}>
@@ -31,9 +28,12 @@ export default function ProfileCover({
         source={
           finalUri
             ? { uri: finalUri }
-            : require("@/assets/images/default_cover_user.jpg")
+            : require("@/assets/images/default_cover_user.svg")
         }
+        contentFit="cover"
         style={[styles.image, style]}
+        transition={200}
+        cachePolicy="memory-disk"
         {...props}
       />
     </View>

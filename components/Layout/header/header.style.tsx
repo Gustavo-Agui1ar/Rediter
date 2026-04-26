@@ -6,26 +6,26 @@ export const useStylesHeader = makeStyles((colors: any) =>
     container: {
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: 16,
-      paddingVertical: 12,
+      paddingHorizontal: 12,
+      paddingTop: 20,
       backgroundColor: colors.background,
+      gap: 12,
     },
     divider: {
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },
     left: {
-      flex: 1,
       alignItems: "flex-start",
+      justifyContent: "center",
     },
     center: {
-      flex: 2,
-      alignItems: "center",
+      flex: 1,
+      justifyContent: "center",
     },
     right: {
-      flex: 1,
       alignItems: "flex-end",
+      justifyContent: "center",
     },
     logo: {
       width: 32,

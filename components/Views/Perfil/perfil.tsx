@@ -79,7 +79,7 @@ export default function Perfil() {
   );
 
   const ProfileHeader = (
-    <View>
+    <View style={{ width: "100%" }}>
       <View style={stylesPerfil.header}>
         <ProfileCover imageName={form.coverUrl} />
 
@@ -95,8 +95,8 @@ export default function Perfil() {
   );
 
   return (
-    <View style={[styles.container, { flex: 1 }]}>
-      <View style={[stylesPerfil.feedContainer, { flex: 1 }]}>
+    <View style={[styles.container]}>
+      <View style={[stylesPerfil.feedContainer]}>
         <FeedProfile
           headerComponent={ProfileHeader}
           onRefreshProfile={fetchProfile}
