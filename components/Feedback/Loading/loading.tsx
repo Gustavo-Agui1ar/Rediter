@@ -1,11 +1,11 @@
 import { useTheme } from "@/context/ThemeContext";
 import React from "react";
 import { ActivityIndicator, View } from "react-native";
-import { createdLoadingStyles } from "./loading.style";
+import { useLoadingStyles } from "./loading.style"; // O novo hook de estilos
 
 export default function LoadingOverlay() {
+  const styles = useLoadingStyles();
   const { colors } = useTheme();
-  const styles = createdLoadingStyles(colors);
 
   return (
     <View style={styles.overlay}>

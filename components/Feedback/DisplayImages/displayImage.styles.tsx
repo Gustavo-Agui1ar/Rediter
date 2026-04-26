@@ -1,9 +1,10 @@
+import { makeStyles } from "@/utils/makeStyles.utils";
 import { Dimensions, StyleSheet } from "react-native";
 
 export const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } =
   Dimensions.get("window");
 
-export const createdDisplayImageStyles = (colors: any) =>
+export const useDisplayImageStyles = makeStyles((colors: any) =>
   StyleSheet.create({
     gridContainer: {
       marginTop: 12,
@@ -72,4 +73,5 @@ export const createdDisplayImageStyles = (colors: any) =>
 
       resizeMode: "contain",
     },
-  });
+  }),
+);

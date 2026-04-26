@@ -1,7 +1,6 @@
-import { useTheme } from "@/context/ThemeContext";
 import React, { useRef, useState } from "react";
 import { LayoutChangeEvent, TextInput, View } from "react-native";
-import { createdCodeStyles } from "./code.style";
+import { useCodeStyles } from "./code.style";
 interface OtpInputProps {
   length?: number;
   OnChangeCode?: (code: string) => void;
@@ -11,8 +10,7 @@ export default function OtpInput({ length = 6, OnChangeCode }: OtpInputProps) {
   const [code, setCode] = useState<string[]>(Array(length).fill(""));
   const [size, setSize] = useState(50);
 
-  const { colors } = useTheme();
-  const styles = createdCodeStyles(colors);
+  const styles = useCodeStyles();
 
   const inputs = useRef<(TextInput | null)[]>([]);
 

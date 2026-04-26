@@ -1,4 +1,4 @@
-import { DarkColors, LightColors } from "@/styles/theme";
+import { DarkColors, LightColors } from "@/styles/Colors";
 import { getColorTheme, saveColorTheme } from "@/utils/storage.utils";
 import React, { createContext, useContext, useEffect, useState } from "react";
 

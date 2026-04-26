@@ -1,7 +1,6 @@
 import { Button, Header, HelperText, TextBox } from "@/components/components";
-import { useTheme } from "@/context/ThemeContext";
 import { ScriptRegister } from "@/scripts/register.script";
-import { createdStyles } from "@/styles/theme";
+import { useGlobalStyles } from "@/styles/global.styles";
 import { LoginValidator, updateField } from "@/utils/login.utils";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -15,11 +14,9 @@ export default function Register() {
     confirmPassword: "",
   });
 
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorText, setErrorText] = useState("");
 
-  const { colors } = useTheme();
-  const styles = createdStyles(colors);
+  const styles = useGlobalStyles();
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={"height"}>
@@ -83,8 +80,6 @@ export default function Register() {
           <Button
             title="Criar conta"
             onPress={async () => {
-              setIsSubmitted(true);
-
               var response = await ScriptRegister.sendRegisterRequest(form);
 
               setErrorText(response.error);

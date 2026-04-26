@@ -1,6 +1,7 @@
+import { makeStyles } from "@/utils/makeStyles.utils";
 import { StyleSheet } from "react-native";
 
-export const createDividerStyles = (colors: any) =>
+export const useDividerStyles = makeStyles((colors: any) =>
   StyleSheet.create({
     container: {
       flexDirection: "row",
@@ -20,4 +21,5 @@ export const createDividerStyles = (colors: any) =>
       color: colors.textMuted,
       fontSize: 14,
     },
-  });
+  }),
+);

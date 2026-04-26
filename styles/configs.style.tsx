@@ -1,6 +1,7 @@
+import { makeStyles } from "@/utils/makeStyles.utils";
 import { StyleSheet } from "react-native";
 
-export const createdConfigsStyles = (colors: any) =>
+export const useConfigsStyles = makeStyles((colors: any) =>
   StyleSheet.create({
     imageFix: {
       alignItems: "center",
@@ -58,4 +59,5 @@ export const createdConfigsStyles = (colors: any) =>
       position: "relative",
       backgroundColor: colors.background,
     },
-  });
+  }),
+);

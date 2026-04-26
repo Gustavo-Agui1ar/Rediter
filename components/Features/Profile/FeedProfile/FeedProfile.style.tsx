@@ -1,6 +1,7 @@
+import { makeStyles } from "@/utils/makeStyles.utils";
 import { StyleSheet } from "react-native";
 
-export const createdFeedStyles = (colors: any) =>
+export const useFeedStyles = makeStyles((colors: any) =>
   StyleSheet.create({
     container: {
       width: "100%",
@@ -34,4 +35,5 @@ export const createdFeedStyles = (colors: any) =>
       flex: 1,
       gap: 16,
     },
-  });
+  }),
+);

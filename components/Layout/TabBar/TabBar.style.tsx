@@ -1,6 +1,7 @@
+import { makeStyles } from "@/utils/makeStyles.utils";
 import { StyleSheet } from "react-native";
 
-export const createdTabBarStyles = (colors: any) =>
+export const useTabBarStyles = makeStyles((colors: any) =>
   StyleSheet.create({
     container: {
       width: "100%",
@@ -32,4 +33,5 @@ export const createdTabBarStyles = (colors: any) =>
       height: 2,
       backgroundColor: colors.primary,
     },
-  });
+  }),
+);

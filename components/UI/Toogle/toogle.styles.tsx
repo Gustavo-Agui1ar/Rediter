@@ -1,6 +1,7 @@
+import { makeStyles } from "@/utils/makeStyles.utils";
 import { StyleSheet } from "react-native";
 
-export const createToggleStyles = (colors: any) =>
+export const createToggleStyles = makeStyles((colors: any) =>
   StyleSheet.create({
     track: {
       width: 50,
@@ -20,4 +21,5 @@ export const createToggleStyles = (colors: any) =>
       shadowOpacity: 0.2,
       shadowRadius: 2,
     },
-  });
+  }),
+);

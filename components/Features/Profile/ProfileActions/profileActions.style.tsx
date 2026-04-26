@@ -1,7 +1,8 @@
-import { TextSize } from "@/styles/theme";
+import { TextSize } from "@/styles/global.styles";
+import { makeStyles } from "@/utils/makeStyles.utils";
 import { StyleSheet } from "react-native";
 
-export const createdProfileActionsStyles = (colors: any) =>
+export const useProfileActionsStyles = makeStyles((colors: any) =>
   StyleSheet.create({
     container: {
       flexDirection: "row",
@@ -27,4 +28,5 @@ export const createdProfileActionsStyles = (colors: any) =>
       flex: 1,
       maxWidth: 140,
     },
-  });
+  }),
+);

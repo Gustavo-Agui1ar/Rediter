@@ -2,12 +2,10 @@ import {
   ProfileActions,
   ProfileCover,
   ProfileImage,
-  ReloadableContainer,
 } from "@/components/components";
+// 🚨 Removi o ReloadableContainer das importações
 import FeedProfile from "@/components/Features/Profile/FeedProfile/FeedProfile";
-import { useLoading } from "@/context/loadingContext";
-import { useTheme } from "@/context/ThemeContext";
-import { createdStyles } from "@/styles/theme";
+import { useGlobalStyles } from "@/styles/global.styles";
 import { request } from "@/utils/request.utils";
 import {
   getProfileBasic,
@@ -15,13 +13,11 @@ import {
   saveProfileBasic,
 } from "@/utils/storage.utils";
 import { useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { View } from "react-native";
-import { createdStylesPerfil } from "./perfil.style";
+import { useStylesPerfil } from "./perfil.style";
 
 export default function Perfil() {
-  const { setLoading } = useLoading();
-
   const [form, setForm] = useState({
     imageUrl: "",
     coverUrl: "",
@@ -29,9 +25,8 @@ export default function Perfil() {
     email: "",
   });
 
-  const { colors } = useTheme();
-  const styles = createdStyles(colors);
-  const stylesPerfil = createdStylesPerfil(colors);
+  const styles = useGlobalStyles();
+  const stylesPerfil = useStylesPerfil();
 
   function applyProfile(data: any) {
     setForm({
@@ -46,7 +41,6 @@ export default function Perfil() {
     const response = await request({
       urlComplement: `/User/GetUser`,
       method: "GET",
-      setLoading,
     });
 
     if (response.ok) {
@@ -78,35 +72,36 @@ export default function Perfil() {
     fetchProfile();
   }
 
-  useEffect(() => {
-    hydrateProfile();
-  }, []);
-
   useFocusEffect(
     useCallback(() => {
       hydrateProfile();
     }, []),
   );
 
-  return (
-    <ReloadableContainer onRefresh={fetchProfile}>
-      <View style={styles.container}>
-        <View style={stylesPerfil.header}>
-          <ProfileCover imageName={form.coverUrl} />
+  const ProfileHeader = (
+    <View>
+      <View style={stylesPerfil.header}>
+        <ProfileCover imageName={form.coverUrl} />
 
-          <View style={stylesPerfil.avatarWrapper}>
-            <ProfileImage imageName={form.imageUrl} size={120} />
-          </View>
-        </View>
-
-        <View style={stylesPerfil.actionsContainer}>
-          <ProfileActions canFollow={false} userName={form.userName} />
-        </View>
-
-        <View style={stylesPerfil.feedContainer}>
-          <FeedProfile />
+        <View style={stylesPerfil.avatarWrapper}>
+          <ProfileImage imageName={form.imageUrl} size={120} />
         </View>
       </View>
-    </ReloadableContainer>
+
+      <View style={stylesPerfil.actionsContainer}>
+        <ProfileActions canFollow={false} userName={form.userName} />
+      </View>
+    </View>
+  );
+
+  return (
+    <View style={[styles.container, { flex: 1 }]}>
+      <View style={[stylesPerfil.feedContainer, { flex: 1 }]}>
+        <FeedProfile
+          headerComponent={ProfileHeader}
+          onRefreshProfile={fetchProfile}
+        />
+      </View>
+    </View>
   );
 }

@@ -1,6 +1,7 @@
+import { makeStyles } from "@/utils/makeStyles.utils";
 import { StyleSheet } from "react-native";
 
-export const createdCodeStyles = (colors: any) =>
+export const useCodeStyles = makeStyles((colors: any) =>
   StyleSheet.create({
     container: {
       flexDirection: "row",
@@ -17,4 +18,5 @@ export const createdCodeStyles = (colors: any) =>
       borderColor: colors.primary,
       fontSize: 24,
     },
-  });
+  }),
+);

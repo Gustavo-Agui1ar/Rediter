@@ -1,5 +1,4 @@
 import { useLoading } from "@/context/loadingContext";
-import { useTheme } from "@/context/ThemeContext";
 import { ReactNode } from "react";
 import {
   Text,
@@ -7,7 +6,7 @@ import {
   TouchableOpacityProps,
   View,
 } from "react-native";
-import { createButtonStyles } from "./button.style";
+import { useStylesButton } from "./button.style";
 
 interface ButtonProps extends TouchableOpacityProps {
   title: string;
@@ -25,10 +24,9 @@ export default function Button({
   ...rest
 }: ButtonProps) {
   const { loading } = useLoading();
+  const styles = useStylesButton();
 
   const isDisabled = disabled || loading;
-  const { colors } = useTheme();
-  const styles = createButtonStyles(colors);
 
   const getTextStyle = () => {
     switch (type) {

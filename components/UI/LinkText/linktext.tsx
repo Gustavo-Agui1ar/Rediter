@@ -1,14 +1,12 @@
-import { useTheme } from "@/context/ThemeContext";
 import { Pressable, PressableProps, Text } from "react-native";
-import { createdLinkTextStyles } from "./linktext.style";
+import { useLinkTextStyles } from "./linktext.style";
 
 interface LinkTextProps extends PressableProps {
   text: string;
 }
 
 export default function LinkText({ text, ...rest }: LinkTextProps) {
-  const { colors } = useTheme();
-  const styles = createdLinkTextStyles(colors);
+  const styles = useLinkTextStyles();
 
   return (
     <Pressable {...rest}>

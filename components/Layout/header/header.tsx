@@ -1,7 +1,14 @@
-import { useTheme } from "@/context/ThemeContext";
-import { Image, ImageSourcePropType, Text, View } from "react-native";
-import { ViewProps } from "react-native/Libraries/Components/View/ViewPropTypes";
-import { createdStylesHeader } from "./header.style";
+import React from "react";
+// Importe o ViewProps direto do react-native, a pasta Libraries/Components... é obsoleta
+import {
+  Image,
+  ImageSourcePropType,
+  Text,
+  View,
+  ViewProps,
+} from "react-native";
+import { useStylesHeader } from "./header.style"; // <-- Importando nosso Hook
+
 interface HeaderProps extends ViewProps {
   title?: string;
   resource?: ImageSourcePropType;
@@ -17,33 +24,31 @@ export default function Header({
   style,
   ...rest
 }: HeaderProps) {
+  const styles = useStylesHeader();
   const defaultLogo = require("@/assets/logo/white_r.png");
-
-  const { colors } = useTheme();
-  const stylesHeader = createdStylesHeader(colors);
 
   return (
     <View
-      style={[stylesHeader.container, divider && stylesHeader.divider, style]}
+      style={[styles.container, divider && styles.divider, style]}
       {...rest}
     >
-      <View style={stylesHeader.left}>
+      <View style={styles.left}>
         <Image
           source={resource ?? defaultLogo}
-          style={stylesHeader.logo}
+          style={styles.logo}
           resizeMode="contain"
         />
       </View>
 
-      <View style={stylesHeader.center}>
+      <View style={styles.center}>
         {title ? (
-          <Text numberOfLines={1} style={stylesHeader.title}>
+          <Text numberOfLines={1} style={styles.title}>
             {title}
           </Text>
         ) : null}
       </View>
 
-      <View style={stylesHeader.right}>{children}</View>
+      <View style={styles.right}>{children}</View>
     </View>
   );
 }

@@ -11,10 +11,9 @@ import {
 import ProfileImage from "@/components/Features/Profile/ProfileImage";
 import DisplayImages from "@/components/Feedback/DisplayImages/displayImage";
 import IconButton from "@/components/UI/IconButton/IconButton";
-import { useTheme } from "@/context/ThemeContext";
-import { createdStyles } from "@/styles/theme";
+import { useGlobalStyles } from "@/styles/global.styles";
 import { request } from "@/utils/request.utils";
-import { createdPostStyles } from "./post.style";
+import { usePostStyles } from "./post.style";
 
 interface PostProps {
   text: string;
@@ -38,10 +37,9 @@ export default function Post({
   myProfile = true,
 }: PostProps) {
   const [showOptions, setShowOptions] = useState(false);
-  const { colors } = useTheme();
 
-  const styles = createdStyles(colors);
-  const postStyles = createdPostStyles(colors);
+  const styles = useGlobalStyles();
+  const postStyles = usePostStyles();
 
   const handleEditPost = () => {
     setShowOptions(false);
@@ -120,9 +118,7 @@ export default function Post({
                     onPress={handleDeletePost}
                     style={postStyles.itemOptionsContainer}
                   >
-                    <Text
-                      style={[postStyles.optionText, { color: colors.error }]}
-                    >
+                    <Text style={[postStyles.optionTextDelete]}>
                       Excluir Post
                     </Text>
                   </TouchableOpacity>

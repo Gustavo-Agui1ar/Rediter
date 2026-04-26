@@ -1,49 +1,40 @@
-import { TextSize } from "@/styles/theme";
+import { makeStyles } from "@/utils/makeStyles.utils";
 import { StyleSheet } from "react-native";
 
-export const createdStylesHeader = (colors: any) =>
+export const useStylesHeader = makeStyles((colors: any) =>
   StyleSheet.create({
     container: {
-      width: "100%",
-      height: 64,
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-
       paddingHorizontal: 16,
-      backgroundColor: colors.surface,
+      paddingVertical: 12,
+      backgroundColor: colors.background,
     },
-
     divider: {
       borderBottomWidth: 1,
-      borderColor: colors.border,
+      borderBottomColor: colors.border,
     },
-
     left: {
-      width: 60,
-      justifyContent: "center",
+      flex: 1,
       alignItems: "flex-start",
     },
-
     center: {
-      flex: 1,
+      flex: 2,
       alignItems: "center",
     },
-
     right: {
-      width: 60,
+      flex: 1,
       alignItems: "flex-end",
-      justifyContent: "center",
     },
-
     logo: {
       width: 32,
       height: 32,
     },
-
     title: {
-      fontSize: TextSize.md,
-      fontWeight: "600",
-      color: colors.textPrimary,
+      fontSize: 18,
+      fontWeight: "bold",
+      color: colors.text,
     },
-  });
+  }),
+);

@@ -1,5 +1,5 @@
 import { iconMapping } from "@/styles/icons";
-import { ReactNode } from "react";
+import React, { ReactNode, useMemo } from "react";
 import {
   ActivityIndicator,
   StyleSheet,
@@ -10,9 +10,9 @@ import {
 import { useLoading } from "@/context/loadingContext";
 import { useTheme } from "@/context/ThemeContext";
 import {
-  createIconButtonStyles,
-  getIconColorByType,
   IconButtonType,
+  useIconButtonStyles,
+  useIconColorsByType, // <-- Importamos o novo hook
 } from "./iconButton.style";
 
 type IconName = keyof typeof iconMapping;
@@ -35,16 +35,28 @@ export default function IconButton({
   circle = true,
   ...rest
 }: IconButtonProps) {
+  // 1. TODOS os hooks no topo!
   const { loading } = useLoading();
   const { colors } = useTheme();
+  const iconButtonStyles = useIconButtonStyles();
+  const iconColors = useIconColorsByType();
 
   const isDisabled = disabled || loading;
+
   const color = isDisabled
     ? colors.disabled
-    : getIconColorByType(colors)[type] || colors.textPrimary;
+    : iconColors[type] || colors.textPrimary;
 
   const Icon = iconMapping[icon];
-  const iconButtonStyles = createIconButtonStyles(colors);
+
+  const dynamicStyle = useMemo(() => {
+    if (fullSize) return StyleSheet.absoluteFillObject;
+    return {
+      width: size,
+      height: size,
+      borderRadius: circle ? size / 2 : 12,
+    };
+  }, [fullSize, size, circle]);
 
   function renderContent(): ReactNode {
     if (loading) {
@@ -61,19 +73,10 @@ export default function IconButton({
       activeOpacity={0.8}
       disabled={isDisabled}
       style={[
-        fullSize
-          ? StyleSheet.absoluteFillObject
-          : {
-              width: size,
-              height: size,
-              borderRadius: circle ? size / 2 : 12,
-            },
-
+        dynamicStyle,
         iconButtonStyles.base,
         iconButtonStyles[type],
-
         type === "overlay" && iconButtonStyles.overlay,
-
         isDisabled && !fullSize && iconButtonStyles.disabled,
         style,
       ]}

@@ -1,11 +1,9 @@
 import { default as Button } from "@/components/UI/Button/button";
 import IconButton from "@/components/UI/IconButton/IconButton";
-import { useLoading } from "@/context/loadingContext";
-import { useTheme } from "@/context/ThemeContext";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Text, View } from "react-native";
-import { createdProfileActionsStyles } from "./profileActions.style";
+import { useProfileActionsStyles } from "./profileActions.style";
 
 interface ProfileActionsProps {
   canFollow?: boolean;
@@ -16,11 +14,9 @@ export default function ProfileActions({
   canFollow = true,
   userName = "Usuário",
 }: ProfileActionsProps) {
-  const { setLoading } = useLoading();
   const [isFollowing, setIsFollowing] = useState(false);
 
-  const { colors } = useTheme();
-  const styles = createdProfileActionsStyles(colors);
+  const styles = useProfileActionsStyles();
 
   function updateFollowStatus() {
     setIsFollowing((prev) => !prev);

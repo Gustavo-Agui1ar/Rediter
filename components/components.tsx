@@ -2,7 +2,7 @@ export { default as Code } from "./Code/code";
 export { default as Post } from "./Features/Post/post";
 export { default as FeedProfile } from "./Features/Profile/FeedProfile/FeedProfile";
 export { default as ProfileActions } from "./Features/Profile/ProfileActions/ProfileActions";
-export { default as ProfileCover } from "./Features/Profile/ProfileCover";
+export { default as ProfileCover } from "./Features/Profile/ProfileCover/ProfileCover";
 export { default as ProfileImage } from "./Features/Profile/ProfileImage";
 export { default as DisplayImages } from "./Feedback/DisplayImages/displayImage";
 export { default as LoadingOverlay } from "./Feedback/Loading/loading";

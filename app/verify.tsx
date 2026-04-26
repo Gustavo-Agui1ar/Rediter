@@ -1,8 +1,7 @@
 import { Button, Code, LinkText } from "@/components/components";
 import { useLoading } from "@/context/loadingContext";
-import { useTheme } from "@/context/ThemeContext";
 import { ScriptVerify } from "@/scripts/verify.script";
-import { createdStyles } from "@/styles/theme";
+import { useGlobalStyles } from "@/styles/global.styles";
 import { request } from "@/utils/request.utils";
 import { saveTokens } from "@/utils/storage.utils";
 import { router, useLocalSearchParams } from "expo-router";
@@ -14,8 +13,7 @@ export default function Verify() {
   const [code, setCode] = useState("");
   const { setLoading } = useLoading();
 
-  const { colors } = useTheme();
-  const styles = createdStyles(colors);
+  const styles = useGlobalStyles();
 
   return (
     <KeyboardAvoidingView style={[styles.content]} behavior="padding">

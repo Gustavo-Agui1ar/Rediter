@@ -33,7 +33,7 @@ export default function Toggle({
   });
 
   const { colors } = useTheme();
-  const styles = createToggleStyles(colors);
+  const styles = createToggleStyles();
 
   return (
     <TouchableWithoutFeedback onPress={toggle}>

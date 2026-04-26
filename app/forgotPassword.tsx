@@ -1,8 +1,7 @@
 import { Button, Header, TextBox } from "@/components/components";
 import { useLoading } from "@/context/loadingContext";
-import { useTheme } from "@/context/ThemeContext";
-import { forgotPasswordStyle } from "@/styles/forgotPassword.style";
-import { createdStyles } from "@/styles/theme";
+import { useStylesForgotPassword } from "@/styles/forgotPassword.style";
+import { useGlobalStyles } from "@/styles/global.styles";
 import { request } from "@/utils/request.utils";
 import { deleteTokens } from "@/utils/storage.utils";
 import { router } from "expo-router";
@@ -16,15 +15,27 @@ export default function ForgotPassword() {
   });
 
   const { setLoading } = useLoading();
-  const { colors } = useTheme();
-  const styles = createdStyles(colors);
+  const styles = useGlobalStyles();
+  const forgotStyles = useStylesForgotPassword();
 
   return (
     <KeyboardAvoidingView style={[styles.content]} behavior="padding">
       <Header title="Redefinir senha" />
-      <View style={[styles.content, forgotPasswordStyle.content]}>
-        <TextBox placeholder="Nova senha" secureTextEntry />
-        <TextBox placeholder="Confirmar nova senha" secureTextEntry />
+      <View style={[styles.content, forgotStyles.content]}>
+        <TextBox
+          placeholder="Nova senha"
+          value={form.password}
+          onChangeText={(text: string) => setForm({ ...form, password: text })}
+          secureTextEntry
+        />
+        <TextBox
+          placeholder="Confirmar nova senha"
+          value={form.confirmPassword}
+          onChangeText={(text: string) =>
+            setForm({ ...form, confirmPassword: text })
+          }
+          secureTextEntry
+        />
         <Button
           title="Redefinir senha"
           onPress={() => {

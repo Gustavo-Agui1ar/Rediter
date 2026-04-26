@@ -1,6 +1,7 @@
+import { makeStyles } from "@/utils/makeStyles.utils";
 import { StyleSheet } from "react-native";
 
-export const createButtonStyles = (colors: any) =>
+export const useStylesButton = makeStyles((colors: any) =>
   StyleSheet.create({
     base: {
       paddingVertical: 16,
@@ -56,4 +57,5 @@ export const createButtonStyles = (colors: any) =>
     textRemove: {
       color: colors.error,
     },
-  });
+  }),
+);

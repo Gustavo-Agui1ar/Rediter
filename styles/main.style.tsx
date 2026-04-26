@@ -1,6 +1,7 @@
+import { makeStyles } from "@/utils/makeStyles.utils";
 import { StyleSheet } from "react-native";
 
-export const createdStylesMain = (colors: any) =>
+export const useStylesMain = makeStyles((colors: any) =>
   StyleSheet.create({
     footerContainer: {
       width: "100%",
@@ -18,4 +19,5 @@ export const createdStylesMain = (colors: any) =>
       left: "84%",
       alignSelf: "center",
     },
-  });
+  }),
+);

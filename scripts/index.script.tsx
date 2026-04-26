@@ -6,7 +6,6 @@ import {
 import { LoginValidator } from "@/utils/login.utils";
 import { request } from "@/utils/request.utils";
 import * as StorageUtils from "@/utils/storage.utils";
-import { router } from "expo-router";
 import { Alert } from "react-native";
 
 GoogleSignin.configure({
@@ -14,9 +13,13 @@ GoogleSignin.configure({
     "573963521901-0tovmn0v1au6ob5dm2uq7q19gm21o144.apps.googleusercontent.com",
   offlineAccess: true,
 });
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export class ScriptIndex {
-  static async signInWithGoogle(setLoading?: (loading: boolean) => void) {
+  // 1. Recebendo o router como parâmetro
+  static async signInWithGoogle(
+    router: any,
+    setLoading?: (loading: boolean) => void,
+  ) {
     try {
       const response = await GoogleSignin.signIn();
 
@@ -30,6 +33,7 @@ export class ScriptIndex {
 
         const tokens = await LoginValidator.ParseTokens(tks);
         await StorageUtils.saveTokens(tokens.access, tokens.refresh);
+
         router.replace("/main");
       } else {
         Alert.alert(
@@ -42,16 +46,20 @@ export class ScriptIndex {
     }
   }
 
-  static async checkTokens() {
-    const accessToken = await StorageUtils.getStoreageItem("user_token");
-    const refreshToken = await StorageUtils.getStoreageItem("refresh_token");
-    if (accessToken && refreshToken) {
-      console.log("Tokens encontrados, redirecionando para main...");
-      setTimeout(() => {
+  static async checkTokens(router: any) {
+    try {
+      const accessToken = await StorageUtils.getStoreageItem("user_token");
+      const refreshToken = await StorageUtils.getStoreageItem("refresh_token");
+
+      if (accessToken && refreshToken) {
+        console.log("Tokens encontrados, redirecionando para main...");
         router.replace("/main");
-      }, 0);
+      }
+    } catch (error) {
+      console.error("Erro ao recuperar tokens:", error);
     }
   }
+
   static async authenticate(
     email: string,
     password: string,

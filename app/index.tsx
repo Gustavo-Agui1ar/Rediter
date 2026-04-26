@@ -7,11 +7,14 @@ import {
   LoadingOverlay,
   TextBox,
 } from "@/components/components";
-import { useTheme } from "@/context/ThemeContext";
-import { createdStyles } from "@/styles/theme";
+import { useLoading } from "@/context/loadingContext";
+import { ScriptIndex } from "@/scripts/index.script";
+import { useGlobalStyles } from "@/styles/global.styles";
+import { useIndexStyle } from "@/styles/index.style";
 import { LoginValidator, updateField } from "@/utils/login.utils";
-import { router } from "expo-router";
-import { useState } from "react";
+import * as StorageUtils from "@/utils/storage.utils";
+import { useRootNavigationState, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   Image,
   KeyboardAvoidingView,
@@ -20,31 +23,39 @@ import {
   View,
 } from "react-native";
 
-import { useLoading } from "@/context/loadingContext";
-import { ScriptIndex } from "@/scripts/index.script";
-import { indexStyle } from "@/styles/index.style";
-import * as StorageUtils from "@/utils/storage.utils";
-import { useEffect } from "react";
-
 export default function Index() {
   const { loading, setLoading } = useLoading();
-
-  const { colors } = useTheme();
-  const styles = createdStyles(colors);
-
-  useEffect(() => {
-    const check = async () => {
-      await ScriptIndex.checkTokens();
-    };
-    check();
-  }, []);
-
+  const styles = useGlobalStyles();
+  const indexStyles = useIndexStyle();
+  const router = useRouter();
+  const rootNavigationState = useRootNavigationState();
   const [Submitted, setSubmitted] = useState(false);
-
   const [form, setForm] = useState({
     email: "",
     password: "",
   });
+
+  useEffect(() => {
+    // 2. A MÁGICA: Se a navegação raiz ainda não estiver pronta, não faça NADA.
+    if (!rootNavigationState?.key) return;
+
+    const checkTokens = async () => {
+      try {
+        const accessToken = await StorageUtils.getStoreageItem("user_token");
+        const refreshToken =
+          await StorageUtils.getStoreageItem("refresh_token");
+
+        if (accessToken && refreshToken) {
+          console.log("Tokens encontrados, redirecionando para main...");
+          router.replace("/main");
+        }
+      } catch (error) {
+        console.error("Erro ao recuperar tokens:", error);
+      }
+    };
+
+    checkTokens();
+  }, [rootNavigationState?.key, router]);
 
   return (
     <KeyboardAvoidingView style={[styles.container]} behavior="padding">
@@ -54,7 +65,7 @@ export default function Index() {
         contentContainerStyle={styles.scroll_content}
       >
         <Header title="Bem-vindo ao Rediter" />
-        <View style={indexStyle.content_login}>
+        <View style={indexStyles.content_login}>
           <TextBox
             placeholder="Email"
             value={form.email}
@@ -106,7 +117,7 @@ export default function Index() {
           <Divider text="ou" />
           <Button
             title="Entrar com Google"
-            onPress={() => ScriptIndex.signInWithGoogle(setLoading)}
+            onPress={() => ScriptIndex.signInWithGoogle(router, setLoading)}
             type="border"
             icon={
               <Image

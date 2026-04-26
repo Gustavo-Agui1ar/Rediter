@@ -6,9 +6,9 @@ import {
   TextBox,
 } from "@/components/components";
 import { useLoading } from "@/context/loadingContext";
-import { useTheme } from "@/context/ThemeContext";
 import { NewPostScript } from "@/scripts/newPost.script";
-import { createdStyles } from "@/styles/theme";
+import { useGlobalStyles } from "@/styles/global.styles";
+import { useNewPostStyles } from "@/styles/newPost.style";
 import { pickImage } from "@/utils/filePicker.utils";
 import { handleGetLocation } from "@/utils/location.utils";
 import { useLocalSearchParams } from "expo-router";
@@ -32,8 +32,8 @@ export default function NewPost() {
 
   const params = useLocalSearchParams();
 
-  const { colors } = useTheme();
-  const styles = createdStyles(colors);
+  const globalStyles = useGlobalStyles();
+  const localStyles = useNewPostStyles();
 
   const isEditingParam = params.isEditing;
   const postIdParam = params.postId;
@@ -67,20 +67,15 @@ export default function NewPost() {
   }, [isEditingParam, postIdParam, textParam, locationParam, imageUrlsParam]);
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={"height"}>
+    <KeyboardAvoidingView style={globalStyles.container} behavior={"height"}>
       <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.scroll_content}
+        style={globalStyles.container}
+        contentContainerStyle={globalStyles.scroll_content}
         keyboardShouldPersistTaps="handled"
       >
         <Header title={postId ? "Editar Post" : "Criar Post"} />
 
-        <View
-          style={[
-            styles.content,
-            { justifyContent: "flex-start", paddingTop: 16, width: "95%" },
-          ]}
-        >
+        <View style={[globalStyles.content, localStyles.contentWrapper]}>
           <TextBox
             placeholder="O que você está pensando?"
             value={text}
@@ -97,18 +92,10 @@ export default function NewPost() {
               }
             />
 
-            <View style={{ marginTop: 16, gap: 12 }}>
+            <View style={localStyles.actionsContainer}>
               {locationName && (
-                <View
-                  style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
-                >
-                  <Text
-                    style={{
-                      color: colors.textMuted,
-                      fontSize: 14,
-                      fontWeight: "bold",
-                    }}
-                  >
+                <View style={localStyles.locationContainer}>
+                  <Text style={localStyles.locationText}>
                     📍 Em {locationName}
                   </Text>
                   <IconButton
@@ -121,13 +108,7 @@ export default function NewPost() {
               )}
 
               {/* BARRAS DE BOTÕES */}
-              <View
-                style={{
-                  alignSelf: "flex-start",
-                  flexDirection: "row",
-                  gap: 10,
-                }}
-              >
+              <View style={localStyles.iconBar}>
                 <IconButton
                   icon="image"
                   type="fill"
@@ -174,13 +155,7 @@ export default function NewPost() {
 
       {/* Renderização do seletor de Emojis */}
       {showEmoji && (
-        <View
-          style={{
-            height: 320,
-            backgroundColor: colors.background,
-            borderColor: colors.primary,
-          }}
-        >
+        <View style={localStyles.emojiContainer}>
           <EmojiKeyboard
             onEmojiSelected={(emojiObject) =>
               setText((prev) => prev + emojiObject.emoji)

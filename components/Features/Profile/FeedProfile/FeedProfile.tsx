@@ -1,19 +1,24 @@
-import Posts from "@/components/Features/Profile/Posts";
-import ProfileCover from "@/components/Features/Profile/ProfileCover";
+import Midiagrid from "@/components/Features/Profile/Midia/Midia";
+import Posts from "@/components/Features/Profile/Posts/Posts";
 import { NavItem } from "@/components/Layout/NavBar/navbar";
 import TabBar from "@/components/Layout/TabBar/TabBar";
-import { useTheme } from "@/context/ThemeContext";
 import { useMemo, useState } from "react";
-import { ScrollView, View } from "react-native";
-import { createdFeedStyles } from "./FeedProfile.style";
+import { View } from "react-native";
+import { useFeedStyles } from "./FeedProfile.style";
 
 type Tab = "posts" | "media" | "likes";
 
-export default function FeedProfile() {
-  const [currentTab, setCurrentTab] = useState<Tab>("posts");
+interface FeedProfileProps {
+  headerComponent: React.ReactNode;
+  onRefreshProfile: () => Promise<void>;
+}
 
-  const { colors } = useTheme();
-  const styles = createdFeedStyles(colors);
+export default function FeedProfile({
+  headerComponent,
+  onRefreshProfile,
+}: FeedProfileProps) {
+  const [currentTab, setCurrentTab] = useState<Tab>("posts");
+  const styles = useFeedStyles();
 
   const navItems: NavItem<Tab>[] = useMemo(
     () => [
@@ -33,31 +38,43 @@ export default function FeedProfile() {
     [],
   );
 
-  const items = Array.from({ length: 20 });
+  const CombinedHeader = (
+    <View>
+      {headerComponent}
+      <TabBar items={navItems} active={currentTab} onChange={setCurrentTab} />
+    </View>
+  );
 
   return (
     <View style={styles.container}>
-      <TabBar items={navItems} active={currentTab} onChange={setCurrentTab} />
+      <View
+        style={[
+          styles.tabContainer,
+          currentTab !== "posts" && { display: "none" },
+        ]}
+      >
+        {/* Envia para os posts */}
+        <Posts
+          ListHeaderComponent={CombinedHeader}
+          onRefreshProfile={onRefreshProfile}
+        />
+      </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {currentTab === "posts" && (
-          <View style={styles.tabContainer}>
-            <Posts />
-          </View>
-        )}
+      <View
+        style={[
+          styles.mediaContainer,
+          currentTab !== "media" && { display: "none" },
+        ]}
+      >
+        {/* Envia para as mídias */}
+        <Midiagrid
+          isMyProfile={true}
+          ListHeaderComponent={CombinedHeader}
+          onRefreshProfile={onRefreshProfile}
+        />
+      </View>
 
-        {currentTab === "media" && (
-          <View style={styles.mediaContainer}>
-            {items.map((_, index) => (
-              <View key={index} style={styles.mediaItem}>
-                <ProfileCover />
-              </View>
-            ))}
-          </View>
-        )}
-
-        {currentTab === "likes" && <View style={styles.likesContainer} />}
-      </ScrollView>
+      {/* ... aba de likes */}
     </View>
   );
 }

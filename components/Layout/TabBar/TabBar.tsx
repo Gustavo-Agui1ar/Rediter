@@ -1,4 +1,3 @@
-import { useTheme } from "@/context/ThemeContext";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
@@ -8,7 +7,7 @@ import {
   View,
 } from "react-native";
 import { NavItem } from "../NavBar/navbar";
-import { createdTabBarStyles } from "./TabBar.style";
+import { useTabBarStyles } from "./TabBar.style";
 
 interface TabBarProps<T> {
   items: NavItem<T>[];
@@ -20,8 +19,7 @@ export default function TabBar<T>({ items, active, onChange }: TabBarProps<T>) {
   const translateX = useRef(new Animated.Value(0)).current;
   const [tabWidth, setTabWidth] = useState(0);
 
-  const { colors } = useTheme();
-  const tabBarStyles = createdTabBarStyles(colors);
+  const tabBarStyles = useTabBarStyles();
 
   const activeIndex = items.findIndex((i) => i.id === active);
 

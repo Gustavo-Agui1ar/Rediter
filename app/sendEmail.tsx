@@ -1,7 +1,6 @@
 import { Button, Header, TextBox } from "@/components/components";
 import { useLoading } from "@/context/loadingContext";
-import { useTheme } from "@/context/ThemeContext";
-import { createdStyles } from "@/styles/theme";
+import { useGlobalStyles } from "@/styles/global.styles";
 import { request } from "@/utils/request.utils";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -11,8 +10,7 @@ export default function SendEmail() {
   const [email, setEmail] = useState("");
   const { setLoading } = useLoading();
 
-  const { colors } = useTheme();
-  const styles = createdStyles(colors);
+  const styles = useGlobalStyles();
 
   return (
     <KeyboardAvoidingView style={styles.content} behavior={"height"}>

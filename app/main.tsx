@@ -4,18 +4,17 @@ import {
   LoadingOverlay,
   NavBar,
 } from "@/components/components";
-import { createdStyles } from "@/styles/theme";
+import { useGlobalStyles } from "@/styles/global.styles";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { JSX, useEffect, useMemo, useState } from "react";
-import { KeyboardAvoidingView, View } from "react-native";
+import { View } from "react-native";
 
 import { NavItem } from "@/components/Layout/NavBar/navbar";
 import Feed from "@/components/Views/feed";
 import Message from "@/components/Views/message";
 import Perfil from "@/components/Views/Perfil/perfil";
 import { useLoading } from "@/context/loadingContext";
-import { useTheme } from "@/context/ThemeContext";
-import { createdStylesMain } from "@/styles/main.style";
+import { useStylesMain } from "@/styles/main.style";
 
 const validTabs: Tab[] = ["home", "messages", "profile"];
 type Tab = "home" | "messages" | "profile";
@@ -25,9 +24,8 @@ export default function Main() {
   const [currentTab, setCurrentTab] = useState<Tab>("home");
   const { loading } = useLoading();
 
-  const { colors } = useTheme();
-  const stylesMain = createdStylesMain(colors);
-  const styles = createdStyles(colors);
+  const stylesMain = useStylesMain();
+  const styles = useGlobalStyles();
 
   const screens: Record<Tab, JSX.Element> = {
     home: <Feed />,
@@ -51,13 +49,10 @@ export default function Main() {
   }, [screen]);
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior="height">
+    <View style={{ flex: 1 }}>
       {loading && <LoadingOverlay />}
-
-      {currentTab !== "profile" && <Header />}
-
+      {currentTab !== "profile" && <Header></Header>}
       <View style={styles.fill}>{screens[currentTab]}</View>
-
       <View style={stylesMain.footerContainer}>
         <NavBar<Tab>
           items={navItems}
@@ -74,6 +69,6 @@ export default function Main() {
           />
         </View>
       </View>
-    </KeyboardAvoidingView>
+    </View>
   );
 }

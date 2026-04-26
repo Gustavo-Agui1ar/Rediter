@@ -1,6 +1,7 @@
+import { makeStyles } from "@/utils/makeStyles.utils";
 import { StyleSheet } from "react-native";
 
-export const createdStylesPerfil = (colors: any) =>
+export const useStylesPerfil = makeStyles((colors: any) =>
   StyleSheet.create({
     header: {
       width: "100%",
@@ -24,4 +25,5 @@ export const createdStylesPerfil = (colors: any) =>
       width: "100%",
       marginTop: 10,
     },
-  });
+  }),
+);

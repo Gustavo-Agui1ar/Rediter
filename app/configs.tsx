@@ -11,8 +11,8 @@ import {
 import { useLoading } from "@/context/loadingContext";
 import { useTheme } from "@/context/ThemeContext";
 import { handleSave } from "@/scripts/configs.script";
-import { createdConfigsStyles } from "@/styles/configs.style";
-import { createdStyles } from "@/styles/theme";
+import { useConfigsStyles } from "@/styles/configs.style";
+import { useGlobalStyles } from "@/styles/global.styles";
 import { pickImage } from "@/utils/filePicker.utils";
 import { deleteAccount, logOut } from "@/utils/login.utils";
 import { request } from "@/utils/request.utils";
@@ -24,9 +24,8 @@ export default function Configs() {
   const { loading, setLoading } = useLoading();
   const [error, setError] = useState<string | null>(null);
 
-  const { colors } = useTheme();
-  const configsStyles = createdConfigsStyles(colors);
-  const styles = createdStyles(colors);
+  const configsStyles = useConfigsStyles();
+  const styles = useGlobalStyles();
 
   const [form, setForm] = useState({
     name: "",
