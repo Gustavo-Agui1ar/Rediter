@@ -56,7 +56,7 @@ export default function FeedProfile({
         )}
       >
         <Tabs.Tab name="posts" label="Posts">
-          <Posts />
+          <Posts myProfile={true} />
         </Tabs.Tab>
 
         <Tabs.Tab name="media" label="Mídia">
@@ -64,7 +64,7 @@ export default function FeedProfile({
         </Tabs.Tab>
 
         <Tabs.Tab name="likes" label="Curtidas">
-          <Posts />
+          <Posts myProfile={false} />
         </Tabs.Tab>
       </Tabs.Container>
     </View>

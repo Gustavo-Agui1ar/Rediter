@@ -46,7 +46,7 @@ export default function Index() {
 
         if (accessToken && refreshToken) {
           console.log("Tokens encontrados, redirecionando para main...");
-          router.replace("/search");
+          router.replace("/home");
         }
       } catch (error) {
         console.error("Erro ao recuperar tokens:", error);

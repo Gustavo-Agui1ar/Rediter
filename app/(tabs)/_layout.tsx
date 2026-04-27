@@ -8,7 +8,7 @@ import { useStylesMain } from "@/styles/main.style";
 // 1. Importe o seu hook de tema
 import { useTheme } from "@/context/ThemeContext";
 
-type Tab = "home" | "message" | "Perfil/Perfil" | "search";
+type Tab = "home" | "message" | "Perfil/Perfil" | "Search/search";
 
 export default function TabLayout() {
   const stylesMain = useStylesMain();
@@ -17,7 +17,7 @@ export default function TabLayout() {
   const navItems: NavItem<Tab>[] = useMemo(
     () => [
       { id: "home", label: "Início", icon: "home" },
-      { id: "search", label: "Buscar", icon: "search" },
+      { id: "Search/search", label: "Buscar", icon: "search" },
       { id: "message", label: "Mensagens", icon: "message" },
       { id: "Perfil/Perfil", label: "Perfil", icon: "profile" },
     ],
@@ -66,7 +66,7 @@ export default function TabLayout() {
         }}
       />
 
-      <Tabs.Screen name="search" options={{ headerShown: false }} />
+      <Tabs.Screen name="Search/search" options={{ headerShown: false }} />
 
       <Tabs.Screen
         name="message"

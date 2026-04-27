@@ -12,6 +12,7 @@ import ProfileImage from "@/components/Features/Profile/ProfileImage";
 import DisplayImages from "@/components/Feedback/DisplayImages/displayImage";
 import IconButton from "@/components/UI/IconButton/IconButton";
 import { useGlobalStyles } from "@/styles/global.styles";
+import { formatDate } from "@/utils/datePost.utils";
 import { request } from "@/utils/request.utils";
 import { usePostStyles } from "./post.style";
 
@@ -24,6 +25,7 @@ interface PostProps {
   Location?: string;
   edited?: boolean;
   myProfile?: boolean;
+  createdAt?: string;
 }
 
 export default function Post({
@@ -35,6 +37,7 @@ export default function Post({
   Location,
   edited = false,
   myProfile = true,
+  createdAt,
 }: PostProps) {
   const [showOptions, setShowOptions] = useState(false);
 
@@ -87,10 +90,15 @@ export default function Post({
       {/* HEADER */}
       <View style={postStyles.header}>
         <View style={postStyles.userInfo}>
-          <ProfileImage size={50} wrapper={false} imageName={imageProfileUrl} />
-          <View style={{ marginLeft: 12 }}>
+          <ProfileImage size={44} wrapper={false} imageName={imageProfileUrl} />
+          <View style={postStyles.userTextContainer}>
             <Text style={postStyles.username}>{userName}</Text>
-            {edited && <Text style={postStyles.edited}>• Editado</Text>}
+            <View style={postStyles.metaDataContainer}>
+              <Text style={postStyles.timeText}>
+                {formatDate(createdAt as string)}
+              </Text>
+              {edited && <Text style={postStyles.editedText}> • Editado</Text>}
+            </View>
           </View>
         </View>
 
@@ -98,7 +106,7 @@ export default function Post({
           <IconButton
             type="none"
             icon="more-vertical"
-            size={28}
+            size={32}
             circle={false}
             onPress={() => setShowOptions((prev) => !prev)}
           />
@@ -118,7 +126,7 @@ export default function Post({
                     onPress={handleDeletePost}
                     style={postStyles.itemOptionsContainer}
                   >
-                    <Text style={[postStyles.optionTextDelete]}>
+                    <Text style={postStyles.optionTextDelete}>
                       Excluir Post
                     </Text>
                   </TouchableOpacity>
@@ -131,7 +139,7 @@ export default function Post({
                   postStyles.itemOptionsContainerLast,
                 ]}
               >
-                <Text style={postStyles.optionText}>Download Imagens</Text>
+                <Text style={postStyles.optionText}>Salvar Mídia</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -142,23 +150,32 @@ export default function Post({
       <View style={postStyles.contentBody}>
         {text ? <Text style={postStyles.description}>{text}</Text> : null}
 
-        <DisplayImages files={postImageUrl || []} />
+        <View style={postStyles.imageContainer}>
+          <DisplayImages files={postImageUrl || []} />
+        </View>
 
-        {Location && <Text style={postStyles.location}>📍 {Location}</Text>}
+        {Location && (
+          <View style={postStyles.locationBadge}>
+            <Text style={postStyles.locationText}>📍 {Location}</Text>
+          </View>
+        )}
       </View>
 
       {/* BARRAS DE AÇÃO */}
       <View style={postStyles.buttonContainer}>
-        <TouchableOpacity activeOpacity={0.7} style={postStyles.actionButton}>
-          <IconButton type="none" icon="repeat" circle={false} size={40} />
+        <TouchableOpacity activeOpacity={0.6} style={postStyles.actionGroup}>
+          <IconButton type="none" icon="message" circle={false} size={44} />
+          <Text style={postStyles.actionLabel}>0</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity activeOpacity={0.7} style={postStyles.actionButton}>
-          <IconButton type="none" icon="message" circle={false} size={40} />
+        <TouchableOpacity activeOpacity={0.6} style={postStyles.actionGroup}>
+          <IconButton type="none" icon="repeat" circle={false} size={44} />
+          <Text style={postStyles.actionLabel}>0</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity activeOpacity={0.7} style={postStyles.actionButton}>
-          <IconButton type="none" icon="like" circle={false} size={40} />
+        <TouchableOpacity activeOpacity={0.6} style={postStyles.actionGroup}>
+          <IconButton type="none" icon="like" circle={false} size={44} />
+          <Text style={postStyles.actionLabel}>0</Text>
         </TouchableOpacity>
       </View>
     </View>

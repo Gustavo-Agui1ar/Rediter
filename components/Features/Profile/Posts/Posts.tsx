@@ -55,7 +55,11 @@ const mergePosts = (oldPosts: PostItem[], newPosts: PostItem[]) => {
   return [...oldPosts, ...filtered];
 };
 
-export default function Posts() {
+interface PostsProps {
+  myProfile: boolean;
+}
+
+export default function Posts({ myProfile }: PostsProps) {
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -133,9 +137,11 @@ export default function Posts() {
         postId={getId(item) as string}
         Location={item.Location || item.location}
         edited={item.edited}
+        createdAt={item.createdAt}
+        myProfile={myProfile}
       />
     ),
-    [],
+    [myProfile],
   );
 
   return (

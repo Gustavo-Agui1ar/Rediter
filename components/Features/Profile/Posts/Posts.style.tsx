@@ -23,6 +23,7 @@ export const useStylesPosts = makeStyles((colors: ThemeColors) => ({
   listContent: {
     flexGrow: 1,
     width: "100%",
+    paddingHorizontal: 8,
     paddingBottom: 20,
     gap: constValues.gap,
   },

@@ -4,50 +4,67 @@ import { makeStyles } from "@/utils/makeStyles.utils";
 export const usePostStyles = makeStyles((colors: ThemeColors) => ({
   container: {
     width: "100%",
-    padding: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
     backgroundColor: colors.background,
-    borderWidth: 1.2,
+    borderWidth: 1,
+    borderColor: colors.divider,
     borderRadius: 12,
-    borderColor: colors.disabled,
-    marginBottom: 4,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    zIndex: 100,
+    zIndex: 10,
   },
   userInfo: {
     flexDirection: "row",
     alignItems: "center",
+    flex: 1,
+  },
+  userTextContainer: {
+    marginLeft: 12,
+    justifyContent: "center",
+  },
+  username: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: colors.textPrimary,
+    marginBottom: 2,
+  },
+  metaDataContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  timeText: {
+    fontSize: 13,
+    color: colors.textMuted,
+  },
+  editedText: {
+    fontSize: 13,
+    color: colors.textMuted,
+    fontStyle: "italic",
   },
   optionsWrapper: {
     position: "relative",
+    left: 8,
+    top: -8,
   },
   dropdownMenu: {
     position: "absolute",
     right: 0,
-    top: 30,
+    top: 36,
     backgroundColor: colors.background,
-    borderRadius: 8,
-    minWidth: 170,
+    borderRadius: 12,
+    minWidth: 160,
     borderWidth: 1,
     borderColor: colors.divider,
-    elevation: 5,
+    elevation: 4,
     shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
     zIndex: 999,
-  },
-  username: {
-    fontSize: 16,
-    color: colors.textPrimary,
-  },
-  edited: {
-    fontSize: 11,
-    color: colors.textMuted,
-    marginTop: 2,
   },
   contentBody: {
     marginTop: 12,
@@ -56,23 +73,42 @@ export const usePostStyles = makeStyles((colors: ThemeColors) => ({
   description: {
     fontSize: 15,
     lineHeight: 22,
-    color: colors.textSecondary,
-    marginBottom: 10,
+    color: colors.textPrimary,
+    marginBottom: 12,
   },
-  location: {
+  imageContainer: {
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  locationBadge: {
+    alignSelf: "flex-start",
+    backgroundColor: colors.divider,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginTop: 12,
+  },
+  locationText: {
     fontSize: 12,
-    fontWeight: "600",
-    color: colors.textMuted,
-    marginTop: 8,
+    fontWeight: "500",
+    color: colors.textSecondary,
   },
   buttonContainer: {
     flexDirection: "row",
-    marginTop: 16,
+    marginTop: 18,
     justifyContent: "space-between",
-    paddingHorizontal: 20,
+    paddingRight: 40,
   },
-  actionButton: {
-    padding: 8,
+  actionGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 4,
+  },
+  actionLabel: {
+    fontSize: 13,
+    color: colors.textMuted,
+    fontWeight: "500",
   },
   itemOptionsContainer: {
     paddingVertical: 14,
@@ -86,10 +122,11 @@ export const usePostStyles = makeStyles((colors: ThemeColors) => ({
   optionText: {
     color: colors.textPrimary,
     fontSize: 15,
+    fontWeight: "500",
   },
-
   optionTextDelete: {
     color: colors.error,
     fontSize: 15,
+    fontWeight: "500",
   },
 }));
