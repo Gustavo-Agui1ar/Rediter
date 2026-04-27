@@ -54,7 +54,7 @@ export const LightColors = {
 
   /* UI */
   border: "#D1D5F0",
-  divider: "#E2E5F8",
+  divider: "#bfc0ca",
 
   fill_button: "#6B66FF",
   border_button: "#6B66FF",

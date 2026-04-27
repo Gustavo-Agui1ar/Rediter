@@ -62,7 +62,7 @@ export const usePostStyles = makeStyles((colors: ThemeColors) => ({
     elevation: 4,
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.3,
     shadowRadius: 8,
     zIndex: 999,
   },

@@ -55,17 +55,16 @@ export default function Search() {
           />
         )}
       >
-        {/* ABA 1: MAIS RECENTES */}
         <Tabs.Tab name="posts" label="Mais Recentes">
-          <Posts myProfile={false} />
+          <View style={styles.postsContainer}>
+            <Posts myProfile={false} />
+          </View>
         </Tabs.Tab>
 
-        {/* ABA 2: PESSOAS */}
         <Tabs.Tab name="media" label="Pessoas">
           <Text>Pessoas relacionadas à sua busca aparecerão aqui.</Text>
         </Tabs.Tab>
 
-        {/* ABA 3: CURTIDAS */}
         <Tabs.Tab name="likes" label="Mídias">
           <Text style={{ ...styles.textTitle, margin: 20 }}>
             Mídias relacionadas à sua busca aparecerão aqui.

@@ -13,7 +13,6 @@ export const useFeedStyles = makeStyles((colors: ThemeColors) => ({
   },
   tabBar: {
     backgroundColor: colors.background,
-    paddingBottom: 24,
   },
   tabIndicator: {
     backgroundColor: colors.primary,
@@ -25,5 +24,11 @@ export const useFeedStyles = makeStyles((colors: ThemeColors) => ({
   tabContainer: {
     flex: 1,
     width: "100%",
+  },
+
+  tabItemContainer: {
+    flex: 1,
+    width: "100%",
+    paddingTop: 16,
   },
 }));

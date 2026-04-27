@@ -1,10 +1,10 @@
 import { ThemeColors } from "@/styles/types/theme.types";
 import { makeStyles } from "@/utils/makeStyles.utils";
-import { Dimensions } from "react-native";
+import { Dimensions } from "react-native"; // Importe o Platform
 
 const { width } = Dimensions.get("window");
 
-const GAP = 4;
+const GAP = 6;
 export const PADDING_HORIZONTAL = 8;
 const AVAILABLE_WIDTH = width - PADDING_HORIZONTAL * 2 - GAP;
 const ITEM_WIDTH = AVAILABLE_WIDTH / 2;
@@ -23,11 +23,21 @@ export const useMidiaStyles = makeStyles((colors: ThemeColors) => ({
     aspectRatio: 1.0,
     backgroundColor: colors.background,
     borderRadius: 4,
-    overflow: "hidden",
+
+    shadowColor: colors.black || "#000000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 3.84,
+
+    elevation: 3,
   },
   image: {
     width: "100%",
     height: "100%",
+    borderRadius: 4,
   },
 
   skeletonGrid: {
@@ -40,6 +50,7 @@ export const useMidiaStyles = makeStyles((colors: ThemeColors) => ({
   skeletonItem: {
     backgroundColor: colors.border || "#E0E0E0",
     marginBottom: GAP,
+    borderRadius: 4,
   },
 
   loadingContainer: {

@@ -56,15 +56,21 @@ export default function FeedProfile({
         )}
       >
         <Tabs.Tab name="posts" label="Posts">
-          <Posts myProfile={true} />
+          <View style={styles.tabItemContainer}>
+            <Posts myProfile={true} />
+          </View>
         </Tabs.Tab>
 
         <Tabs.Tab name="media" label="Mídia">
-          <Midiagrid isMyProfile={true} />
+          <View style={styles.tabItemContainer}>
+            <Midiagrid isMyProfile={true} />
+          </View>
         </Tabs.Tab>
 
         <Tabs.Tab name="likes" label="Curtidas">
-          <Posts myProfile={false} />
+          <View style={styles.tabItemContainer}>
+            <Posts myProfile={false} />
+          </View>
         </Tabs.Tab>
       </Tabs.Container>
     </View>
