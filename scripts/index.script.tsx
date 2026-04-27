@@ -1,6 +1,6 @@
 import {
-    GoogleSignin,
-    isSuccessResponse,
+  GoogleSignin,
+  isSuccessResponse,
 } from "@react-native-google-signin/google-signin";
 
 import { LoginValidator } from "@/utils/login.utils";
@@ -15,7 +15,6 @@ GoogleSignin.configure({
 });
 
 export class ScriptIndex {
-  // 1. Recebendo o router como parâmetro
   static async signInWithGoogle(
     router: any,
     setLoading?: (loading: boolean) => void,

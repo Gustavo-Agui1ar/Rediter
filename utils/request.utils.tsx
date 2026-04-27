@@ -140,7 +140,6 @@ export async function request({
             throw new Error("Sessão expirada. Faça login novamente.");
           }
         }
-        // ----------------------------------------
 
         if (!response.ok) {
           let errorMessage = `HTTP ${response.status} - ${response.statusText}`;

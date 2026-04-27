@@ -5,14 +5,12 @@ import { Pressable, TextInput, View } from "react-native";
 
 import { useTextboxStyles } from "./textbox.style";
 
-// Extraímos o isSearch e o onSearch das props
 export default function TextBox({
   children,
   isSearch,
   onSearch,
   ...props
 }: any) {
-  // Hooks no topo, sem amarras!
   const { colors } = useTheme();
   const styles = useTextboxStyles();
 
@@ -40,7 +38,6 @@ export default function TextBox({
           onBlur={() => setFocused(false)}
         />
 
-        {/* Ícone de Senha */}
         {isPassword && (
           <Pressable
             style={styles.icon}
@@ -55,7 +52,6 @@ export default function TextBox({
           </Pressable>
         )}
 
-        {/* Ícone de Busca */}
         {isSearch && !isPassword && (
           <Pressable
             style={styles.icon}

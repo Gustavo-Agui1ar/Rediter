@@ -1,5 +1,5 @@
 import { iconMapping } from "@/styles/icons";
-import React, { ReactNode, useMemo } from "react";
+import { ReactNode, useMemo } from "react";
 import {
   ActivityIndicator,
   StyleSheet,
@@ -12,7 +12,7 @@ import { useTheme } from "@/context/ThemeContext";
 import {
   IconButtonType,
   useIconButtonStyles,
-  useIconColorsByType, // <-- Importamos o novo hook
+  useIconColorsByType,
 } from "./iconButton.style";
 
 type IconName = keyof typeof iconMapping;
@@ -35,7 +35,6 @@ export default function IconButton({
   circle = true,
   ...rest
 }: IconButtonProps) {
-  // 1. TODOS os hooks no topo!
   const { loading } = useLoading();
   const { colors } = useTheme();
   const iconButtonStyles = useIconButtonStyles();

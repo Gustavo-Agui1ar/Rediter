@@ -6,7 +6,7 @@ export const DarkColors = {
   surfaceAlt: "#1F2233",
 
   /* Brand - Unificado com os tons da imagem */
-  primary: "#6B66FF", // O mesmo azul vibrante
+  primary: "#6B66FF",
   primaryLight: "#8A85FF",
   primaryDark: "#4D49CC",
 

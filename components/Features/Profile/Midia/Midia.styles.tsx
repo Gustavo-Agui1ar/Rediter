@@ -1,6 +1,6 @@
 import { ThemeColors } from "@/styles/types/theme.types";
 import { makeStyles } from "@/utils/makeStyles.utils";
-import { Dimensions } from "react-native"; // Importe o Platform
+import { Dimensions } from "react-native";
 
 const { width } = Dimensions.get("window");
 

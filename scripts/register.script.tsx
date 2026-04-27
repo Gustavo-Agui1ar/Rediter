@@ -24,11 +24,6 @@ export class ScriptRegister {
       return response;
     }
 
-    // if (!LoginValidator.isPasswordValid(form.password)) {
-    //   response.error = "Por favor, insira uma senha válida.";
-    //   return response;
-    // }
-
     if (!LoginValidator.doPasswordsMatch(form.password, form.confirmPassword)) {
       response.error = "Por favor, insira senhas coincidentes.";
       return response;

@@ -3,7 +3,6 @@ import {
   ProfileCover,
   ProfileImage,
 } from "@/components/components";
-// 🚨 Removi o ReloadableContainer das importações
 import FeedProfile from "@/components/Features/Profile/FeedProfile/FeedProfile";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { request } from "@/utils/request.utils";

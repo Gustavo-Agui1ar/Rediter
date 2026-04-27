@@ -1,4 +1,3 @@
-// FeedProfile.style.ts
 import { ThemeColors } from "@/styles/types/theme.types";
 import { makeStyles } from "@/utils/makeStyles.utils";
 

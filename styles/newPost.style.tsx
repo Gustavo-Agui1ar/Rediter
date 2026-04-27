@@ -30,6 +30,5 @@ export const useNewPostStyles = makeStyles((colors: ThemeColors) => ({
     height: 320,
     backgroundColor: colors.background,
     borderColor: colors.primary,
-    // borderTopWidth: 1, // Descomente caso queira que a borda primária apareça
   },
 }));

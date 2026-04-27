@@ -1,12 +1,11 @@
 import { Header, IconButton, NavBar } from "@/components/components";
 import { Tabs, router } from "expo-router";
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { View } from "react-native";
 
 import { NavItem } from "@/components/Layout/NavBar/navbar";
-import { useStylesMain } from "@/styles/main.style";
-// 1. Importe o seu hook de tema
 import { useTheme } from "@/context/ThemeContext";
+import { useStylesMain } from "@/styles/main.style";
 
 type Tab = "home" | "message" | "Perfil/Perfil" | "Search/search";
 

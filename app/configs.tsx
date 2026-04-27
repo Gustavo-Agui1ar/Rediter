@@ -39,7 +39,6 @@ export default function Configs() {
 
   useEffect(() => {
     async function hydrateProfile() {
-      // 1. tenta cache primeiro
       const cached = await Storage.getProfileBasic();
 
       if (cached) {
@@ -184,7 +183,6 @@ export default function Configs() {
                 });
 
                 if (!err) {
-                  // atualiza cache consistente
                   await Storage.saveProfileBasic({
                     imageUrl: profileImage.local?.uri || profileImage.remote,
                     coverUrl: coverImage.local?.uri || coverImage.remote,
