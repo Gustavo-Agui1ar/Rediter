@@ -1,11 +1,11 @@
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-    Alert,
-    DeviceEventEmitter,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  DeviceEventEmitter,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 import ProfileImage from "@/components/Features/Profile/ProfileImage";
@@ -73,7 +73,7 @@ export default function Post({
           style: "destructive",
           onPress: async () => {
             const response = await request({
-              urlComplement: `/Post/DeletePost/${postId}`,
+              urlComplement: `/api/posts/${postId}`,
               method: "DELETE",
             });
             if (response.ok) {

@@ -45,8 +45,8 @@ export function useRegister() {
       };
 
       const serverResponse = await request({
-        urlComplement: "/User/Register",
-        method: "PUT",
+        urlComplement: "/api/users",
+        method: "POST",
         body: user,
         requireAuth: false,
       });

@@ -3,169 +3,304 @@ import { pickImage } from "@/utils/filePicker.utils";
 import { LoginValidator } from "@/utils/login.utils";
 import { useApi } from "@/utils/request.utils";
 import * as Storage from "@/utils/storage.utils";
-import { useCallback, useEffect, useState } from "react";
-
+import { deleteInfoUser } from "@/utils/storage.utils";
+import { router } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
 interface ImageState {
   local?: any;
   remote?: string;
   changed?: boolean;
 }
+interface FormState {
+  name: string;
+  email: string;
+  password: string;
+}
+
+const INITIAL_FORM: FormState = {
+  name: "",
+  email: "",
+  password: "",
+};
 
 export function useConfigs() {
   const { loading, setLoading } = useLoading();
   const { request } = useApi();
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [profileImage, setProfileImage] = useState<ImageState>({});
   const [coverImage, setCoverImage] = useState<ImageState>({});
-
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  const clearAlerts = () => {
-    if (error) setError(null);
-    if (successMsg) setSuccessMsg(null);
-  };
+  const clearAlerts = useCallback(() => {
+    setError(null);
+    setSuccessMsg(null);
+  }, []);
 
-  const onChangeForm = (field: keyof typeof form, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-    clearAlerts();
-  };
+  const onChangeForm = useCallback(
+    (field: keyof FormState, value: string) => {
+      setForm((prev) => {
+        if (prev[field] === value) return prev;
+
+        return {
+          ...prev,
+          [field]: value,
+        };
+      });
+
+      clearAlerts();
+    },
+    [clearAlerts],
+  );
+
+  const applyProfileData = useCallback((data: any) => {
+    setForm({
+      name: data.userName || "",
+      email: data.email || "",
+      password: "",
+    });
+
+    setProfileImage({
+      remote: data.imageUrl,
+    });
+
+    setCoverImage({
+      remote: data.coverUrl,
+    });
+  }, []);
 
   const loadProfileData = useCallback(async () => {
-    setLoading(true);
     try {
+      setLoading(true);
+
       const cached = await Storage.getProfileBasic();
-      if (cached) {
-        setForm((prev) => ({
-          ...prev,
-          name: cached.userName || "",
-          email: cached.email || "",
-        }));
-        setProfileImage({ remote: cached.imageUrl });
-        setCoverImage({ remote: cached.coverUrl });
-      }
+      if (cached) applyProfileData(cached);
 
       const response = await request({
-        urlComplement: `/User/GetUser`,
+        urlComplement: "/api/users/me",
         method: "GET",
       });
-      if (response.ok) {
-        const json = await response.json();
-        const data = {
-          userName: json.name,
-          email: json.email,
-          imageUrl: json.imageName,
-          coverUrl: json.imageCover,
-        };
 
-        await Storage.saveProfileBasic(data);
-        setForm((prev) => ({
-          ...prev,
-          name: data.userName || "",
-          email: data.email || "",
-        }));
-        setProfileImage({ remote: data.imageUrl });
-        setCoverImage({ remote: data.coverUrl });
-      }
+      const json = await response.json();
+
+      const data = {
+        userName: json.name,
+        email: json.email,
+        imageUrl: json.imageName,
+        coverUrl: json.imageCover,
+      };
+
+      applyProfileData(data);
+
+      await Storage.saveProfileBasic(data);
     } catch (error) {
-      console.error("Erro ao carregar dados do perfil:", error);
+      setError("Erro ao carregar informações do perfil.");
     } finally {
       setLoading(false);
     }
-  }, [setLoading]);
+  }, [applyProfileData, request, setLoading]);
 
   useEffect(() => {
     loadProfileData();
   }, [loadProfileData]);
 
-  const handlePickCover = async () => {
-    const img = await pickImage(false);
-    if (img) {
-      setCoverImage({ local: img, changed: true });
-      clearAlerts();
-    }
-  };
+  const pickAndSetImage = useCallback(
+    async (
+      setImage: React.Dispatch<React.SetStateAction<ImageState>>,
+      crop: boolean,
+    ) => {
+      try {
+        const img = await pickImage(crop);
 
-  const handlePickProfileImage = async () => {
-    const img = await pickImage(true);
-    if (img) {
-      setProfileImage({ local: img, changed: true });
-      clearAlerts();
-    }
-  };
+        if (!img) return;
 
-  const createFileData = (imageAsset: any) => {
+        setImage({
+          local: img,
+          changed: true,
+        });
+
+        clearAlerts();
+      } catch (error) {
+        setError("Erro ao selecionar imagem.");
+      }
+    },
+    [clearAlerts],
+  );
+
+  const handlePickCover = useCallback(() => {
+    return pickAndSetImage(setCoverImage, false);
+  }, [pickAndSetImage]);
+
+  const handlePickProfileImage = useCallback(() => {
+    return pickAndSetImage(setProfileImage, true);
+  }, [pickAndSetImage]);
+
+  const createFileData = useCallback((imageAsset: any) => {
     if (!imageAsset?.uri) return null;
+
     const uriParts = imageAsset.uri.split("/");
-    const fileName = imageAsset.fileName || uriParts[uriParts.length - 1];
+
     return {
       uri: imageAsset.uri,
-      name: fileName,
+      name:
+        imageAsset.fileName ||
+        uriParts[uriParts.length - 1] ||
+        `image-${Date.now()}.jpg`,
       type: imageAsset.mimeType || "image/jpeg",
     } as any;
-  };
+  }, []);
 
-  const handleSave = async () => {
-    clearAlerts();
+  const clearSessionAndRedirect = useCallback(async () => {
+    await deleteInfoUser();
 
+    router.replace("/");
+  }, []);
+
+  const logOut = useCallback(async () => {
+    await clearSessionAndRedirect();
+  }, [clearSessionAndRedirect]);
+
+  const deleteAccount = useCallback(async () => {
+    try {
+      setLoading(true);
+
+      await request({
+        urlComplement: "/api/users/me",
+        method: "DELETE",
+      });
+
+      await clearSessionAndRedirect();
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Erro ao deletar conta.");
+    } finally {
+      setLoading(false);
+    }
+  }, [request, clearSessionAndRedirect, setLoading]);
+
+  const validateForm = useCallback(() => {
     const name = form.name?.trim() || "";
     const email = form.email?.trim().toLowerCase() || "";
     const password = form.password || "";
 
-    if (!name) return setError("O campo Nome não pode estar vazio.");
-    if (!email) return setError("O campo E-mail não pode estar vazio.");
+    if (!name) return "O campo Nome não pode estar vazio.";
+
+    if (!email) return "O campo E-mail não pode estar vazio.";
+
     if (!LoginValidator.isEmailValid(email))
-      return setError("O formato do e-mail é inválido.");
+      return "O formato do e-mail é inválido.";
+
     if (password && !LoginValidator.isPasswordValid(password))
-      return setError("A nova senha informada é inválida ou muito curta.");
+      return "A nova senha é inválida.";
 
-    setLoading(true);
+    return null;
+  }, [form]);
+
+  const buildFormData = useCallback(() => {
     const formData = new FormData();
+    const name = form.name.trim();
+    const email = form.email.trim().toLowerCase();
 
-    if (profileImage?.changed && profileImage?.local) {
+    if (profileImage.changed && profileImage.local) {
       const fileData = createFileData(profileImage.local);
       if (fileData) formData.append("File", fileData);
     }
 
-    if (coverImage?.changed && coverImage?.local) {
+    if (coverImage.changed && coverImage.local) {
       const coverData = createFileData(coverImage.local);
       if (coverData) formData.append("Cover", coverData);
     }
 
     formData.append("Name", name);
     formData.append("Email", email);
-    if (password) formData.append("Password", password);
+
+    if (form.password) formData.append("Password", form.password);
+
+    return formData;
+  }, [form, profileImage, coverImage, createFileData]);
+
+  const handleSave = useCallback(async () => {
+    clearAlerts();
+
+    const validationError = validateForm();
+
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
 
     try {
+      setLoading(true);
+
+      const formData = buildFormData();
+
       await request({
-        urlComplement: "/User/UpdateProfile",
-        method: "POST",
+        urlComplement: "/api/users/me",
+        method: "PATCH",
         body: formData,
       });
 
       await Storage.saveProfileBasic({
         imageUrl: profileImage.local?.uri || profileImage.remote,
         coverUrl: coverImage.local?.uri || coverImage.remote,
-        userName: name,
-        email: email,
+        userName: form.name.trim(),
+        email: form.email.trim().toLowerCase(),
       });
 
       setSuccessMsg("Informações atualizadas com sucesso!");
-      setForm((prev) => ({ ...prev, password: "" }));
+
+      setForm((prev) => ({
+        ...prev,
+        password: "",
+      }));
     } catch (err: any) {
-      setError(err.message || "Ocorreu um erro ao atualizar o perfil.");
+      setError(err?.message || "Erro ao atualizar perfil.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [
+    clearAlerts,
+    validateForm,
+    buildFormData,
+    request,
+    setLoading,
+    profileImage,
+    coverImage,
+    form,
+  ]);
 
-  return {
-    state: { form, profileImage, coverImage, error, successMsg, loading },
-    actions: {
+  const state = useMemo(
+    () => ({
+      form,
+      profileImage,
+      coverImage,
+      error,
+      successMsg,
+      loading,
+    }),
+    [form, profileImage, coverImage, error, successMsg, loading],
+  );
+
+  const actions = useMemo(
+    () => ({
       onChangeForm,
       handlePickCover,
       handlePickProfileImage,
       handleSave,
-    },
+      deleteAccount,
+      logOut,
+    }),
+    [
+      onChangeForm,
+      handlePickCover,
+      handlePickProfileImage,
+      handleSave,
+      deleteAccount,
+      logOut,
+    ],
+  );
+
+  return {
+    state,
+    actions,
   };
 }

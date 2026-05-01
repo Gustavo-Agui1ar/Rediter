@@ -82,8 +82,8 @@ export default function MediaGrid({
         if (!isMyProfile && !userProfileId) return;
 
         const endpoint = isMyProfile
-          ? `/Post/GetMyMidiaNames`
-          : `/Post/GetAllMidiaNames?userId=${userProfileId}`;
+          ? `/api/posts/me/media`
+          : `/api/posts/${userProfileId}/media`;
 
         const response = await request({
           urlComplement: endpoint,

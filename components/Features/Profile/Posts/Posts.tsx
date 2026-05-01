@@ -83,7 +83,7 @@ export default function Posts({ myProfile }: PostsProps) {
     }
 
     try {
-      let url = `/Post/GetPostUser?pageSize=${PAGE_SIZE}`;
+      let url = `/api/posts/me?pageSize=${PAGE_SIZE}`;
       if (!isRefresh && lastItemRef.current) {
         const { id, createdAt } = lastItemRef.current;
         url += `&lastCreatedAt=${encodeURIComponent(createdAt)}&lastId=${id}`;

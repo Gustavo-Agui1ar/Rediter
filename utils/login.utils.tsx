@@ -1,7 +1,3 @@
-import { router } from "expo-router";
-import { Alert } from "react-native";
-import { request } from "./request.utils";
-import { deleteInfoUser } from "./storage.utils";
 
 export class LoginValidator {
   /**
@@ -78,35 +74,4 @@ export function updateField<T>(
     ...prev,
     [field]: value,
   }));
-}
-
-/**
- * Remove as informações locais do usuário
- * e redireciona para a tela inicial.
- */
-export function logOut() {
-  deleteInfoUser().then(() => {
-    router.replace("/");
-  });
-}
-
-/**
- * Realiza a exclusão da conta do usuário na API,
- * remove os dados locais e redireciona para login.
- */
-export function deleteAccount() {
-  request({
-    urlComplement: "/User/DeleteAccount",
-    method: "DELETE",
-  })
-    .then(() => {
-      deleteInfoUser().then(() => {
-        router.replace("/");
-      });
-    })
-    .catch((err: any) => {
-      console.error("Erro ao deletar conta:", err.response?.data || err);
-
-      Alert.alert("Erro", "Houve um problema ao deletar sua conta.");
-    });
 }

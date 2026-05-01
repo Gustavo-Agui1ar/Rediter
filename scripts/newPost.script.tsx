@@ -228,7 +228,7 @@ export function useNewPost() {
       const formData = createFormData();
 
       await request({
-        urlComplement: postId ? `/Post/UpdatePost/${postId}` : "/Post/NewPost",
+        urlComplement: postId ? `/api/posts/${postId}` : "/api/posts",
         method: postId ? "PUT" : "POST",
         body: formData,
       });

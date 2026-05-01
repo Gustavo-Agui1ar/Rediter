@@ -11,7 +11,6 @@ import {
 import { useTheme } from "@/context/ThemeContext";
 import { useConfigsStyles } from "@/styles/configs.style";
 import { useGlobalStyles } from "@/styles/global.styles";
-import { deleteAccount, logOut } from "@/utils/login.utils";
 import { KeyboardAvoidingView, ScrollView, Text, View } from "react-native";
 
 import { useConfigs } from "@/scripts/Configs.script";
@@ -131,14 +130,14 @@ export default function Configs() {
             <Button
               title="Excluir Conta"
               type="remove_border"
-              onPress={() => deleteAccount()}
+              onPress={() => actions.deleteAccount()}
               disabled={state.loading}
             />
 
             <Button
               title="Sair"
               type="remove_fill"
-              onPress={() => logOut()}
+              onPress={() => actions.logOut()}
               disabled={state.loading}
             />
           </View>

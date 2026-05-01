@@ -1,8 +1,8 @@
 import { useApi } from "@/utils/request.utils";
 import {
-    getProfileBasic,
-    isCacheValid,
-    saveProfileBasic,
+  getProfileBasic,
+  isCacheValid,
+  saveProfileBasic,
 } from "@/utils/storage.utils";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
@@ -28,7 +28,7 @@ export function usePerfil() {
   const fetchProfile = useCallback(async () => {
     try {
       const response = await request({
-        urlComplement: `/User/GetUser`,
+        urlComplement: `/api/users/me`,
         method: "GET",
       });
 

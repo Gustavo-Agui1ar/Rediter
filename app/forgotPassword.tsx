@@ -46,8 +46,8 @@ export default function ForgotPassword() {
             formData.append("password", "novaSenha");
 
             request({
-              urlComplement: "/User/UpdateProfile",
-              method: "POST",
+              urlComplement: "/api/users/me",
+              method: "PATCH",
               body: formData,
             });
 
