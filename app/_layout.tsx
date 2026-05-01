@@ -17,15 +17,14 @@ function AppStack() {
 
   return (
     <Stack
-      initialRouteName="Index"
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: colors.background },
       }}
     >
-      <Stack.Screen name="Index" />
-      <Stack.Screen name="register" />
-      <Stack.Screen name="verify" />
+      <Stack.Screen name="index" />
+      <Stack.Screen name="Register" />
+      <Stack.Screen name="Verify" />
       <Stack.Screen name="Configs" />
       <Stack.Screen name="forgotPassword" />
       <Stack.Screen name="NewPost" />

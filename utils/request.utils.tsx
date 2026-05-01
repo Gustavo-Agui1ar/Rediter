@@ -116,12 +116,14 @@ async function handleApiError(response: Response, url: string): Promise<never> {
   }
 
   await writeLog(`[HTTP ERROR] ${response.status} ${url} -> ${errorMessage}`);
+  console.error(`[HTTP ERROR] ${response.status} ${url} -> ${errorMessage}`);
   throw new ApiError(errorMessage, response.status);
 }
 
 async function refreshAccessToken(): Promise<string | null> {
   if (isRefreshing && refreshPromise) {
     await writeLog("[AUTH] Refresh já em andamento");
+    console.log("[AUTH] Refresh já em andamento, aguardando resultado...");
     return refreshPromise;
   }
 
@@ -129,6 +131,7 @@ async function refreshAccessToken(): Promise<string | null> {
   refreshPromise = (async () => {
     try {
       await writeLog("[AUTH] Iniciando refresh token");
+      console.log("[AUTH] Iniciando refresh token...");
       const refreshToken = await getStoreageItem(STORAGE_KEYS.REFRESH_TOKEN);
 
       if (!refreshToken) return null;
@@ -150,6 +153,7 @@ async function refreshAccessToken(): Promise<string | null> {
       }
       return null;
     } catch (error) {
+      console.error("[AUTH] Erro ao atualizar token:", error);
       return null;
     } finally {
       isRefreshing = false;
@@ -181,7 +185,7 @@ export function useApi() {
         const requestInit = await buildRequestOptions(options);
 
         await writeLog(`[REQUEST] ${method} ${url}`);
-
+        console.log(`[REQUEST] ${method} ${url}`);
         const response = await fetchWithTimeout(
           url,
           requestInit,
@@ -191,6 +195,7 @@ export function useApi() {
 
         if (response.status === 401 && !_isRetry) {
           await writeLog("[AUTH] Token expirado, tentando atualizar...");
+          console.log("[AUTH] Token expirado, tentando atualizar...");
           const newToken = await refreshAccessToken();
 
           if (newToken) {
@@ -210,6 +215,9 @@ export function useApi() {
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err);
         await writeLog(
+          `[REQUEST ERROR] ${method} ${urlComplement} -> ${errorMsg}`,
+        );
+        console.error(
           `[REQUEST ERROR] ${method} ${urlComplement} -> ${errorMsg}`,
         );
 

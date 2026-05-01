@@ -37,7 +37,7 @@ export default function SendEmail() {
               });
 
               router.push({
-                pathname: "/verify",
+                pathname: "/Verify",
                 params: { userEmail: email, mode: "reset" },
               });
             }}

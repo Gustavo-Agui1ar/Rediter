@@ -53,7 +53,7 @@ export function useRegister() {
 
       if (serverResponse.ok) {
         router.push({
-          pathname: "/verify",
+          pathname: "/Verify",
           params: { userEmail: trimmedEmail, mode: "register" },
         });
       } else {

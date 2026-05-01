@@ -4,7 +4,7 @@ export { default as FeedProfile } from "./Features/Profile/FeedProfile/FeedProfi
 export { default as ProfileActions } from "./Features/Profile/ProfileActions/ProfileActions";
 export { default as ProfileCover } from "./Features/Profile/ProfileCover/ProfileCover";
 export { default as ProfileImage } from "./Features/Profile/ProfileImage";
-export { default as DisplayImages } from "./Feedback/DisplayImages/displayImage";
+export { default as DisplayImages } from "./Feedback/DisplayImages/DisplayImage";
 export { default as LoadingOverlay } from "./Feedback/Loading/loading";
 export { default as Header } from "./Layout/header/header";
 export { default as NavBar, default as NavItem } from "./Layout/NavBar/navbar";

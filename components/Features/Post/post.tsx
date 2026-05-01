@@ -1,15 +1,15 @@
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-  Alert,
-  DeviceEventEmitter,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    DeviceEventEmitter,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 import ProfileImage from "@/components/Features/Profile/ProfileImage";
-import DisplayImages from "@/components/Feedback/DisplayImages/displayImage";
+import DisplayImages from "@/components/Feedback/DisplayImages/DisplayImage";
 import IconButton from "@/components/UI/IconButton/IconButton";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { formatDate } from "@/utils/datePost.utils";

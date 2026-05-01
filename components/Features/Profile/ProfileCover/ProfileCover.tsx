@@ -1,4 +1,4 @@
-import { getBaseURL } from "@/utils/configs.utils";
+import { ImageUtils } from "@/utils/imageUri.utils";
 import { Image, ImageProps } from "expo-image";
 import React, { useMemo } from "react";
 import { View } from "react-native";
@@ -16,10 +16,8 @@ export default function ProfileCover({
   const styles = useStylesProfileCover();
 
   const finalUri = useMemo(() => {
-    if (!imageName) return null;
-    if (imageName.startsWith("http") || imageName.startsWith("file://"))
-      return imageName;
-    return `${getBaseURL()}/Picture/GetPicture?name=${encodeURIComponent(imageName)}`;
+    console.log("Gerando URI para ProfileCover com imageName:", imageName);
+    return ImageUtils.getProfileImageUri(imageName);
   }, [imageName]);
 
   return (
@@ -30,10 +28,12 @@ export default function ProfileCover({
             ? { uri: finalUri }
             : require("@/assets/images/default_cover_user.svg")
         }
+        placeholder={require("@/assets/images/default_cover_user.svg")}
         contentFit="cover"
         style={[styles.image, style]}
         transition={200}
         cachePolicy="memory-disk"
+        onError={(e) => console.log("[Expo Image Error]:", e.error)}
         {...props}
       />
     </View>
