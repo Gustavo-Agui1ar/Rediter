@@ -1,5 +1,5 @@
 import IconButton from "@/components/UI/IconButton/IconButton";
-import { configs } from "@/utils/configs.utils";
+import { getBaseURL } from "@/utils/configs.utils";
 import { Image } from "expo-image";
 import React, { useCallback, useMemo, useState } from "react";
 import {
@@ -29,7 +29,7 @@ export default function DisplayImages({
     if (item && typeof item === "object" && item.uri) return item.uri;
     if (typeof item === "string") {
       if (item.startsWith("http") || item.startsWith("file://")) return item;
-      return `${configs.apiUrls[0]}/Picture/GetPicture?name=${encodeURIComponent(item)}`;
+      return `${getBaseURL()}/Picture/GetPicture?name=${encodeURIComponent(item)}`;
     }
     return "";
   }, []);

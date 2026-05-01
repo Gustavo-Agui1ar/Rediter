@@ -5,10 +5,10 @@ import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   DeviceEventEmitter,
+  FlatList,
   Text,
   View,
 } from "react-native";
-import { Tabs } from "react-native-collapsible-tab-view";
 import { useStylesPosts } from "./Posts.style";
 
 const MemoizedPost = memo(Post);
@@ -115,9 +115,11 @@ export default function Posts({ myProfile }: PostsProps) {
 
   useEffect(() => {
     fetchPosts(true);
+
     const sub = DeviceEventEmitter.addListener("refresh_posts", () =>
       fetchPosts(true),
     );
+
     return () => sub.remove();
   }, [fetchPosts]);
 
@@ -145,7 +147,7 @@ export default function Posts({ myProfile }: PostsProps) {
   );
 
   return (
-    <Tabs.FlatList
+    <FlatList
       data={posts}
       renderItem={renderItem}
       keyExtractor={(item, index) => {
@@ -155,7 +157,7 @@ export default function Posts({ myProfile }: PostsProps) {
       initialNumToRender={6}
       maxToRenderPerBatch={10}
       windowSize={5}
-      removeClippedSubviews={true}
+      removeClippedSubviews
       onEndReachedThreshold={0.3}
       onEndReached={loadMore}
       contentContainerStyle={[styles.listContent, { minHeight: "100%" }]}

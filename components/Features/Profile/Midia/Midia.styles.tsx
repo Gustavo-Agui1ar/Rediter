@@ -77,6 +77,16 @@ export const useMidiaStyles = makeStyles((colors: ThemeColors) => ({
     right: 0,
     zIndex: 10,
   },
+
+  closeBtn: {
+    position: "absolute",
+    top: 25,
+    right: 15,
+    zIndex: 10,
+    backgroundColor: colors.overlay,
+    borderRadius: 9999,
+  },
+
   modalCarouselItem: {
     width: width,
     flex: 1,

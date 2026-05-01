@@ -5,7 +5,7 @@ export const useDividerStyles = makeStyles((colors: ThemeColors) => ({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 20,
+    marginVertical: 12,
     width: "100%",
   },
 
@@ -19,5 +19,6 @@ export const useDividerStyles = makeStyles((colors: ThemeColors) => ({
     marginHorizontal: 10,
     color: colors.textMuted,
     fontSize: 14,
+    lineHeight: 20,
   },
 }));

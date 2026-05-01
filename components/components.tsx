@@ -10,6 +10,7 @@ export { default as Header } from "./Layout/header/header";
 export { default as NavBar, default as NavItem } from "./Layout/NavBar/navbar";
 export { default as ReloadableContainer } from "./Layout/ReloadableContainer/reloadableContainer";
 export { default as TabBar } from "./Layout/TabBar/TabBar";
+export { default as AlertBanner } from "./UI/AlertBanner/AlertBanner";
 export { default as Button } from "./UI/Button/button";
 export { default as Divider } from "./UI/Divider/divider";
 export { default as HelperText } from "./UI/HelperText/helpertext";

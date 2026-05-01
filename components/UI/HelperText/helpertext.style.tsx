@@ -3,8 +3,23 @@ import { makeStyles } from "@/utils/makeStyles.utils";
 
 export const createHelperTextStyles = makeStyles((colors: ThemeColors) => ({
   text: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+
+  error: {
     color: colors.error,
-    fontSize: 12,
-    paddingLeft: 10,
+  },
+
+  success: {
+    color: colors.success,
+  },
+
+  info: {
+    color: colors.primary,
+  },
+
+  warning: {
+    color: colors.warning,
   },
 }));

@@ -1,5 +1,5 @@
 import IconButton from "@/components/UI/IconButton/IconButton";
-import { configs } from "@/utils/configs.utils";
+import { getBaseURL } from "@/utils/configs.utils";
 import { request } from "@/utils/request.utils";
 import { Image } from "expo-image";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -14,7 +14,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Tabs } from "react-native-collapsible-tab-view";
 import { useMidiaStyles } from "./Midia.styles";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
@@ -27,7 +26,7 @@ interface MediaGridProps {
 const getImageUri = (item: string | { uri: string }) => {
   if (typeof item === "object" && item?.uri) return item.uri;
   if (typeof item === "string") {
-    return `${configs.apiUrls[0]}/Picture/GetPicture?name=${encodeURIComponent(item)}`;
+    return `${getBaseURL()}/Picture/GetPicture?name=${encodeURIComponent(item)}`;
   }
   return "";
 };
@@ -76,15 +75,10 @@ export default function MediaGrid({
       if (fetchingRef.current) return;
       fetchingRef.current = true;
 
-      if (!isRefresh) {
-        setIsLocalLoading(true);
-      }
+      if (!isRefresh) setIsLocalLoading(true);
 
       try {
-        if (!isMyProfile && !userProfileId) {
-          fetchingRef.current = false;
-          return;
-        }
+        if (!isMyProfile && !userProfileId) return;
 
         const endpoint = isMyProfile
           ? `/Post/GetMyMidiaNames`
@@ -93,20 +87,16 @@ export default function MediaGrid({
         const response = await request({
           urlComplement: endpoint,
           method: "GET",
+          requireAuth: isMyProfile,
         });
 
         if (response.ok) {
           const json = await response.json();
           setData(json || []);
         } else {
-          console.warn(
-            "[MediaGrid] Falha na requisição. Status:",
-            response.status,
-          );
           setData([]);
         }
-      } catch (error) {
-        console.error("[fetchMedia ERROR]:", error);
+      } catch {
         setData([]);
       } finally {
         fetchingRef.current = false;
@@ -176,7 +166,7 @@ export default function MediaGrid({
 
   return (
     <>
-      <Tabs.FlatList
+      <FlatList
         data={displayData}
         keyExtractor={(item, index) => `media-${item}-${index}`}
         numColumns={2}
@@ -186,7 +176,7 @@ export default function MediaGrid({
           displayData.length > 1 ? styles.columnWrapper : undefined
         }
         showsVerticalScrollIndicator={false}
-        removeClippedSubviews={true}
+        removeClippedSubviews
         maxToRenderPerBatch={10}
         windowSize={5}
         ListEmptyComponent={renderEmptyComponent}
@@ -204,7 +194,8 @@ export default function MediaGrid({
             <IconButton
               icon="close"
               type="none"
-              size={32}
+              size={44}
+              style={styles.closeBtn}
               onPress={closeModal}
             />
           </View>

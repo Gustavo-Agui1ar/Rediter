@@ -10,7 +10,6 @@ export const useTextboxStyles = makeStyles((colors: ThemeColors) => ({
     backgroundColor: colors.surface,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    marginBottom: 12,
   },
 
   focused: {

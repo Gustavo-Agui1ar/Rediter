@@ -18,8 +18,7 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo/black_r.png",
         "backgroundColor": "#000000"
-      },
-      "edgeToEdgeEnabled": true
+      }
     },
     "web": {
       "output": "static",
@@ -57,7 +56,7 @@
     ],
     "experiments": {
       "typedRoutes": true,
-      "reactCompiler": true
+      "reactCompiler": false
     },
     "extra": {
       "router": {},

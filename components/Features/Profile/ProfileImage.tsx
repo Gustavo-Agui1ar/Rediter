@@ -1,4 +1,4 @@
-import { configs } from "@/utils/configs.utils";
+import { getBaseURL } from "@/utils/configs.utils";
 import { Image } from "expo-image";
 import React, { useMemo } from "react";
 
@@ -14,13 +14,21 @@ export default function ProfileImage({
   wrapper,
 }: ProfileImageProps) {
   const finalUri = useMemo(() => {
-    if (!imageName) return null;
+    try {
+      if (!imageName || typeof imageName !== "string") {
+        return null;
+      }
 
-    if (imageName.startsWith("http") || imageName.startsWith("file://")) {
-      return imageName;
+      if (imageName.startsWith("http") || imageName.startsWith("file://")) {
+        return imageName;
+      }
+
+      const baseUrl = getBaseURL();
+      return `${baseUrl}/Picture/GetPicture?name=${encodeURIComponent(imageName)}`;
+    } catch (error) {
+      console.error("Erro interno ao gerar a URI da ProfileImage:", error);
+      return null;
     }
-
-    return `${configs.apiUrls[0]}/Picture/GetPicture?name=${encodeURIComponent(imageName)}`;
   }, [imageName]);
 
   return (
@@ -36,11 +44,13 @@ export default function ProfileImage({
           height: size,
           borderRadius: size / 2,
         },
-        wrapper && {
-          position: "absolute",
-          bottom: -(size / 2),
-          left: 20,
-        },
+        wrapper
+          ? {
+              position: "absolute",
+              bottom: -(size / 2),
+              left: 20,
+            }
+          : undefined,
       ]}
       contentFit="cover"
       transition={200}

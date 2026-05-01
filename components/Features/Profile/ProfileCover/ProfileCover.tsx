@@ -1,4 +1,4 @@
-import { configs } from "@/utils/configs.utils";
+import { getBaseURL } from "@/utils/configs.utils";
 import { Image, ImageProps } from "expo-image";
 import React, { useMemo } from "react";
 import { View } from "react-native";
@@ -19,7 +19,7 @@ export default function ProfileCover({
     if (!imageName) return null;
     if (imageName.startsWith("http") || imageName.startsWith("file://"))
       return imageName;
-    return `${configs.apiUrls[0]}/Picture/GetPicture?name=${encodeURIComponent(imageName)}`;
+    return `${getBaseURL()}/Picture/GetPicture?name=${encodeURIComponent(imageName)}`;
   }, [imageName]);
 
   return (

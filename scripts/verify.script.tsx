@@ -22,9 +22,11 @@ export class ScriptVerify {
 
     try {
       const serverResponse = await request({
-        urlComplement: `/Auth/Code?code=${code}&userEmail=${userEmail}`,
-        method: "GET",
+        urlComplement: `/Auth/verify-code`,
+        method: "POST",
+        requireAuth: false,
         setLoading,
+        body: { code: code, email: userEmail },
       });
 
       if (!serverResponse.ok) {

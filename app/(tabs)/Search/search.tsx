@@ -1,17 +1,15 @@
 import { Header, TextBox } from "@/components/components";
 import Posts from "@/components/Features/Profile/Posts/Posts";
+import TabBar from "@/components/Layout/TabBar/TabBar";
 import { useTheme } from "@/context/ThemeContext";
 import { useState } from "react";
 import { Text, View } from "react-native";
-import {
-  MaterialTabBar,
-  MaterialTabItem,
-  Tabs,
-} from "react-native-collapsible-tab-view";
 import { useStyles } from "./search.styles";
 
 export default function Search() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("posts");
+
   const { colors } = useTheme();
   const styles = useStyles();
 
@@ -34,43 +32,45 @@ export default function Search() {
     );
   }
 
-  return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <Tabs.Container
-        renderHeader={renderHeader}
-        renderTabBar={(props) => (
-          <MaterialTabBar
-            {...props}
-            activeColor={colors.primaryDark}
-            inactiveColor={colors.textMuted}
-            indicatorStyle={styles.tabIndicator}
-            style={styles.tabBar}
-            TabItemComponent={(itemProps) => (
-              <MaterialTabItem
-                {...itemProps}
-                pressColor="transparent"
-                pressOpacity={0.8}
-              />
-            )}
-          />
-        )}
-      >
-        <Tabs.Tab name="posts" label="Mais Recentes">
+  const tabs = [
+    { id: "posts", label: "Mais Recentes" },
+    { id: "people", label: "Pessoas" },
+    { id: "media", label: "Mídias" },
+  ];
+
+  function renderContent() {
+    switch (activeTab) {
+      case "posts":
+        return (
           <View style={styles.postsContainer}>
             <Posts myProfile={false} />
           </View>
-        </Tabs.Tab>
+        );
 
-        <Tabs.Tab name="media" label="Pessoas">
-          <Text>Pessoas relacionadas à sua busca aparecerão aqui.</Text>
-        </Tabs.Tab>
+      case "people":
+        return (
+          <Text style={{ margin: 20 }}>
+            Pessoas relacionadas à sua busca aparecerão aqui.
+          </Text>
+        );
 
-        <Tabs.Tab name="likes" label="Mídias">
+      case "media":
+        return (
           <Text style={{ ...styles.textTitle, margin: 20 }}>
             Mídias relacionadas à sua busca aparecerão aqui.
           </Text>
-        </Tabs.Tab>
-      </Tabs.Container>
+        );
+
+      default:
+        return null;
+    }
+  }
+
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      {renderHeader()}
+      <TabBar items={tabs} active={activeTab} onChange={setActiveTab} />
+      <View style={{ flex: 1 }}>{renderContent()}</View>
     </View>
   );
 }

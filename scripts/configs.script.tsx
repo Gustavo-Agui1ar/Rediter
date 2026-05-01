@@ -1,4 +1,4 @@
-import { configs } from "@/utils/configs.utils";
+import { getBaseURL } from "@/utils/configs.utils";
 import { request } from "@/utils/request.utils";
 import { router } from "expo-router";
 interface Config {
@@ -24,7 +24,7 @@ interface Config {
 export function loadProfileImage(imageName?: string) {
   if (!imageName) return undefined;
 
-  return `${configs.apiUrls[0]}/Picture/GetPicture?name=${encodeURIComponent(
+  return `${getBaseURL()}/Picture/GetPicture?name=${encodeURIComponent(
     imageName,
   )}`;
 }

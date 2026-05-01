@@ -40,6 +40,7 @@ export class ScriptRegister {
         urlComplement: "/User/Register",
         method: "PUT",
         body: user,
+        requireAuth: false,
       });
 
       if (serverResponse.ok) {

@@ -5,6 +5,12 @@ interface LocationData {
   setLocationName: (name: string) => void;
 }
 
+/**
+ * Obtém a localização do usuário e define o nome do local.
+ * @param setLocationName Função para atualizar o nome do local no estado do componente. O nome é formatado como "Cidade, Região". Se a localização não puder ser obtida, exibe um alerta para o usuário.
+ * @returns void
+ * @throws Erro se ocorrer um problema ao acessar a localização ou processar os dados. O erro é capturado e um alerta é exibido para o usuário.
+ */
 export async function handleGetLocation({ setLocationName }: LocationData) {
   try {
     let { status } = await Location.requestForegroundPermissionsAsync();

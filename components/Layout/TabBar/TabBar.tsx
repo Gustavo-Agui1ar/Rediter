@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { memo, useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   LayoutChangeEvent,
@@ -15,58 +15,84 @@ interface TabBarProps<T> {
   onChange: (id: T) => void;
 }
 
+const TabItem = memo(function TabItem<T>({
+  item,
+  isActive,
+  onPress,
+  styles,
+}: {
+  item: NavItem<T>;
+  isActive: boolean;
+  onPress: () => void;
+  styles: ReturnType<typeof useTabBarStyles>;
+}) {
+  if (!item.label) return null;
+
+  return (
+    <TouchableOpacity
+      style={styles.tab}
+      onPress={onPress}
+      activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityState={{ selected: isActive }}
+    >
+      <Text style={[styles.label, isActive && styles.activeLabel]}>
+        {item.label}
+      </Text>
+    </TouchableOpacity>
+  );
+});
+
 export default function TabBar<T>({ items, active, onChange }: TabBarProps<T>) {
+  const styles = useTabBarStyles();
+
   const translateX = useRef(new Animated.Value(0)).current;
   const [tabWidth, setTabWidth] = useState(0);
 
-  const tabBarStyles = useTabBarStyles();
-
-  const activeIndex = items.findIndex((i) => i.id === active);
+  const activeIndex = useMemo(() => {
+    return items.findIndex((i) => i.id === active);
+  }, [items, active]);
 
   useEffect(() => {
-    if (tabWidth === 0) return;
+    if (tabWidth === 0 || items.length === 0 || activeIndex < 0) return;
 
     Animated.timing(translateX, {
       toValue: activeIndex * tabWidth,
       duration: 220,
       useNativeDriver: true,
     }).start();
-  }, [activeIndex, tabWidth]);
+  }, [activeIndex, tabWidth, items.length]);
 
   function onLayout(e: LayoutChangeEvent) {
     const width = e.nativeEvent.layout.width;
-    setTabWidth(width / items.length);
+    if (items.length > 0) {
+      setTabWidth(width / items.length);
+    }
   }
 
   return (
-    <View style={tabBarStyles.container} onLayout={onLayout}>
+    <View style={styles.container} onLayout={onLayout}>
       {items.map((item) => {
-        if (!item.label) return null;
-
         const isActive = item.id === active;
 
         return (
-          <TouchableOpacity
+          <TabItem
             key={String(item.id)}
-            style={tabBarStyles.tab}
+            item={item}
+            isActive={isActive}
             onPress={() => onChange(item.id)}
-            activeOpacity={0.7}
-          >
-            <Text
-              style={[tabBarStyles.label, isActive && tabBarStyles.activeLabel]}
-            >
-              {item.label}
-            </Text>
-          </TouchableOpacity>
+            styles={styles}
+          />
         );
       })}
 
-      {tabWidth > 0 && (
+      {tabWidth > 0 && activeIndex >= 0 && (
         <Animated.View
           style={[
-            tabBarStyles.indicator,
+            styles.indicator,
             {
               width: tabWidth,
+              opacity: tabWidth ? 1 : 0,
               transform: [{ translateX }],
             },
           ]}

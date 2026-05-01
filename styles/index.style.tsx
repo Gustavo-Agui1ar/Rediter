@@ -11,4 +11,32 @@ export const useIndexStyle = makeStyles((colors: ThemeColors) => ({
     justifyContent: "center",
     margin: "auto",
   },
+
+  content_fields: {
+    width: "100%",
+    gap: 24,
+  },
+
+  fieldContainer: {
+    marginBottom: 0,
+    gap: 8,
+  },
+
+  helperText: {
+    paddingLeft: 8,
+  },
+
+  forgotPasswordLink: {
+    alignSelf: "flex-end",
+    marginBottom: 24,
+  },
+
+  googleIcon: {
+    width: 20,
+    height: 20,
+  },
+
+  signUpRow: {
+    marginTop: 10,
+  },
 }));

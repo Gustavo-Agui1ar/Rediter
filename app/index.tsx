@@ -1,4 +1,5 @@
 import {
+  AlertBanner,
   Button,
   Divider,
   Header,
@@ -8,7 +9,7 @@ import {
   TextBox,
 } from "@/components/components";
 import { useLoading } from "@/context/loadingContext";
-import { ScriptIndex } from "@/scripts/index.script";
+import { AuthController } from "@/scripts/index.script";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { useIndexStyle } from "@/styles/index.style";
 import { LoginValidator, updateField } from "@/utils/login.utils";
@@ -28,6 +29,7 @@ export default function Index() {
   const styles = useGlobalStyles();
   const indexStyles = useIndexStyle();
   const router = useRouter();
+  const [serverError, setServerError] = useState("");
   const rootNavigationState = useRootNavigationState();
   const [Submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
@@ -56,77 +58,124 @@ export default function Index() {
     checkTokens();
   }, [rootNavigationState?.key, router]);
 
+  const handleInputChange = (field: "email" | "password", value: string) => {
+    updateField(setForm, field, value);
+    if (Submitted) setSubmitted(false);
+    if (serverError) setServerError("");
+  };
+
   return (
     <KeyboardAvoidingView style={[styles.container]} behavior="padding">
       {loading && <LoadingOverlay />}
       <ScrollView
         style={[styles.container]}
         contentContainerStyle={styles.scroll_content}
+        keyboardShouldPersistTaps="handled"
       >
         <Header title="Bem-vindo ao Rediter" />
         <View style={indexStyles.content_login}>
-          <TextBox
-            placeholder="Email"
-            value={form.email}
-            onChangeText={(text: string) => {
-              updateField(setForm, "email", text);
-              if (Submitted) setSubmitted(false);
-            }}
+          <AlertBanner
+            message={serverError}
+            visible={!!serverError}
+            alert_type="error"
           />
-          <HelperText
-            message="E-mail incorreto ou não preenchido"
-            visible={Submitted && !LoginValidator.isEmailValid(form.email)}
-          />
-          <TextBox
-            placeholder="Password"
-            value={form.password}
-            onChangeText={(text: string) => {
-              updateField(setForm, "password", text);
-              if (Submitted) setSubmitted(false);
-            }}
-            secureTextEntry
-          />
-          <HelperText />
+          <View style={indexStyles.content_fields}>
+            <View style={indexStyles.fieldContainer}>
+              <TextBox
+                placeholder="Email"
+                value={form.email}
+                onChangeText={(text: string) =>
+                  handleInputChange("email", text)
+                }
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+              <HelperText
+                message="E-mail incorreto ou não preenchido"
+                visible={Submitted && !LoginValidator.isEmailValid(form.email)}
+                alert_type="error"
+                style={indexStyles.helperText}
+              />
+            </View>
+
+            <View style={indexStyles.fieldContainer}>
+              <TextBox
+                placeholder="Password"
+                value={form.password}
+                onChangeText={(text: string) =>
+                  handleInputChange("password", text)
+                }
+                secureTextEntry
+              />
+              <HelperText
+                message="Senha incorreta ou não preenchida"
+                visible={
+                  Submitted && !LoginValidator.isPasswordValid(form.password)
+                }
+                alert_type="error"
+                style={indexStyles.helperText}
+              />
+            </View>
+          </View>
           <LinkText
             text="Esqueceu sua senha?"
-            style={{ alignSelf: "flex-end" }}
+            style={indexStyles.forgotPasswordLink}
             onPress={() => {
               router.push("/sendEmail");
             }}
           />
+
           <Button
             title="Conectar-se agora"
             onPress={async () => {
               setSubmitted(true);
+              setServerError("");
 
-              const result = await ScriptIndex.authenticate(
+              if (
+                !LoginValidator.isEmailValid(form.email) ||
+                !LoginValidator.isPasswordValid(form.password)
+              ) {
+                return;
+              }
+
+              const result = await AuthController.authenticate(
                 form.email,
                 form.password,
+                router,
                 setLoading,
               );
 
-              if (!result.success) return;
-
-              await StorageUtils.saveTokens(result.access, result.refresh);
-
-              router.replace("/home");
+              if (!result.success) {
+                setServerError(result.error as string);
+              }
             }}
             type="fill"
           />
+
           <Divider text="ou" />
+
           <Button
             title="Entrar com Google"
-            onPress={() => ScriptIndex.signInWithGoogle(router, setLoading)}
+            onPress={async () => {
+              const result = await AuthController.signInWithGoogle(
+                router,
+                setLoading,
+              );
+
+              if (result !== undefined && !result.success) {
+                setServerError(result.error as string);
+              }
+            }}
             type="border"
             icon={
               <Image
                 source={require("@/assets/images/google_icon.png")}
-                style={{ width: 20, height: 20 }}
+                style={indexStyles.googleIcon}
               />
             }
           />
 
-          <View style={styles.centerRow}>
+          <View style={[styles.centerRow, indexStyles.signUpRow]}>
             <Text style={[styles.textCenter]}>Não possui uma conta? </Text>
             <LinkText
               text="Inscreva-se"

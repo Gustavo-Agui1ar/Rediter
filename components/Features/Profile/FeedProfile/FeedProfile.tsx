@@ -1,13 +1,9 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { DeviceEventEmitter, View } from "react-native";
-import {
-  MaterialTabBar,
-  MaterialTabItem,
-  Tabs,
-} from "react-native-collapsible-tab-view";
 
 import Midiagrid from "@/components/Features/Profile/Midia/Midia";
 import Posts from "@/components/Features/Profile/Posts/Posts";
+import TabBar from "@/components/Layout/TabBar/TabBar";
 import { useTheme } from "@/context/ThemeContext";
 import { useFeedStyles } from "./FeedProfile.style";
 
@@ -23,6 +19,8 @@ export default function FeedProfile({
   const styles = useFeedStyles();
   const { colors } = useTheme();
 
+  const [activeTab, setActiveTab] = useState("posts");
+
   const handleGlobalRefresh = async () => {
     await onRefreshProfile();
     DeviceEventEmitter.emit("refresh_posts");
@@ -34,45 +32,47 @@ export default function FeedProfile({
     [headerComponent, styles.headerWrapper],
   );
 
-  return (
-    <View style={styles.container}>
-      <Tabs.Container
-        renderHeader={renderHeader}
-        renderTabBar={(props) => (
-          <MaterialTabBar
-            {...props}
-            activeColor={colors.primary}
-            inactiveColor={colors.textMuted}
-            indicatorStyle={styles.tabIndicator}
-            style={styles.tabBar}
-            TabItemComponent={(itemProps) => (
-              <MaterialTabItem
-                {...itemProps}
-                pressColor="transparent"
-                pressOpacity={1}
-              />
-            )}
-          />
-        )}
-      >
-        <Tabs.Tab name="posts" label="Posts">
+  const tabs = [
+    { id: "posts", label: "Posts" },
+    { id: "media", label: "Mídia" },
+    { id: "likes", label: "Curtidas" },
+  ];
+
+  function renderContent() {
+    switch (activeTab) {
+      case "posts":
+        return (
           <View style={styles.tabItemContainer}>
             <Posts myProfile={true} />
           </View>
-        </Tabs.Tab>
+        );
 
-        <Tabs.Tab name="media" label="Mídia">
+      case "media":
+        return (
           <View style={styles.tabItemContainer}>
             <Midiagrid isMyProfile={true} />
           </View>
-        </Tabs.Tab>
+        );
 
-        <Tabs.Tab name="likes" label="Curtidas">
+      case "likes":
+        return (
           <View style={styles.tabItemContainer}>
             <Posts myProfile={false} />
           </View>
-        </Tabs.Tab>
-      </Tabs.Container>
+        );
+
+      default:
+        return null;
+    }
+  }
+
+  return (
+    <View style={styles.container}>
+      {renderHeader()}
+
+      <TabBar items={tabs} active={activeTab} onChange={setActiveTab} />
+
+      <View style={{ flex: 1 }}>{renderContent()}</View>
     </View>
   );
 }

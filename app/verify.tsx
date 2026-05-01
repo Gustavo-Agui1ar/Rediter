@@ -44,8 +44,9 @@ export default function Verify() {
             onPress={async () => {
               await request({
                 method: "POST",
-                urlComplement: "/Auth/GenerateCode",
+                urlComplement: "/Auth/generate-code",
                 body: userEmail,
+                requireAuth: false,
                 setLoading: setLoading,
               });
             }}
