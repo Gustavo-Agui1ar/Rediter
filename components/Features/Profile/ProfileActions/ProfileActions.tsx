@@ -24,7 +24,7 @@ export default function ProfileActions({
 
   function goToConfig() {
     if (!canFollow) {
-      router.push("/configs");
+      router.push("/Configs");
     }
   }
 

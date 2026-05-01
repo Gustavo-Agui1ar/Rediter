@@ -1,38 +1,46 @@
+import { useLoading } from "@/context/loadingContext";
 import { LoginValidator } from "@/utils/login.utils";
 import { request } from "@/utils/request.utils";
+import { router } from "expo-router";
+import { useState } from "react";
 
-interface RegisterForm {
-  name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
+export function useRegister() {
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
 
-export class ScriptRegister {
-  static async sendRegisterRequest(form: RegisterForm) {
-    var response = {
-      error: "",
-      success: false,
-      userId: "",
-    };
-    response.error = "";
+  const [errorText, setErrorText] = useState("");
+  const { setLoading } = useLoading();
 
-    form.email = form.email.trim().toLowerCase();
+  const handleInputChange = (field: keyof typeof form, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    if (errorText) setErrorText("");
+  };
 
-    if (!LoginValidator.isEmailValid(form.email)) {
-      response.error = "Por favor, insira um e-mail válido.";
-      return response;
+  const handleRegister = async () => {
+    const trimmedEmail = form.email.trim().toLowerCase();
+    setErrorText("");
+
+    if (!form.name.trim()) {
+      return setErrorText("Por favor, insira o seu nome.");
+    }
+
+    if (!LoginValidator.isEmailValid(trimmedEmail)) {
+      return setErrorText("Por favor, insira um e-mail válido.");
     }
 
     if (!LoginValidator.doPasswordsMatch(form.password, form.confirmPassword)) {
-      response.error = "Por favor, insira senhas coincidentes.";
-      return response;
+      return setErrorText("Por favor, insira senhas coincidentes.");
     }
 
+    setLoading(true);
     try {
       const user = {
         name: form.name,
-        email: form.email,
+        email: trimmedEmail,
         password: form.password,
       };
 
@@ -41,24 +49,32 @@ export class ScriptRegister {
         method: "PUT",
         body: user,
         requireAuth: false,
+        setLoading,
       });
 
       if (serverResponse.ok) {
-        const data = await serverResponse.json();
-        response.success = true;
-        response.userId = data.userId;
+        router.push({
+          pathname: "/verify",
+          params: { userEmail: trimmedEmail, mode: "register" },
+        });
       } else {
-        response.error =
-          "Falha ao registrar usuário. Verifique se o e-mail já existe.";
+        setErrorText(
+          "Falha ao registrar usuário. Verifique se o e-mail já existe.",
+        );
       }
-      return response;
     } catch (error: any) {
       if (error.name === "AbortError") {
-        response.error = "O servidor demorou muito para responder (Timeout).";
+        setErrorText("O servidor demorou muito para responder (Timeout).");
       } else {
-        response.error = "Erro de conexão com o servidor.";
+        setErrorText("Erro de conexão com o servidor.");
       }
-      return response;
+    } finally {
+      setLoading(false);
     }
-  }
+  };
+
+  return {
+    state: { form, errorText },
+    actions: { handleInputChange, handleRegister },
+  };
 }

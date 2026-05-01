@@ -7,7 +7,7 @@ import { NavItem } from "@/components/Layout/NavBar/navbar";
 import { useTheme } from "@/context/ThemeContext";
 import { useStylesMain } from "@/styles/main.style";
 
-type Tab = "home" | "message" | "Perfil/Perfil" | "Search/search";
+type Tab = "home" | "message" | "Perfil" | "Search";
 
 export default function TabLayout() {
   const stylesMain = useStylesMain();
@@ -16,9 +16,9 @@ export default function TabLayout() {
   const navItems: NavItem<Tab>[] = useMemo(
     () => [
       { id: "home", label: "Início", icon: "home" },
-      { id: "Search/search", label: "Buscar", icon: "search" },
+      { id: "Search", label: "Buscar", icon: "search" },
       { id: "message", label: "Mensagens", icon: "message" },
-      { id: "Perfil/Perfil", label: "Perfil", icon: "profile" },
+      { id: "Perfil", label: "Perfil", icon: "profile" },
     ],
     [],
   );
@@ -50,7 +50,7 @@ export default function TabLayout() {
                 circle={false}
                 icon="post"
                 type="fill"
-                onPress={() => router.push("/newPost")}
+                onPress={() => router.push("/NewPost")}
               />
             </View>
           </View>
@@ -65,7 +65,7 @@ export default function TabLayout() {
         }}
       />
 
-      <Tabs.Screen name="Search/search" options={{ headerShown: false }} />
+      <Tabs.Screen name="Search" options={{ headerShown: false }} />
 
       <Tabs.Screen
         name="message"
@@ -75,7 +75,7 @@ export default function TabLayout() {
         }}
       />
 
-      <Tabs.Screen name="Perfil/Perfil" options={{ headerShown: false }} />
+      <Tabs.Screen name="Perfil" options={{ headerShown: false }} />
     </Tabs>
   );
 }

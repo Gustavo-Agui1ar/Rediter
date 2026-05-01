@@ -2,44 +2,32 @@ import { Header, TextBox } from "@/components/components";
 import Posts from "@/components/Features/Profile/Posts/Posts";
 import TabBar from "@/components/Layout/TabBar/TabBar";
 import { useTheme } from "@/context/ThemeContext";
-import { useState } from "react";
+import { useSearch } from "@/scripts/Search.script";
+import { useStyles } from "@/styles/search.styles";
 import { Text, View } from "react-native";
-import { useStyles } from "./search.styles";
 
 export default function Search() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("posts");
-
   const { colors } = useTheme();
   const styles = useStyles();
-
-  function handleSearch() {
-    console.log("Buscando por:", searchQuery);
-  }
+  const { state, actions } = useSearch();
 
   function renderHeader() {
     return (
       <Header divider={false}>
         <TextBox
           placeholder="O que você quer ler hoje?"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
+          value={state.searchQuery}
+          onChangeText={actions.setSearchQuery}
           isSearch={true}
-          onSearch={handleSearch}
+          onSearch={actions.handleSearch}
           style={{ width: "100%" }}
         />
       </Header>
     );
   }
 
-  const tabs = [
-    { id: "posts", label: "Mais Recentes" },
-    { id: "people", label: "Pessoas" },
-    { id: "media", label: "Mídias" },
-  ];
-
   function renderContent() {
-    switch (activeTab) {
+    switch (state.activeTab) {
       case "posts":
         return (
           <View style={styles.postsContainer}>
@@ -69,7 +57,13 @@ export default function Search() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       {renderHeader()}
-      <TabBar items={tabs} active={activeTab} onChange={setActiveTab} />
+
+      <TabBar
+        items={state.tabs}
+        active={state.activeTab}
+        onChange={actions.setActiveTab}
+      />
+
       <View style={{ flex: 1 }}>{renderContent()}</View>
     </View>
   );

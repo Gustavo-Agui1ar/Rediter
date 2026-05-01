@@ -1,45 +1,108 @@
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { Router } from "expo-router";
+import { useRootNavigationState, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 
+import { useLoading } from "@/context/loadingContext";
 import { configs } from "@/utils/configs.utils";
 import { LoginValidator } from "@/utils/login.utils";
 import { request } from "@/utils/request.utils";
-import { getStoreageItem, saveTokens } from "@/utils/storage.utils";
+import * as StorageUtils from "@/utils/storage.utils";
 
-// ============================================================================
-// CONFIGURAÇÕES
-// ============================================================================
 GoogleSignin.configure({
   webClientId: configs.GoogleClientID,
   offlineAccess: true,
 });
 
-// ============================================================================
-// CONTROLADOR DE AUTENTICAÇÃO
-// ============================================================================
-export class AuthController {
-  /**
-   * Inicia o fluxo de login com Google
-   */
-  static async signInWithGoogle(
-    router: Router,
-    setLoading?: (loading: boolean) => void,
-  ): Promise<{ success: boolean; error?: string } | undefined> {
-    if (setLoading) setLoading(true);
+export function useIndex() {
+  const router = useRouter();
+  const { setLoading } = useLoading();
+  const rootNavigationState = useRootNavigationState();
+
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [serverError, setServerError] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (!rootNavigationState?.key) return;
+
+    const checkTokens = async () => {
+      try {
+        const accessToken = await StorageUtils.getStoreageItem("user_token");
+        const refreshToken =
+          await StorageUtils.getStoreageItem("refresh_token");
+
+        if (accessToken && refreshToken) {
+          console.log("Tokens encontrados, redirecionando para main...");
+          router.replace("/home");
+        }
+      } catch (error) {
+        console.error("Erro ao recuperar tokens:", error);
+      }
+    };
+
+    checkTokens();
+  }, [rootNavigationState?.key, router]);
+
+  const handleInputChange = (field: "email" | "password", value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    if (submitted) setSubmitted(false);
+    if (serverError) setServerError("");
+  };
+
+  const handleLogin = async () => {
+    setSubmitted(true);
+    setServerError("");
+
+    if (
+      !LoginValidator.isEmailValid(form.email) ||
+      !LoginValidator.isPasswordValid(form.password)
+    ) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await request({
+        urlComplement: "/Auth/rediter",
+        method: "POST",
+        body: {
+          name: "User Redider",
+          email: form.email,
+          password: form.password,
+        },
+        requireAuth: false,
+      });
+
+      const { refresh, access } = await LoginValidator.ParseTokens(response);
+
+      if (!access || !refresh) {
+        setServerError("Resposta inválida do servidor.");
+        return;
+      }
+
+      await StorageUtils.saveTokens(access, refresh);
+      router.replace("/home");
+    } catch (error: any) {
+      setServerError(error?.message || "Falha na conexão com o servidor.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setServerError("");
 
     try {
       await GoogleSignin.hasPlayServices({
         showPlayServicesUpdateDialog: true,
       });
-
       const userInfo = await GoogleSignin.signIn();
       const idToken = userInfo.data?.idToken;
 
       if (!idToken) {
-        return {
-          success: false,
-          error: "Falha ao obter o token de autenticação do Google.",
-        };
+        setServerError("Falha ao obter o token de autenticação do Google.");
+        return;
       }
 
       const response = await request({
@@ -47,16 +110,16 @@ export class AuthController {
         method: "POST",
         body: { idToken: idToken },
         requireAuth: false,
-        setLoading,
       });
 
       const { refresh, access } = await LoginValidator.ParseTokens(response);
 
       if (!access || !refresh) {
-        return { success: false, error: "Resposta inválida do servidor." };
+        setServerError("Resposta inválida do servidor.");
+        return;
       }
 
-      await saveTokens(access, refresh);
+      await StorageUtils.saveTokens(access, refresh);
       router.replace("/home");
     } catch (error: any) {
       console.error("Erro durante o Google Sign-In:", error);
@@ -64,101 +127,31 @@ export class AuthController {
       if (error.code) {
         switch (error.code) {
           case "SIGN_IN_CANCELLED":
-            return {
-              success: false,
-              error: "O login com Google foi cancelado.",
-            };
+            setServerError("O login com Google foi cancelado.");
+            return;
           case "IN_PROGRESS":
-            return { success: false, error: "O login já está em andamento." };
+            setServerError("O login já está em andamento.");
+            return;
           case "PLAY_SERVICES_NOT_AVAILABLE":
-            return {
-              success: false,
-              error: "Serviços do Google Play indisponíveis neste dispositivo.",
-            };
+            setServerError(
+              "Serviços do Google Play indisponíveis neste dispositivo.",
+            );
+            return;
           default:
-            return {
-              success: false,
-              error: "Falha ao comunicar com os servidores do Google.",
-            };
+            setServerError("Falha ao comunicar com os servidores do Google.");
+            return;
         }
       }
-
-      return {
-        success: false,
-        error: error?.message || "Erro desconhecido durante login com Google.",
-      };
+      setServerError(
+        error?.message || "Erro desconhecido durante login com Google.",
+      );
     } finally {
-      if (setLoading) setLoading(false);
+      setLoading(false);
     }
-  }
+  };
 
-  /**
-   * Verifica se os tokens já existem no Storage e redireciona automaticamente
-   */
-  static async checkTokens(router: Router) {
-    try {
-      const accessToken = await getStoreageItem("user_token");
-      const refreshToken = await getStoreageItem("refresh_token");
-
-      if (accessToken && refreshToken) {
-        console.log("Tokens encontrados, redirecionando para /home...");
-        router.replace("/home");
-      }
-    } catch (error) {
-      console.error("Erro ao verificar tokens:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Autenticação clássica via credenciais (Email e Senha)
-   */
-  static async authenticate(
-    email: string,
-    password: string,
-    router: Router,
-    setLoading?: (loading: boolean) => void,
-  ): Promise<{ success: boolean; error?: string }> {
-    // 1. Validação de dados de entrada
-    if (!LoginValidator.isEmailValid(email)) {
-      return { success: false, error: "E-mail com formato inválido." };
-    }
-
-    if (!LoginValidator.isPasswordValid(password)) {
-      return { success: false, error: "Senha inválida ou muito curta." };
-    }
-
-    const userPayload = {
-      name: "User Redider",
-      email,
-      password,
-    };
-
-    try {
-      const response = await request({
-        urlComplement: "/Auth/rediter",
-        method: "POST",
-        body: userPayload,
-        requireAuth: false,
-        setLoading,
-      });
-
-      const { refresh, access } = await LoginValidator.ParseTokens(response);
-
-      if (!access || !refresh) {
-        return { success: false, error: "Resposta inválida do servidor." };
-      }
-
-      await saveTokens(access, refresh);
-
-      router.replace("/home");
-
-      return { success: true };
-    } catch (error: any) {
-      return {
-        success: false,
-        error: error?.message || "Falha na conexão com o servidor.",
-      };
-    }
-  }
+  return {
+    state: { form, serverError, submitted },
+    actions: { handleInputChange, handleLogin, handleGoogleLogin },
+  };
 }

@@ -1,70 +1,24 @@
 import {
+  AlertBanner,
   Button,
   DisplayImages,
   Header,
+  HelperText,
   IconButton,
   TextBox,
 } from "@/components/components";
-import { useLoading } from "@/context/loadingContext";
-import { NewPostScript } from "@/scripts/newPost.script";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { useNewPostStyles } from "@/styles/newPost.style";
-import { pickImage } from "@/utils/filePicker.utils";
-import { handleGetLocation } from "@/utils/location.utils";
-import { useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
-import {
-  Keyboard,
-  KeyboardAvoidingView,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { KeyboardAvoidingView, ScrollView, Text, View } from "react-native";
 import { EmojiKeyboard } from "rn-emoji-keyboard";
 
+import { useNewPost } from "@/scripts/NewPost.script";
+
 export default function NewPost() {
-  const [files, setFiles] = useState<any[]>([]);
-  const [showEmoji, setShowEmoji] = useState(false);
-  const [text, setText] = useState("");
-  const [locationName, setLocationName] = useState<string | null>(null);
-  const { setLoading } = useLoading();
-  const [postId, setPostId] = useState<string | null>(null);
-
-  const params = useLocalSearchParams();
-
   const globalStyles = useGlobalStyles();
   const localStyles = useNewPostStyles();
 
-  const isEditingParam = params.isEditing;
-  const postIdParam = params.postId;
-  const textParam = params.text;
-  const locationParam = params.location;
-  const imageUrlsParam = params.imageUrls;
-
-  useEffect(() => {
-    if (isEditingParam === "true") {
-      if (postIdParam && typeof postIdParam === "string") {
-        setPostId(postIdParam);
-      }
-
-      if (textParam && typeof textParam === "string") {
-        setText(textParam);
-      }
-
-      if (locationParam && typeof locationParam === "string") {
-        setLocationName(locationParam);
-      }
-
-      if (imageUrlsParam && typeof imageUrlsParam === "string") {
-        try {
-          const parsedImages = JSON.parse(imageUrlsParam);
-          setFiles(parsedImages);
-        } catch (e) {
-          console.error("Erro ao fazer parse das imagens", e);
-        }
-      }
-    }
-  }, [isEditingParam, postIdParam, textParam, locationParam, imageUrlsParam]);
+  const { state, actions } = useNewPost();
 
   return (
     <KeyboardAvoidingView style={globalStyles.container} behavior={"height"}>
@@ -73,93 +27,82 @@ export default function NewPost() {
         contentContainerStyle={globalStyles.scroll_content}
         keyboardShouldPersistTaps="handled"
       >
-        <Header title={postId ? "Editar Post" : "Criar Post"} />
+        <Header title={state.postId ? "Editar Post" : "Criar Post"} />
+
+        {state.alertBanner && (
+          <AlertBanner
+            alert_type={state.alertBanner.type}
+            message={state.alertBanner.message}
+          />
+        )}
 
         <View style={[globalStyles.content, localStyles.contentWrapper]}>
           <TextBox
             placeholder="O que você está pensando?"
-            value={text}
-            onChangeText={setText}
-            onFocus={() => setShowEmoji(false)}
+            value={state.text}
+            onChangeText={actions.onChangeText}
+            onFocus={() => actions.setShowEmoji(false)}
           >
             <DisplayImages
-              files={files}
-              onRemoveImage={(index) =>
-                new NewPostScript().handleRemoveImage({
-                  indexToRemove: index,
-                  setFiles,
-                })
-              }
+              files={state.files}
+              onRemoveImage={actions.onRemoveImage}
             />
 
             <View style={localStyles.actionsContainer}>
-              {locationName && (
+              {state.locationName && (
                 <View style={localStyles.locationContainer}>
                   <Text style={localStyles.locationText}>
-                    📍 Em {locationName}
+                    📍 Em {state.locationName}
                   </Text>
                   <IconButton
                     icon="close"
                     type="none"
                     size={20}
-                    onPress={() => setLocationName(null)}
+                    onPress={() => actions.setLocationName(null)}
                   />
                 </View>
               )}
 
-              {/* BARRAS DE BOTÕES */}
               <View style={localStyles.iconBar}>
                 <IconButton
                   icon="image"
                   type="fill"
                   size={28}
-                  onPress={async () => {
-                    const result = await pickImage();
-                    if (result) setFiles((prev) => [...prev, result]);
-                  }}
+                  onPress={actions.onAddImage}
                 />
                 <IconButton
                   icon="emoji"
                   type="fill"
                   size={28}
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    setShowEmoji((prev) => !prev);
-                  }}
+                  onPress={actions.onToggleEmoji}
                 />
                 <IconButton
                   icon="location"
                   type="fill"
                   size={28}
-                  onPress={async () =>
-                    await handleGetLocation({ setLocationName })
-                  }
+                  onPress={actions.onAddLocation}
                 />
               </View>
             </View>
           </TextBox>
+
+          {state.helperText && (
+            <HelperText alert_type={state.helperText.type}>
+              {state.helperText.message}
+            </HelperText>
+          )}
+
           <Button
-            title={postId ? "Salvar Edição" : "Publicar"}
-            onPress={() =>
-              new NewPostScript().handlePublish({
-                text,
-                files,
-                locationName,
-                setLoading,
-                postId: postId ?? undefined,
-              })
-            }
+            title={state.postId ? "Salvar Edição" : "Publicar"}
+            onPress={actions.handlePublish}
           />
         </View>
       </ScrollView>
 
-      {/* Renderização do seletor de Emojis */}
-      {showEmoji && (
+      {state.showEmoji && (
         <View style={localStyles.emojiContainer}>
           <EmojiKeyboard
-            onEmojiSelected={(emojiObject) =>
-              setText((prev) => prev + emojiObject.emoji)
-            }
+            onEmojiSelected={actions.onEmojiSelected}
             allowMultipleSelections
           />
         </View>

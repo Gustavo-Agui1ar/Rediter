@@ -1,22 +1,12 @@
 import { Button, Header, HelperText, TextBox } from "@/components/components";
-import { ScriptRegister } from "@/scripts/register.script";
+import { useRegister } from "@/scripts/Register.script";
 import { useGlobalStyles } from "@/styles/global.styles";
-import { LoginValidator, updateField } from "@/utils/login.utils";
-import { router } from "expo-router";
-import { useState } from "react";
+import { LoginValidator } from "@/utils/login.utils";
 import { KeyboardAvoidingView, ScrollView, View } from "react-native";
 
 export default function Register() {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-
-  const [errorText, setErrorText] = useState("");
-
   const styles = useGlobalStyles();
+  const { state, actions } = useRegister();
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={"height"}>
@@ -28,69 +18,68 @@ export default function Register() {
         <Header title="Crie sua conta" />
 
         <View style={[styles.content, { width: "80%" }]}>
-          <HelperText message={errorText} visible={!!errorText} />
+          <HelperText
+            message={state.errorText}
+            visible={!!state.errorText}
+            alert_type="error"
+          />
+
           <TextBox
             placeholder="Nome"
-            value={form.name}
+            value={state.form.name}
             onChangeText={(value: string) =>
-              updateField(setForm, "name", value)
+              actions.handleInputChange("name", value)
             }
           />
 
           <TextBox
             placeholder="Email"
-            value={form.email}
+            value={state.form.email}
             onChangeText={(value: string) =>
-              updateField(setForm, "email", value)
+              actions.handleInputChange("email", value)
             }
           />
           <HelperText
             message="E-mail incorreto ou não preenchido"
-            visible={!!form.email && !LoginValidator.isEmailValid(form.email)}
+            alert_type="error"
+            visible={
+              !!state.form.email &&
+              !LoginValidator.isEmailValid(state.form.email)
+            }
           />
 
           <TextBox
             placeholder="Senha"
-            value={form.password}
+            value={state.form.password}
             onChangeText={(value: string) =>
-              updateField(setForm, "password", value)
+              actions.handleInputChange("password", value)
             }
             secureTextEntry
           />
 
           <TextBox
             placeholder="Confirmar senha"
-            value={form.confirmPassword}
+            value={state.form.confirmPassword}
             onChangeText={(value: string) =>
-              updateField(setForm, "confirmPassword", value)
+              actions.handleInputChange("confirmPassword", value)
             }
             secureTextEntry
           />
           <HelperText
             message="As senhas não coincidem."
+            alert_type="error"
             visible={
-              !!form.confirmPassword &&
+              !!state.form.confirmPassword &&
               !LoginValidator.doPasswordsMatch(
-                form.password,
-                form.confirmPassword,
+                state.form.password,
+                state.form.confirmPassword,
               )
             }
           />
 
           <Button
             title="Criar conta"
-            onPress={async () => {
-              var response = await ScriptRegister.sendRegisterRequest(form);
-
-              setErrorText(response.error);
-
-              if (response.success) {
-                router.push({
-                  pathname: "/verify",
-                  params: { userEmail: form.email, mode: "register" },
-                });
-              }
-            }}
+            onPress={actions.handleRegister}
             style={{ marginTop: 20 }}
           />
         </View>
