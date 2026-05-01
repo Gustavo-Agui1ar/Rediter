@@ -1,6 +1,6 @@
 import IconButton from "@/components/UI/IconButton/IconButton";
 import { getBaseURL } from "@/utils/configs.utils";
-import { request } from "@/utils/request.utils";
+import { useApi } from "@/utils/request.utils";
 import { Image } from "expo-image";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -69,6 +69,7 @@ export default function MediaGrid({
 
   const styles = useMidiaStyles();
   const fetchingRef = useRef(false);
+  const { request } = useApi();
 
   const fetchMedia = useCallback(
     async (isRefresh = false) => {

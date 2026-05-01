@@ -1,7 +1,7 @@
 import { useLoading } from "@/context/loadingContext";
 import { pickImage } from "@/utils/filePicker.utils";
 import { handleGetLocation } from "@/utils/location.utils";
-import { request } from "@/utils/request.utils";
+import { useApi } from "@/utils/request.utils";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { DeviceEventEmitter, Keyboard } from "react-native";
@@ -12,7 +12,7 @@ export function useNewPost() {
   const [text, setText] = useState("");
   const [locationName, setLocationName] = useState<string | null>(null);
   const [postId, setPostId] = useState<string | null>(null);
-
+  const { request } = useApi();
   const [helperText, setHelperText] = useState<{
     message: string;
     type: "error" | "warning" | "success";
@@ -127,7 +127,6 @@ export function useNewPost() {
         urlComplement: postId ? `/Post/UpdatePost/${postId}` : "/Post/NewPost",
         method: postId ? "PUT" : "POST",
         body: formData,
-        setLoading: setLoading,
       });
 
       DeviceEventEmitter.emit("refresh_posts");

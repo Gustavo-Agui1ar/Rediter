@@ -1,6 +1,6 @@
 import Post from "@/components/Features/Post/post";
 import { useTheme } from "@/context/ThemeContext";
-import { request } from "@/utils/request.utils";
+import { useApi } from "@/utils/request.utils";
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -64,7 +64,7 @@ export default function Posts({ myProfile }: PostsProps) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [initialLoading, setInitialLoading] = useState(true);
-
+  const { request } = useApi();
   const { colors } = useTheme();
   const styles = useStylesPosts();
 

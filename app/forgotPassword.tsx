@@ -1,8 +1,7 @@
 import { Button, Header, TextBox } from "@/components/components";
-import { useLoading } from "@/context/loadingContext";
 import { useStylesForgotPassword } from "@/styles/forgotPassword.style";
 import { useGlobalStyles } from "@/styles/global.styles";
-import { request } from "@/utils/request.utils";
+import { useApi } from "@/utils/request.utils";
 import { deleteTokens } from "@/utils/storage.utils";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -13,8 +12,7 @@ export default function ForgotPassword() {
     password: "",
     confirmPassword: "",
   });
-
-  const { setLoading } = useLoading();
+  const { request } = useApi();
   const styles = useGlobalStyles();
   const forgotStyles = useStylesForgotPassword();
 
@@ -51,7 +49,6 @@ export default function ForgotPassword() {
               urlComplement: "/User/UpdateProfile",
               method: "POST",
               body: formData,
-              setLoading: setLoading,
             });
 
             deleteTokens();

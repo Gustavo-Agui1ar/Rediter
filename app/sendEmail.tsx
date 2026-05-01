@@ -1,7 +1,7 @@
 import { Button, Header, TextBox } from "@/components/components";
 import { useLoading } from "@/context/loadingContext";
 import { useGlobalStyles } from "@/styles/global.styles";
-import { request } from "@/utils/request.utils";
+import { useApi } from "@/utils/request.utils";
 import { router } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, ScrollView, View } from "react-native";
@@ -9,7 +9,7 @@ import { KeyboardAvoidingView, ScrollView, View } from "react-native";
 export default function SendEmail() {
   const [email, setEmail] = useState("");
   const { setLoading } = useLoading();
-
+  const { request } = useApi();
   const styles = useGlobalStyles();
 
   return (
@@ -34,7 +34,6 @@ export default function SendEmail() {
                 urlComplement: "/Auth/generate-code",
                 body: email,
                 requireAuth: false,
-                setLoading: setLoading,
               });
 
               router.push({

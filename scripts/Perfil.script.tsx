@@ -1,4 +1,4 @@
-import { request } from "@/utils/request.utils";
+import { useApi } from "@/utils/request.utils";
 import {
     getProfileBasic,
     isCacheValid,
@@ -8,6 +8,7 @@ import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 
 export function usePerfil() {
+  const { request } = useApi();
   const [form, setForm] = useState({
     imageUrl: "",
     coverUrl: "",

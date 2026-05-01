@@ -13,7 +13,7 @@ import DisplayImages from "@/components/Feedback/DisplayImages/displayImage";
 import IconButton from "@/components/UI/IconButton/IconButton";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { formatDate } from "@/utils/datePost.utils";
-import { request } from "@/utils/request.utils";
+import { useApi } from "@/utils/request.utils";
 import { usePostStyles } from "./post.style";
 
 interface PostProps {
@@ -43,11 +43,11 @@ export default function Post({
 
   const styles = useGlobalStyles();
   const postStyles = usePostStyles();
-
+  const { request } = useApi();
   const handleEditPost = () => {
     setShowOptions(false);
     router.push({
-      pathname: "/newPost",
+      pathname: "/NewPost",
       params: {
         isEditing: "true",
         postId: postId,

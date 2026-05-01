@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useLoading } from "@/context/loadingContext";
 import { configs } from "@/utils/configs.utils";
 import { LoginValidator } from "@/utils/login.utils";
-import { request } from "@/utils/request.utils";
+import { useApi } from "@/utils/request.utils";
 import * as StorageUtils from "@/utils/storage.utils";
 
 GoogleSignin.configure({
@@ -17,7 +17,7 @@ export function useIndex() {
   const router = useRouter();
   const { setLoading } = useLoading();
   const rootNavigationState = useRootNavigationState();
-
+  const { request } = useApi();
   const [form, setForm] = useState({ email: "", password: "" });
   const [serverError, setServerError] = useState("");
   const [submitted, setSubmitted] = useState(false);

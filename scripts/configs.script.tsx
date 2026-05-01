@@ -1,7 +1,7 @@
 import { useLoading } from "@/context/loadingContext";
 import { pickImage } from "@/utils/filePicker.utils";
 import { LoginValidator } from "@/utils/login.utils";
-import { request } from "@/utils/request.utils";
+import { useApi } from "@/utils/request.utils";
 import * as Storage from "@/utils/storage.utils";
 import { useCallback, useEffect, useState } from "react";
 
@@ -13,7 +13,7 @@ interface ImageState {
 
 export function useConfigs() {
   const { loading, setLoading } = useLoading();
-
+  const { request } = useApi();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [profileImage, setProfileImage] = useState<ImageState>({});
   const [coverImage, setCoverImage] = useState<ImageState>({});

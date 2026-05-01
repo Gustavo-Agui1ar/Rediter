@@ -1,6 +1,6 @@
 import { useLoading } from "@/context/loadingContext";
 import { LoginValidator } from "@/utils/login.utils";
-import { request } from "@/utils/request.utils";
+import { useApi } from "@/utils/request.utils";
 import { router } from "expo-router";
 import { useState } from "react";
 
@@ -14,7 +14,7 @@ export function useRegister() {
 
   const [errorText, setErrorText] = useState("");
   const { setLoading } = useLoading();
-
+  const { request } = useApi();
   const handleInputChange = (field: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
     if (errorText) setErrorText("");
@@ -49,7 +49,6 @@ export function useRegister() {
         method: "PUT",
         body: user,
         requireAuth: false,
-        setLoading,
       });
 
       if (serverResponse.ok) {
