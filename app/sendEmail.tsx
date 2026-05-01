@@ -31,7 +31,7 @@ export default function SendEmail() {
             onPress={async () => {
               await request({
                 method: "POST",
-                urlComplement: "/Auth/generate-code",
+                urlComplement: "/api/auth/generate-code",
                 body: email,
                 requireAuth: false,
               });

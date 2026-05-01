@@ -63,7 +63,7 @@ export function useIndex() {
     setLoading(true);
     try {
       const response = await request({
-        urlComplement: "/Auth/rediter",
+        urlComplement: "/api/auth/login",
         method: "POST",
         body: {
           name: "User Redider",
@@ -106,7 +106,7 @@ export function useIndex() {
       }
 
       const response = await request({
-        urlComplement: "/Auth/google",
+        urlComplement: "/api/auth/login/google",
         method: "POST",
         body: { idToken: idToken },
         requireAuth: false,

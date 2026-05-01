@@ -25,7 +25,7 @@ export function useVerifyCode() {
 
     try {
       const serverResponse = await request({
-        urlComplement: `/Auth/verify-code`,
+        urlComplement: `/api/auth/verification-code/confirm`,
         method: "POST",
         requireAuth: false,
         body: { code: codeToVerify, email },
@@ -59,7 +59,7 @@ export function useVerifyCode() {
 
     await request({
       method: "POST",
-      urlComplement: "/Auth/generate-code",
+      urlComplement: "/api/auth/verification-code",
       body: userEmail,
       requireAuth: false,
     });
