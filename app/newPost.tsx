@@ -7,36 +7,33 @@ import {
   IconButton,
   TextBox,
 } from "@/components/components";
+import { useNewPost } from "@/scripts/NewPost.script";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { useNewPostStyles } from "@/styles/newPost.style";
 import { KeyboardAvoidingView, ScrollView, Text, View } from "react-native";
 import { EmojiKeyboard } from "rn-emoji-keyboard";
 
-import { useNewPost } from "@/scripts/NewPost.script";
-
 export default function NewPost() {
   const globalStyles = useGlobalStyles();
   const localStyles = useNewPostStyles();
-
   const { state, actions } = useNewPost();
 
   return (
     <KeyboardAvoidingView style={globalStyles.container} behavior={"height"}>
+      <Header title={state.postId ? "Editar Post" : "Criar Post"} />
+
       <ScrollView
         style={globalStyles.container}
         contentContainerStyle={globalStyles.scroll_content}
         keyboardShouldPersistTaps="handled"
       >
-        <Header title={state.postId ? "Editar Post" : "Criar Post"} />
-
-        {state.alertBanner && (
-          <AlertBanner
-            alert_type={state.alertBanner.type}
-            message={state.alertBanner.message}
-          />
-        )}
-
         <View style={[globalStyles.content, localStyles.contentWrapper]}>
+          <AlertBanner
+            message={state.alertBanner?.message || undefined}
+            visible={!!state.alertBanner}
+            alert_type={state.alertBanner?.type || "error"}
+          />
+
           <TextBox
             placeholder="O que você está pensando?"
             value={state.text}
@@ -87,9 +84,11 @@ export default function NewPost() {
           </TextBox>
 
           {state.helperText && (
-            <HelperText alert_type={state.helperText.type}>
-              {state.helperText.message}
-            </HelperText>
+            <HelperText
+              alert_type={state.helperText.type}
+              message={state.helperText.message}
+              visible={state.helperText !== null}
+            />
           )}
 
           <Button

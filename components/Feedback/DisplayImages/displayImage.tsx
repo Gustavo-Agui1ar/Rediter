@@ -10,7 +10,7 @@ import {
   View,
 } from "react-native";
 import { useDisplayImages } from "./DisplayImage.script";
-import { SCREEN_WIDTH, useDisplayImageStyles } from "./displayImage.styles";
+import { SCREEN_WIDTH, useDisplayImageStyles } from "./DisplayImage.styles";
 
 interface DisplayImagesProps {
   files: any[];
