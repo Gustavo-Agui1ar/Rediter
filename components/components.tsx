@@ -1,5 +1,5 @@
 export { default as Code } from "./Code/code";
-export { default as Post } from "./Features/Post/post";
+export { default as Post } from "./Features/Post/Post";
 export { default as FeedProfile } from "./Features/Profile/FeedProfile/FeedProfile";
 export { default as ProfileActions } from "./Features/Profile/ProfileActions/ProfileActions";
 export { default as ProfileCover } from "./Features/Profile/ProfileCover/ProfileCover";

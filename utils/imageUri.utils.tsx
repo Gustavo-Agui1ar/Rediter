@@ -23,7 +23,7 @@ export class ImageUtils {
       }
 
       const baseUrl = getBaseURL();
-      return `${baseUrl}/Picture/GetPicture?name=${encodeURIComponent(imageName)}`;
+      return `${baseUrl}/api/pictures/${encodeURIComponent(imageName)}`;
     } catch (error) {
       console.error("[ImageUtils] Erro ao gerar URI de perfil:", error);
       return null;

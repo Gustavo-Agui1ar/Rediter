@@ -1,20 +1,13 @@
-import { router } from "expo-router";
-import React, { useState } from "react";
-import {
-  Alert,
-  DeviceEventEmitter,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import React from "react";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 
 import ProfileImage from "@/components/Features/Profile/ProfileImage";
 import DisplayImages from "@/components/Feedback/DisplayImages/DisplayImage";
 import IconButton from "@/components/UI/IconButton/IconButton";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { formatDate } from "@/utils/datePost.utils";
-import { useApi } from "@/utils/request.utils";
-import { usePostStyles } from "./post.style";
+import { usePost } from "./Post.script";
+import { usePostStyles } from "./Post.style";
 
 interface PostProps {
   text: string;
@@ -39,51 +32,24 @@ export default function Post({
   myProfile = true,
   createdAt,
 }: PostProps) {
-  const [showOptions, setShowOptions] = useState(false);
-
   const styles = useGlobalStyles();
   const postStyles = usePostStyles();
-  const { request } = useApi();
-  const handleEditPost = () => {
-    setShowOptions(false);
-    router.push({
-      pathname: "/NewPost",
-      params: {
-        isEditing: "true",
-        postId: postId,
-        text: text,
-        location: Location || "",
-        imageUrls: JSON.stringify(postImageUrl || []),
-      },
-    });
-  };
 
-  const handleDeletePost = () => {
-    Alert.alert(
-      "Excluir Publicação",
-      "Deseja realmente apagar este post? Esta ação não pode ser desfeita.",
-      [
-        {
-          text: "Cancelar",
-          style: "cancel",
-          onPress: () => setShowOptions(false),
-        },
-        {
-          text: "Excluir",
-          style: "destructive",
-          onPress: async () => {
-            const response = await request({
-              urlComplement: `/api/posts/${postId}`,
-              method: "DELETE",
-            });
-            if (response.ok) {
-              DeviceEventEmitter.emit("refresh_posts");
-            }
-          },
-        },
-      ],
-    );
-  };
+  const {
+    showOptions,
+    isDownloading,
+    toggleOptions,
+    handleEditPost,
+    handleDeletePost,
+    handleDownloadMedia,
+  } = usePost({
+    postId,
+    text,
+    Location,
+    postImageUrl,
+  });
+
+  const hasImages = postImageUrl && postImageUrl.length > 0;
 
   return (
     <View style={postStyles.container}>
@@ -108,7 +74,7 @@ export default function Post({
             icon="more-vertical"
             size={32}
             circle={false}
-            onPress={() => setShowOptions((prev) => !prev)}
+            onPress={toggleOptions}
           />
 
           {showOptions && (
@@ -132,15 +98,33 @@ export default function Post({
                   </TouchableOpacity>
                 </>
               )}
-              <TouchableOpacity
-                onPress={() => setShowOptions(false)}
-                style={[
-                  postStyles.itemOptionsContainer,
-                  postStyles.itemOptionsContainerLast,
-                ]}
-              >
-                <Text style={postStyles.optionText}>Salvar Mídia</Text>
-              </TouchableOpacity>
+
+              {hasImages && (
+                <TouchableOpacity
+                  disabled={isDownloading}
+                  onPress={handleDownloadMedia}
+                  style={[
+                    postStyles.itemOptionsContainer,
+                    postStyles.itemOptionsContainerLast,
+                    { opacity: isDownloading ? 0.5 : 1 },
+                  ]}
+                >
+                  {isDownloading ? (
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 6,
+                      }}
+                    >
+                      <ActivityIndicator size="small" color="#007AFF" />
+                      <Text style={postStyles.optionText}>Baixando...</Text>
+                    </View>
+                  ) : (
+                    <Text style={postStyles.optionText}>Salvar Mídia</Text>
+                  )}
+                </TouchableOpacity>
+              )}
             </View>
           )}
         </View>

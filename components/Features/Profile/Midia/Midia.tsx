@@ -26,7 +26,7 @@ interface MediaGridProps {
 const getImageUri = (item: string | { uri: string }) => {
   if (typeof item === "object" && item?.uri) return item.uri;
   if (typeof item === "string") {
-    return `${getBaseURL()}/Picture/GetPicture?name=${encodeURIComponent(item)}`;
+    return `${getBaseURL()}/api/pictures/${encodeURIComponent(item)}`;
   }
   return "";
 };

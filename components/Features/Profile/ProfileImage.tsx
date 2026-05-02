@@ -24,7 +24,7 @@ export default function ProfileImage({
       }
 
       const baseUrl = getBaseURL();
-      return `${baseUrl}/Picture/GetPicture?name=${encodeURIComponent(imageName)}`;
+      return `${baseUrl}/api/pictures/${encodeURIComponent(imageName)}`;
     } catch (error) {
       console.error("Erro interno ao gerar a URI da ProfileImage:", error);
       return null;

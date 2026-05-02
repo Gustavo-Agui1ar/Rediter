@@ -53,7 +53,14 @@
         }
       ],
       "expo-font",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "O aplicativo precisa de permissão para acessar suas fotos.",
+          "savePhotosPermission": "O aplicativo precisa de permissão para salvar fotos na galeria."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
