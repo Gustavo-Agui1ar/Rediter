@@ -2,7 +2,7 @@ import Post from "@/components/Features/Post/Post";
 import { useTheme } from "@/context/ThemeContext";
 import React, { memo, useCallback } from "react";
 import { ActivityIndicator, FlatList, Text, View } from "react-native";
-import { PostItem, getId, usePosts } from "./Post.script";
+import { PostItem, getId, usePosts } from "./Posts.script";
 import { useStylesPosts } from "./Posts.style";
 
 const MemoizedPost = memo(Post);
