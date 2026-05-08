@@ -4,6 +4,9 @@ export { default as FeedProfile } from "./Features/Profile/FeedProfile/FeedProfi
 export { default as ProfileActions } from "./Features/Profile/ProfileActions/ProfileActions";
 export { default as ProfileCover } from "./Features/Profile/ProfileCover/ProfileCover";
 export { default as ProfileImage } from "./Features/Profile/ProfileImage";
+export { default as SearchPosts } from "./Features/SearchPosts/SearchPosts";
+export { default as SearchUser } from "./Features/SearchUser/SearchUser";
+export { default as UserItem } from "./Features/UserItem/UserItem";
 export { default as DisplayImages } from "./Feedback/DisplayImages/DisplayImage";
 export { default as LoadingOverlay } from "./Feedback/Loading/loading";
 export { default as Header } from "./Layout/header/header";

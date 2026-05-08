@@ -28,6 +28,12 @@ export const useConfigsStyles = makeStyles((colors: ThemeColors) => ({
     paddingHorizontal: 20,
   },
 
+  lastContainerConfig: {
+    minHeight: 100,
+    gap: 24,
+    paddingBottom: 60,
+  },
+
   iconButtonFix: {
     justifyContent: "flex-start",
     width: "100%",
@@ -44,6 +50,10 @@ export const useConfigsStyles = makeStyles((colors: ThemeColors) => ({
     position: "relative",
     overflow: "hidden",
     borderRadius: 10,
+  },
+
+  configsContainer: {
+    paddingBottom: 20,
   },
 
   profileImageOverlay: {

@@ -35,6 +35,5 @@ export const useStyles = makeStyles((colors: ThemeColors) => ({
   postsContainer: {
     flex: 1,
     width: "100%",
-    paddingTop: 16,
   },
 }));

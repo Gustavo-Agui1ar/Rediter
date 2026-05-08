@@ -1,26 +1,30 @@
 import IconButton from "@/components/UI/IconButton/IconButton";
 import { getBaseURL } from "@/utils/configs.utils";
-import { useApi } from "@/utils/request.utils";
 import { Image } from "expo-image";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import {
   Animated,
-  DeviceEventEmitter,
   Dimensions,
   FlatList,
   Modal,
+  RefreshControl,
   SafeAreaView,
+  SectionList,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { useMediaGrid } from "./Midia.script";
 import { useMidiaStyles } from "./Midia.styles";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
-
 interface MediaGridProps {
   userProfileId?: string;
   isMyProfile: boolean;
+  onRefresh?: () => Promise<void> | void;
+  refreshing?: boolean;
+  profileHeader?: React.ReactElement;
+  tabBar?: React.ReactElement;
 }
 
 const getImageUri = (item: string | { uri: string }) => {
@@ -61,91 +65,79 @@ const SkeletonItem = ({ styles }: { styles: any }) => {
 export default function MediaGrid({
   userProfileId,
   isMyProfile,
+  onRefresh,
+  refreshing = false,
+  profileHeader,
+  tabBar,
 }: MediaGridProps) {
-  const [data, setData] = useState<string[]>([]);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [initialIndex, setInitialIndex] = useState(0);
-  const [isLocalLoading, setIsLocalLoading] = useState(true);
-
   const styles = useMidiaStyles();
-  const fetchingRef = useRef(false);
-  const { request } = useApi();
 
-  const fetchMedia = useCallback(
-    async (isRefresh = false) => {
-      if (fetchingRef.current) return;
-      fetchingRef.current = true;
+  const {
+    data,
+    isLocalLoading,
+    modalVisible,
+    initialIndex,
+    openCarousel,
+    closeModal,
+  } = useMediaGrid({ userProfileId, isMyProfile });
 
-      if (!isRefresh) setIsLocalLoading(true);
+  const displayData = isLocalLoading
+    ? Array.from({ length: 6 }).map((_, i) => `skeleton-${i}`)
+    : data;
 
-      try {
-        if (!isMyProfile && !userProfileId) return;
+  const chunkedData = [];
+  for (let i = 0; i < displayData.length; i += 2) {
+    chunkedData.push(displayData.slice(i, i + 2));
+  }
 
-        const endpoint = isMyProfile
-          ? `/api/posts/me/media`
-          : `/api/posts/${userProfileId}/media`;
-
-        const response = await request({
-          urlComplement: endpoint,
-          method: "GET",
-          requireAuth: isMyProfile,
-        });
-
-        if (response.ok) {
-          const json = await response.json();
-          setData(json || []);
-        } else {
-          setData([]);
-        }
-      } catch {
-        setData([]);
-      } finally {
-        fetchingRef.current = false;
-        setIsLocalLoading(false);
-      }
-    },
-    [isMyProfile, userProfileId],
-  );
-
-  useEffect(() => {
-    fetchMedia(false);
-
-    const sub = DeviceEventEmitter.addListener("refresh_media", () => {
-      fetchMedia(true);
-    });
-
-    return () => sub.remove();
-  }, [fetchMedia]);
-
-  const openCarousel = useCallback((index: number) => {
-    setInitialIndex(index);
-    requestAnimationFrame(() => setModalVisible(true));
-  }, []);
-
-  const closeModal = useCallback(() => {
-    setModalVisible(false);
-  }, []);
-
-  const renderItem = useCallback(
-    ({ item, index }: { item: string; index: number }) => {
-      if (item.startsWith("skeleton-")) {
-        return <SkeletonItem styles={styles} />;
-      }
-
+  const renderRow = useCallback(
+    ({
+      item: rowItems,
+      index: rowIndex,
+    }: {
+      item: string[];
+      index: number;
+    }) => {
       return (
-        <TouchableOpacity
-          style={styles.imageWrapper}
-          activeOpacity={0.85}
-          onPress={() => openCarousel(index)}
+        <View
+          style={[
+            styles.columnWrapper,
+            { flexDirection: "row", width: "100%" },
+          ]}
         >
-          <Image
-            source={{ uri: getImageUri(item) }}
-            style={styles.image}
-            contentFit="cover"
-            transition={200}
-            cachePolicy="memory-disk"
-          />
-        </TouchableOpacity>
+          {rowItems.map((item, colIndex) => {
+            const actualIndex = rowIndex * 2 + colIndex;
+
+            if (item.startsWith("skeleton-")) {
+              return (
+                <SkeletonItem key={`skel-${actualIndex}`} styles={styles} />
+              );
+            }
+
+            return (
+              <TouchableOpacity
+                key={`media-${actualIndex}`}
+                style={styles.imageWrapper}
+                activeOpacity={0.85}
+                onPress={() => openCarousel(actualIndex)}
+              >
+                <Image
+                  source={{ uri: getImageUri(item) }}
+                  style={styles.image}
+                  contentFit="cover"
+                  transition={200}
+                  cachePolicy="memory-disk"
+                />
+              </TouchableOpacity>
+            );
+          })}
+
+          {rowItems.length === 1 && (
+            <View
+              style={[styles.imageWrapper, { backgroundColor: "transparent" }]}
+            />
+          )}
+        </View>
       );
     },
     [openCarousel, styles],
@@ -161,25 +153,22 @@ export default function MediaGrid({
     );
   }, [isLocalLoading, styles]);
 
-  const displayData = isLocalLoading
-    ? Array.from({ length: 6 }).map((_, i) => `skeleton-${i}`)
-    : data;
-
   return (
     <>
-      <FlatList
-        data={displayData}
-        keyExtractor={(item, index) => `media-${item}-${index}`}
-        numColumns={2}
-        renderItem={renderItem}
-        contentContainerStyle={[styles.listContainer, { minHeight: 400 }]}
-        columnWrapperStyle={
-          displayData.length > 1 ? styles.columnWrapper : undefined
+      <SectionList
+        sections={[{ data: chunkedData }]}
+        keyExtractor={(item, index) => `media-row-${index}`}
+        renderItem={renderRow}
+        ListHeaderComponent={profileHeader}
+        renderSectionHeader={() => tabBar || <></>}
+        stickySectionHeadersEnabled={true}
+        refreshControl={
+          onRefresh ? (
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          ) : undefined
         }
+        contentContainerStyle={[styles.listContainer, { minHeight: 400 }]}
         showsVerticalScrollIndicator={false}
-        removeClippedSubviews
-        maxToRenderPerBatch={10}
-        windowSize={5}
         ListEmptyComponent={renderEmptyComponent}
       />
 

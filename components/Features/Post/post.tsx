@@ -3,7 +3,9 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 
 import ProfileImage from "@/components/Features/Profile/ProfileImage";
 import DisplayImages from "@/components/Feedback/DisplayImages/DisplayImage";
+import HighlightedText from "@/components/UI/HighLightText";
 import IconButton from "@/components/UI/IconButton/IconButton";
+import { useTheme } from "@/context/ThemeContext";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { formatDate } from "@/utils/datePost.utils";
 import { usePost } from "./Post.script";
@@ -19,6 +21,7 @@ interface PostProps {
   edited?: boolean;
   myProfile?: boolean;
   createdAt?: string;
+  searchTerm?: string;
 }
 
 export default function Post({
@@ -31,9 +34,11 @@ export default function Post({
   edited = false,
   myProfile = true,
   createdAt,
+  searchTerm = "",
 }: PostProps) {
   const styles = useGlobalStyles();
   const postStyles = usePostStyles();
+  const { colors } = useTheme();
 
   const {
     showOptions,
@@ -58,7 +63,14 @@ export default function Post({
         <View style={postStyles.userInfo}>
           <ProfileImage size={44} wrapper={false} imageName={imageProfileUrl} />
           <View style={postStyles.userTextContainer}>
-            <Text style={postStyles.username}>{userName}</Text>
+            <View style={postStyles.metaDataContainer}>
+              <HighlightedText
+                text={userName}
+                searchTerm={searchTerm}
+                textStyle={postStyles.username}
+                highlightColor={colors.primary}
+              />
+            </View>
             <View style={postStyles.metaDataContainer}>
               <Text style={postStyles.timeText}>
                 {formatDate(createdAt as string)}
@@ -132,7 +144,14 @@ export default function Post({
 
       {/* CONTEÚDO */}
       <View style={postStyles.contentBody}>
-        {text ? <Text style={postStyles.description}>{text}</Text> : null}
+        {text ? (
+          <HighlightedText
+            text={text}
+            searchTerm={searchTerm}
+            textStyle={postStyles.description}
+            highlightColor={colors.primary}
+          />
+        ) : null}
 
         <View style={postStyles.imageContainer}>
           <DisplayImages files={postImageUrl || []} />

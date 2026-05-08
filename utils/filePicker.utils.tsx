@@ -7,7 +7,8 @@ export async function pickImage(isSquare: boolean = true) {
   const result = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ["images"],
     quality: 1,
-    allowsEditing: false,
+    allowsEditing: true,
+    aspect: isSquare ? [1, 1] : [16, 9],
   });
 
   if (result.canceled) return null;

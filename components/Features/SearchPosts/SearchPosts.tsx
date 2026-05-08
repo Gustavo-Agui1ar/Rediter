@@ -8,8 +8,8 @@ import {
   Text,
   View,
 } from "react-native";
-import { getId, usePosts } from "./Posts.script";
-import { useStylesPosts } from "./Posts.style";
+import { useStylesPosts } from "./SearchPost.style";
+import { getId, useSearchPosts } from "./SearchPosts.script";
 
 const MemoizedPost = memo(Post);
 
@@ -33,24 +33,31 @@ const PostSkeleton = () => {
   );
 };
 
-interface PostsProps {
-  myProfile: boolean;
+interface SearchPostsProps {
+  searchTerm: string;
+  onlyWithMedia?: boolean;
+  myProfile?: boolean;
   onRefresh?: () => Promise<void>;
   refreshing?: boolean;
   profileHeader?: React.ReactElement;
   tabBar?: React.ReactElement;
 }
 
-export default function Posts({
-  myProfile,
+export default function SearchPosts({
+  searchTerm,
+  onlyWithMedia = false,
+  myProfile = false,
   onRefresh,
   refreshing = false,
   profileHeader,
   tabBar,
-}: PostsProps) {
+}: SearchPostsProps) {
   const { colors } = useTheme();
   const styles = useStylesPosts();
-  const { posts, initialLoading, loadingMore, loadMore } = usePosts();
+  const { posts, initialLoading, loadingMore, loadMore } = useSearchPosts(
+    searchTerm,
+    onlyWithMedia,
+  );
 
   const displayData = initialLoading
     ? ([
@@ -77,11 +84,12 @@ export default function Posts({
             edited={item.edited}
             createdAt={item.createdAt}
             myProfile={myProfile}
+            searchTerm={searchTerm}
           />
         </View>
       );
     },
-    [myProfile],
+    [myProfile, searchTerm],
   );
 
   return (
@@ -90,7 +98,6 @@ export default function Posts({
       renderItem={renderItem}
       keyExtractor={(item, index) => {
         if (item._isSkeleton) return item.id;
-
         const id = getId(item);
         return id ? id.toString() : `idx-${index}`;
       }}
@@ -117,7 +124,11 @@ export default function Posts({
         if (initialLoading) return null;
         return (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Nenhum post encontrado</Text>
+            <Text style={styles.emptyText}>
+              {searchTerm
+                ? `Nenhum post encontrado para "${searchTerm}"`
+                : "Digite algo para pesquisar"}
+            </Text>
           </View>
         );
       }}

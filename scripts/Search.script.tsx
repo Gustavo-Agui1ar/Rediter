@@ -10,7 +10,7 @@ export function useSearch() {
     { id: "media", label: "Mídias" },
   ];
 
-  const handleSearch = useCallback(() => {
+  const handleSearch = useCallback(async () => {
     console.log("Buscando por:", searchQuery);
   }, [searchQuery]);
 

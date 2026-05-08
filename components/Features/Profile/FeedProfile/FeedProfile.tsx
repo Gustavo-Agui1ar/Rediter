@@ -1,10 +1,10 @@
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 import { DeviceEventEmitter, View } from "react-native";
 
 import Midiagrid from "@/components/Features/Profile/Midia/Midia";
 import Posts from "@/components/Features/Profile/Posts/Posts";
 import TabBar from "@/components/Layout/TabBar/TabBar";
-import { useTheme } from "@/context/ThemeContext";
+import { useLoading } from "@/context/loadingContext";
 import { useFeedStyles } from "./FeedProfile.style";
 
 interface FeedProfileProps {
@@ -17,20 +17,23 @@ export default function FeedProfile({
   onRefreshProfile,
 }: FeedProfileProps) {
   const styles = useFeedStyles();
-  const { colors } = useTheme();
-
   const [activeTab, setActiveTab] = useState("posts");
+  const { setLoading, loading } = useLoading();
 
   const handleGlobalRefresh = async () => {
-    await onRefreshProfile();
-    DeviceEventEmitter.emit("refresh_posts");
-    DeviceEventEmitter.emit("refresh_media");
-  };
+    setLoading(true);
+    try {
+      await onRefreshProfile();
 
-  const renderHeader = useCallback(
-    () => <View style={styles.headerWrapper}>{headerComponent}</View>,
-    [headerComponent, styles.headerWrapper],
-  );
+      if (activeTab === "posts") {
+        DeviceEventEmitter.emit("refresh_posts");
+      } else if (activeTab === "media") {
+        DeviceEventEmitter.emit("refresh_media");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const tabs = [
     { id: "posts", label: "Posts" },
@@ -38,27 +41,46 @@ export default function FeedProfile({
     { id: "likes", label: "Curtidas" },
   ];
 
+  const profileHeader = (
+    <View style={styles.headerWrapper}>{headerComponent}</View>
+  );
+  const tabBarComponent = (
+    <TabBar items={tabs} active={activeTab} onChange={setActiveTab} />
+  );
+
   function renderContent() {
     switch (activeTab) {
       case "posts":
         return (
-          <View style={styles.tabItemContainer}>
-            <Posts myProfile={true} />
-          </View>
+          <Posts
+            myProfile={true}
+            onRefresh={handleGlobalRefresh}
+            refreshing={loading}
+            profileHeader={profileHeader}
+            tabBar={tabBarComponent}
+          />
         );
 
       case "media":
         return (
-          <View style={styles.tabItemContainer}>
-            <Midiagrid isMyProfile={true} />
-          </View>
+          <Midiagrid
+            isMyProfile={true}
+            onRefresh={handleGlobalRefresh}
+            refreshing={loading}
+            profileHeader={profileHeader}
+            tabBar={tabBarComponent}
+          />
         );
 
       case "likes":
         return (
-          <View style={styles.tabItemContainer}>
-            <Posts myProfile={false} />
-          </View>
+          <Posts
+            myProfile={false}
+            onRefresh={handleGlobalRefresh}
+            refreshing={loading}
+            profileHeader={profileHeader}
+            tabBar={tabBarComponent}
+          />
         );
 
       default:
@@ -66,13 +88,5 @@ export default function FeedProfile({
     }
   }
 
-  return (
-    <View style={styles.container}>
-      {renderHeader()}
-
-      <TabBar items={tabs} active={activeTab} onChange={setActiveTab} />
-
-      <View style={{ flex: 1 }}>{renderContent()}</View>
-    </View>
-  );
+  return <View style={styles.container}>{renderContent()}</View>;
 }

@@ -24,18 +24,25 @@ export default function TextBox({
     <View style={[styles.container, focused && styles.focused]}>
       <View style={styles.inputWrapper}>
         <TextInput
+          {...props}
           style={[
             styles.base,
             {
               paddingRight: hasRightIcon ? 36 : 0,
             },
+            props.style,
           ]}
-          {...props}
           multiline={!isPassword}
           secureTextEntry={isPassword ? secure : false}
           placeholderTextColor={colors.textMuted}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
+          onFocus={(e) => {
+            setFocused(true);
+            if (props.onFocus) props.onFocus(e);
+          }}
+          onBlur={(e) => {
+            setFocused(false);
+            if (props.onBlur) props.onBlur(e);
+          }}
         />
 
         {isPassword && (

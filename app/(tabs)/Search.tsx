@@ -1,15 +1,26 @@
-import { Header, TextBox } from "@/components/components";
-import Posts from "@/components/Features/Profile/Posts/Posts";
+import {
+  Header,
+  SearchPosts,
+  SearchUser,
+  TextBox
+} from "@/components/components";
 import TabBar from "@/components/Layout/TabBar/TabBar";
+import { useLoading } from "@/context/loadingContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useSearch } from "@/scripts/Search.script";
 import { useStyles } from "@/styles/search.styles";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 export default function Search() {
   const { colors } = useTheme();
   const styles = useStyles();
   const { state, actions } = useSearch();
+  const { loading: globalLoading } = useLoading();
+
+  const users = [
+    { id: 1, name: "John Doe" },
+    { id: 2, name: "Jane Smith" },
+  ];
 
   function renderHeader() {
     return (
@@ -21,6 +32,7 @@ export default function Search() {
           isSearch={true}
           onSearch={actions.handleSearch}
           style={{ width: "100%" }}
+          editable={!globalLoading}
         />
       </Header>
     );
@@ -28,25 +40,31 @@ export default function Search() {
 
   function renderContent() {
     switch (state.activeTab) {
-      case "posts":
+      case "people":
         return (
           <View style={styles.postsContainer}>
-            <Posts myProfile={false} />
+            <SearchUser
+              key={`tab-${state.activeTab}`}
+              searchTerm={state.searchQuery}
+              onRefresh={actions.handleSearch}
+              refreshing={globalLoading}
+            />
           </View>
         );
 
-      case "people":
-        return (
-          <Text style={{ margin: 20 }}>
-            Pessoas relacionadas à sua busca aparecerão aqui.
-          </Text>
-        );
-
+      case "posts":
       case "media":
         return (
-          <Text style={{ ...styles.textTitle, margin: 20 }}>
-            Mídias relacionadas à sua busca aparecerão aqui.
-          </Text>
+          <View style={styles.postsContainer}>
+            <SearchPosts
+              key={`tab-${state.activeTab}`}
+              searchTerm={state.searchQuery}
+              myProfile={false}
+              onRefresh={actions.handleSearch}
+              refreshing={globalLoading}
+              onlyWithMedia={state.activeTab === "media"}
+            />
+          </View>
         );
 
       default:

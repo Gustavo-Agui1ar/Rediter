@@ -8,6 +8,7 @@ export const useTextboxStyles = makeStyles((colors: ThemeColors) => ({
     borderRadius: 12,
     borderColor: colors.divider,
     backgroundColor: colors.surface,
+    color: colors.textPrimary,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },

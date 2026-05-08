@@ -3,57 +3,109 @@ import { makeStyles } from "@/utils/makeStyles.utils";
 
 export const useStylesButton = makeStyles((colors: ThemeColors) => ({
   base: {
+    flexDirection: "row" as const,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+    borderRadius: 14,
+
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+
+  small: {
+    minHeight: 36,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+
+  medium: {
+    minHeight: 48,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+  },
+
+  large: {
+    minHeight: 56,
+    paddingHorizontal: 24,
     paddingVertical: 16,
-    paddingHorizontal: 20,
-    width: "100%",
-    borderRadius: 8,
   },
 
   baseWithIcon: {
-    paddingVertical: 16,
     paddingHorizontal: 20,
   },
 
   fill: {
+    backgroundColor: colors.primary,
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+
+  fillPressed: {
     backgroundColor: colors.primaryDark,
+    transform: [{ scale: 0.98 }],
+  },
+
+  border: {
+    backgroundColor: "transparent" as const,
     borderWidth: 2,
-    borderColor: colors.primaryDark,
+    borderColor: colors.primary,
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+
+  borderPressed: {
+    backgroundColor: `${colors.primary}15`,
   },
 
   remove_fill: {
     backgroundColor: colors.error,
-    color: colors.error,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.error,
+  },
+
+  remove_fillPressed: {
+    opacity: 0.9,
+    transform: [{ scale: 0.98 }],
   },
 
   remove_border: {
+    backgroundColor: "transparent" as const,
     borderWidth: 2,
     borderColor: colors.error,
-    backgroundColor: "transparent" as const,
+    elevation: 0,
+    shadowOpacity: 0,
   },
 
-  border: {
-    borderWidth: 2,
-    borderColor: colors.primary,
-    backgroundColor: "transparent" as const,
+  remove_borderPressed: {
+    backgroundColor: `${colors.error}15`,
+  },
+
+  disabled: {
+    opacity: 0.5,
   },
 
   buttonText: {
-    color: colors.white,
-    textTransform: "uppercase" as const,
+    fontWeight: "700" as const,
+    letterSpacing: 0.5,
     textAlign: "center" as const,
+    textTransform: "uppercase" as const,
     fontFamily: "sans-serif",
   },
 
-  textBorder: {
-    color: colors.primary,
-  },
+  textSmall: { fontSize: 12 },
+  textMedium: { fontSize: 14 },
+  textLarge: { fontSize: 16 },
 
-  textOnFill: {
-    color: colors.white,
-  },
-  textRemove: {
-    color: colors.error,
+  textOnFill: { color: colors.white },
+  textBorder: { color: colors.primary },
+  textRemove: { color: colors.error },
+
+  icon: {
+    alignItems: "center",
+    justifyContent: "center",
   },
 }));

@@ -3,7 +3,7 @@ import { useApi } from "@/utils/request.utils";
 import * as FileSystem from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Alert, DeviceEventEmitter } from "react-native";
 
 interface UsePostProps {
@@ -22,11 +22,10 @@ export function usePost({
   const [showOptions, setShowOptions] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const { request } = useApi();
+  const toggleOptions = useCallback(() => setShowOptions((prev) => !prev), []);
+  const closeOptions = useCallback(() => setShowOptions(false), []);
 
-  const toggleOptions = () => setShowOptions((prev) => !prev);
-  const closeOptions = () => setShowOptions(false);
-
-  const handleEditPost = () => {
+  const handleEditPost = useCallback(() => {
     closeOptions();
     router.push({
       pathname: "/NewPost",
@@ -38,18 +37,15 @@ export function usePost({
         imageUrls: JSON.stringify(postImageUrl || []),
       },
     });
-  };
+  }, [postId, text, Location, postImageUrl, closeOptions]);
 
-  const handleDeletePost = () => {
+  const handleDeletePost = useCallback(() => {
     closeOptions();
     Alert.alert(
       "Excluir Publicação",
       "Deseja realmente apagar este post? Esta ação não pode ser desfeita.",
       [
-        {
-          text: "Cancelar",
-          style: "cancel",
-        },
+        { text: "Cancelar", style: "cancel" },
         {
           text: "Excluir",
           style: "destructive",
@@ -65,9 +61,9 @@ export function usePost({
         },
       ],
     );
-  };
+  }, [postId, request, closeOptions]);
 
-  const handleDownloadMedia = async () => {
+  const handleDownloadMedia = useCallback(async () => {
     if (!postImageUrl || postImageUrl.length === 0) {
       Alert.alert("Aviso", "Não há mídias para baixar neste post.");
       closeOptions();
@@ -79,22 +75,20 @@ export function usePost({
     try {
       let permission = await MediaLibrary.getPermissionsAsync();
 
-      if (!permission.granted)
+      if (!permission.granted) {
         permission = await MediaLibrary.requestPermissionsAsync();
+      }
 
       if (!permission.granted) {
         Alert.alert(
           "Permissão negada",
           "Precisamos de acesso à galeria para salvar a imagem.",
         );
-
         closeOptions();
         return;
       }
 
-      for (let i = 0; i < postImageUrl.length; i++) {
-        const imageUrl = postImageUrl[i];
-
+      const downloadPromises = postImageUrl.map(async (imageUrl) => {
         let validUrl = imageUrl;
 
         if (
@@ -104,15 +98,12 @@ export function usePost({
           const cleanImage = validUrl.startsWith("/")
             ? validUrl.slice(1)
             : validUrl;
-
           validUrl = `${configs.ProductionURL}/api/pictures/${cleanImage}`;
         }
 
         const cleanUrl = validUrl.split("?")[0];
-
         const filename =
           cleanUrl.split("/").pop() || `post_media_${Date.now()}.jpg`;
-
         const fileUri = `${FileSystem.documentDirectory}${filename}`;
 
         const downloadedFile = await FileSystem.downloadAsync(
@@ -124,11 +115,12 @@ export function usePost({
           throw new Error(`Erro HTTP ${downloadedFile.status}`);
         }
 
-        await MediaLibrary.saveToLibraryAsync(downloadedFile.uri);
-      }
+        return MediaLibrary.saveToLibraryAsync(downloadedFile.uri);
+      });
+
+      await Promise.all(downloadPromises);
 
       Alert.alert("Sucesso", "Mídia(s) salva(s) na sua galeria!");
-
       closeOptions();
     } catch (error) {
       Alert.alert("Erro", "Não foi possível concluir o download da mídia.");
@@ -136,7 +128,7 @@ export function usePost({
     } finally {
       setIsDownloading(false);
     }
-  };
+  }, [postImageUrl, closeOptions]);
 
   return {
     showOptions,

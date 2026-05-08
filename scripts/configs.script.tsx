@@ -74,7 +74,10 @@ export function useConfigs() {
       setLoading(true);
 
       const cached = await Storage.getProfileBasic();
-      if (cached) applyProfileData(cached);
+      if (cached) {
+        applyProfileData(cached);
+        return;
+      }
 
       const response = await request({
         urlComplement: "/api/users/me",

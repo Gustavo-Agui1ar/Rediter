@@ -28,7 +28,7 @@ export default function Configs() {
         contentContainerStyle={styles.scroll_content}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={[styles.content]}>
+        <View style={[styles.content, configsStyles.configsContainer]}>
           <View>
             <View style={configsStyles.coverOverlay}>
               <ProfileCover
@@ -126,20 +126,21 @@ export default function Configs() {
             </View>
 
             <Divider text="Log-out" />
+            <View style={configsStyles.lastContainerConfig}>
+              <Button
+                title="Excluir Conta"
+                type="remove_border"
+                onPress={() => actions.deleteAccount()}
+                disabled={state.loading}
+              />
 
-            <Button
-              title="Excluir Conta"
-              type="remove_border"
-              onPress={() => actions.deleteAccount()}
-              disabled={state.loading}
-            />
-
-            <Button
-              title="Sair"
-              type="remove_fill"
-              onPress={() => actions.logOut()}
-              disabled={state.loading}
-            />
+              <Button
+                title="Sair"
+                type="remove_fill"
+                onPress={() => actions.logOut()}
+                disabled={state.loading}
+              />
+            </View>
           </View>
         </View>
       </ScrollView>
