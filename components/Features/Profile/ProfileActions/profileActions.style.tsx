@@ -4,9 +4,14 @@ import { makeStyles } from "@/utils/makeStyles.utils";
 
 export const useProfileActionsStyles = makeStyles((colors: ThemeColors) => ({
   container: {
+    flex: 1,
+    width: "100%",
+  },
+
+  row: {
     flexDirection: "row",
     width: "100%",
-    padding: 8,
+    paddingHorizontal: 8,
     justifyContent: "space-between",
     alignItems: "center",
   },
@@ -26,5 +31,14 @@ export const useProfileActionsStyles = makeStyles((colors: ThemeColors) => ({
   followButton: {
     flex: 1,
     maxWidth: 140,
+  },
+
+  description: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    lineHeight: 24,
+    paddingTop: 16,
+    paddingRight: 16,
+    textAlign: "justify" as const,
   },
 }));

@@ -10,6 +10,7 @@ type ProfileBasic = {
   coverUrl: string;
   userName: string;
   email?: string;
+  description?: string;
   updatedAt: number;
 };
 

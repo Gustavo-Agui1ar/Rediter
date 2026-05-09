@@ -25,4 +25,15 @@ export const useStylesUserItem = makeStyles((colors: ThemeColors) => ({
     alignItems: "center",
     justifyContent: "center",
   },
+
+  containerUser: {
+    gap: 4,
+    flex: 1,
+    paddingRight: 16,
+  },
+
+  textDescription: {
+    color: colors.textMuted,
+    fontSize: 14,
+  },
 }));

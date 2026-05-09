@@ -8,11 +8,13 @@ import { useProfileActionsStyles } from "./profileActions.style";
 interface ProfileActionsProps {
   canFollow?: boolean;
   userName?: string;
+  description?: string;
 }
 
 export default function ProfileActions({
   canFollow = true,
   userName = "Usuário",
+  description = "",
 }: ProfileActionsProps) {
   const [isFollowing, setIsFollowing] = useState(false);
 
@@ -30,31 +32,39 @@ export default function ProfileActions({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.nameText} numberOfLines={1}>
-        {userName}
-      </Text>
+      <View style={styles.row}>
+        <Text style={styles.nameText} numberOfLines={1}>
+          {userName}
+        </Text>
 
-      <View style={styles.actionsRow}>
-        {canFollow ? (
-          <>
-            <Button
-              title={isFollowing ? "Seguindo" : "Seguir"}
-              type={isFollowing ? "border" : "fill"}
-              onPress={updateFollowStatus}
-              style={styles.followButton}
+        <View style={styles.actionsRow}>
+          {canFollow ? (
+            <>
+              <Button
+                title={isFollowing ? "Seguindo" : "Seguir"}
+                type={isFollowing ? "border" : "fill"}
+                onPress={updateFollowStatus}
+                style={styles.followButton}
+              />
+
+              <IconButton icon="message" type="border" size={44} />
+            </>
+          ) : (
+            <IconButton
+              icon="configuration"
+              type="border"
+              size={44}
+              onPress={goToConfig}
             />
-
-            <IconButton icon="message" type="border" size={44} />
-          </>
-        ) : (
-          <IconButton
-            icon="configuration"
-            type="border"
-            size={44}
-            onPress={goToConfig}
-          />
-        )}
+          )}
+        </View>
       </View>
+
+      {description.length > 0 && (
+        <View style={styles.row}>
+          <Text style={styles.description}>{description}</Text>
+        </View>
+      )}
     </View>
   );
 }

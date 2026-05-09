@@ -25,7 +25,11 @@ export default function Perfil() {
       </View>
 
       <View style={stylesPerfil.actionsContainer}>
-        <ProfileActions canFollow={false} userName={state.form.userName} />
+        <ProfileActions
+          canFollow={false}
+          userName={state.form.userName}
+          description={state.form.description}
+        />
       </View>
     </View>
   );

@@ -14,6 +14,7 @@ export function usePerfil() {
     coverUrl: "",
     userName: "UserName",
     email: "",
+    description: "",
   });
 
   const applyProfile = useCallback((data: any) => {
@@ -22,6 +23,7 @@ export function usePerfil() {
       coverUrl: data.coverUrl || "",
       userName: data.userName || "",
       email: data.email || "",
+      description: data.description || "",
     });
   }, []);
 
@@ -40,6 +42,7 @@ export function usePerfil() {
           coverUrl: json.imageCover,
           userName: json.name,
           email: json.email,
+          description: json.description,
         };
 
         applyProfile(data);

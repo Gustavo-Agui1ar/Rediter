@@ -15,13 +15,16 @@ interface FormState {
   name: string;
   email: string;
   password: string;
+  description?: string;
 }
 
 const INITIAL_FORM: FormState = {
   name: "",
   email: "",
   password: "",
+  description: "",
 };
+const MAX_DESCRIPTION_LENGTH = 150;
 
 export function useConfigs() {
   const { loading, setLoading } = useLoading();
@@ -40,6 +43,10 @@ export function useConfigs() {
   const onChangeForm = useCallback(
     (field: keyof FormState, value: string) => {
       setForm((prev) => {
+        if (field === "description" && value.length > MAX_DESCRIPTION_LENGTH) {
+          return prev;
+        }
+
         if (prev[field] === value) return prev;
 
         return {
@@ -58,6 +65,7 @@ export function useConfigs() {
       name: data.userName || "",
       email: data.email || "",
       password: "",
+      description: data.description || "",
     });
 
     setProfileImage({
@@ -91,6 +99,7 @@ export function useConfigs() {
         email: json.email,
         imageUrl: json.imageName,
         coverUrl: json.imageCover,
+        description: json.description,
       };
 
       applyProfileData(data);
@@ -184,6 +193,7 @@ export function useConfigs() {
     const name = form.name?.trim() || "";
     const email = form.email?.trim().toLowerCase() || "";
     const password = form.password || "";
+    const description = (form.description || "").replace(/\s+/g, " ").trim();
 
     if (!name) return "O campo Nome não pode estar vazio.";
 
@@ -191,6 +201,10 @@ export function useConfigs() {
 
     if (!LoginValidator.isEmailValid(email))
       return "O formato do e-mail é inválido.";
+
+    if (description.length > MAX_DESCRIPTION_LENGTH) {
+      return `A descrição deve ter no máximo ${MAX_DESCRIPTION_LENGTH} caracteres.`;
+    }
 
     if (password && !LoginValidator.isPasswordValid(password))
       return "A nova senha é inválida.";
@@ -202,7 +216,10 @@ export function useConfigs() {
     const formData = new FormData();
     const name = form.name.trim();
     const email = form.email.trim().toLowerCase();
-
+    const description = (form.description || "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .substring(0, MAX_DESCRIPTION_LENGTH);
     if (profileImage.changed && profileImage.local) {
       const fileData = createFileData(profileImage.local);
       if (fileData) formData.append("File", fileData);
@@ -216,6 +233,8 @@ export function useConfigs() {
     formData.append("Name", name);
     formData.append("Email", email);
 
+    if ((form.description || "").replace(/\s+/g, " ").trim().length > 0)
+      formData.append("Description", description);
     if (form.password) formData.append("Password", form.password);
 
     return formData;
@@ -247,6 +266,7 @@ export function useConfigs() {
         coverUrl: coverImage.local?.uri || coverImage.remote,
         userName: form.name.trim(),
         email: form.email.trim().toLowerCase(),
+        description: (form.description || "").replace(/\s+/g, " ").trim(),
       });
 
       setSuccessMsg("Informações atualizadas com sucesso!");
@@ -279,6 +299,7 @@ export function useConfigs() {
       error,
       successMsg,
       loading,
+      maxDescriptionLength: MAX_DESCRIPTION_LENGTH,
     }),
     [form, profileImage, coverImage, error, successMsg, loading],
   );

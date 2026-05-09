@@ -8,7 +8,12 @@ import { useFollow } from "./UserItem.script";
 import { useStylesUserItem } from "./UserItem.style";
 
 interface UserItemProps {
-  user: { userid: number; userName: string; profileImageName: string };
+  user: {
+    userid: number;
+    userName: string;
+    profileImageName: string;
+    description: string;
+  };
   searchTerm: string;
 }
 
@@ -23,15 +28,19 @@ const UserItem = ({ user, searchTerm }: UserItemProps) => {
     <View style={styles.container}>
       <View style={styles.userInfo}>
         <ProfileImage size={44} imageName={user.profileImageName} />
-
-        <Text style={styles.userName} numberOfLines={1} ellipsizeMode="tail">
-          <HighlightedText
-            text={user.userName}
-            searchTerm={searchTerm}
-            textStyle={styles.userName}
-            highlightColor={colors.primary}
-          />
-        </Text>
+        <View style={styles.containerUser}>
+          <Text style={styles.userName} numberOfLines={1} ellipsizeMode="tail">
+            <HighlightedText
+              text={user.userName}
+              searchTerm={searchTerm}
+              textStyle={styles.userName}
+              highlightColor={colors.primary}
+            />
+          </Text>
+          <Text style={styles.textDescription} numberOfLines={1}>
+            {user.description || ""}
+          </Text>
+        </View>
       </View>
 
       <View style={styles.buttonContainer}>

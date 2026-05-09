@@ -2,7 +2,6 @@ import { useTheme } from "@/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
-
 import { useTextboxStyles } from "./textbox.style";
 
 export default function TextBox({
@@ -20,6 +19,9 @@ export default function TextBox({
 
   const hasRightIcon = isPassword || isSearch;
 
+  const isMultiline =
+    !isPassword && props.numberOfLines && props.numberOfLines > 1;
+
   return (
     <View style={[styles.container, focused && styles.focused]}>
       <View style={styles.inputWrapper}>
@@ -29,6 +31,8 @@ export default function TextBox({
             styles.base,
             {
               paddingRight: hasRightIcon ? 36 : 0,
+              textAlignVertical: isMultiline ? "top" : "center",
+              minHeight: isMultiline ? props.numberOfLines * 24 : "auto",
             },
             props.style,
           ]}

@@ -18,8 +18,28 @@ import { useConfigs } from "@/scripts/Configs.script";
 export default function Configs() {
   const { state, actions } = useConfigs();
   const { theme, toggleTheme } = useTheme();
+  const { colors } = useTheme();
   const configsStyles = useConfigsStyles();
   const styles = useGlobalStyles();
+
+  const renderCharCounter = () => {
+    const currentLength = state.form.description?.length ?? 0;
+    return (
+      <Text
+        style={{
+          alignSelf: "flex-end",
+          fontSize: 12,
+          fontWeight: "bold",
+          color:
+            currentLength >= state.maxDescriptionLength
+              ? colors.error
+              : colors.textSecondary,
+        }}
+      >
+        {currentLength} / {state.maxDescriptionLength}
+      </Text>
+    );
+  };
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={"height"}>
@@ -68,7 +88,7 @@ export default function Configs() {
           </View>
 
           <View style={configsStyles.contentTextFix}>
-            <Divider text="Informações da Conta" />
+            <Divider text="Sobre Você" />
 
             <AlertBanner
               message={state.error || undefined}
@@ -89,6 +109,17 @@ export default function Configs() {
               }
               editable={!state.loading}
             />
+
+            <TextBox
+              placeholder="Descrição"
+              value={state.form.description}
+              onChangeText={(text: string) =>
+                actions.onChangeForm("description", text)
+              }
+            >
+              {renderCharCounter()}
+            </TextBox>
+            <Divider text="Segurança" />
 
             <TextBox
               placeholder="Email"
