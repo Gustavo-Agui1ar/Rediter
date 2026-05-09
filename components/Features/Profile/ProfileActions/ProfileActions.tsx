@@ -6,62 +6,54 @@ import { Text, View } from "react-native";
 import { useProfileActionsStyles } from "./profileActions.style";
 
 interface ProfileActionsProps {
-  canFollow?: boolean;
+  OwnProfile?: boolean;
   userName?: string;
   description?: string;
+  initialIsFollowing?: boolean;
 }
 
 export default function ProfileActions({
-  canFollow = true,
+  OwnProfile = false,
   userName = "Usuário",
   description = "",
+  initialIsFollowing = false,
 }: ProfileActionsProps) {
-  const [isFollowing, setIsFollowing] = useState(false);
-
+  const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const styles = useProfileActionsStyles();
 
-  function updateFollowStatus() {
-    setIsFollowing((prev) => !prev);
-  }
-
-  function goToConfig() {
-    if (!canFollow) {
-      router.push("/Configs");
-    }
-  }
+  const updateFollowStatus = () => setIsFollowing((prev) => !prev);
+  const goToConfig = () => OwnProfile && router.push("/Configs");
 
   return (
     <View style={styles.container}>
-      <View style={styles.row}>
-        <Text style={styles.nameText} numberOfLines={1}>
-          {userName}
-        </Text>
-
-        <View style={styles.actionsRow}>
-          {canFollow ? (
-            <>
-              <Button
-                title={isFollowing ? "Seguindo" : "Seguir"}
-                type={isFollowing ? "border" : "fill"}
-                onPress={updateFollowStatus}
-                style={styles.followButton}
-              />
-
-              <IconButton icon="message" type="border" size={44} />
-            </>
-          ) : (
-            <IconButton
-              icon="configuration"
-              type="border"
-              size={44}
-              onPress={goToConfig}
+      <View style={styles.actionsRow}>
+        {!OwnProfile ? (
+          <>
+            <Button
+              title={isFollowing ? "Seguindo" : "Seguir"}
+              type={isFollowing ? "border" : "fill"}
+              size="small"
+              onPress={updateFollowStatus}
+              style={styles.followButton}
             />
-          )}
-        </View>
+            <IconButton icon="message" type="border" size={36} />
+          </>
+        ) : (
+          <IconButton
+            icon="configuration"
+            type="border"
+            size={36}
+            onPress={goToConfig}
+          />
+        )}
       </View>
 
-      {description.length > 0 && (
-        <View style={styles.row}>
+      <Text style={styles.nameText} numberOfLines={1} ellipsizeMode="tail">
+        {userName}
+      </Text>
+
+      {!!description && (
+        <View style={styles.descriptionContainer}>
           <Text style={styles.description}>{description}</Text>
         </View>
       )}

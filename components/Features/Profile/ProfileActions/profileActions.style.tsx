@@ -4,41 +4,45 @@ import { makeStyles } from "@/utils/makeStyles.utils";
 
 export const useProfileActionsStyles = makeStyles((colors: ThemeColors) => ({
   container: {
-    flex: 1,
     width: "100%",
-  },
-
-  row: {
-    flexDirection: "row",
-    width: "100%",
-    paddingHorizontal: 8,
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-
-  nameText: {
-    fontSize: TextSize.lg,
-    fontWeight: "600",
-    color: colors.primaryLight,
+    paddingBottom: 8,
   },
 
   actionsRow: {
     flexDirection: "row",
+    justifyContent: "flex-end",
     alignItems: "center",
-    gap: 10,
+    width: "100%",
+    gap: 16,
+    marginTop: -42,
+    marginBottom: 12,
+    zIndex: 10,
+    elevation: 10,
   },
 
   followButton: {
-    flex: 1,
-    maxWidth: 140,
+    maxWidth: 100,
+    height: 36,
+    borderRadius: 18,
+  },
+
+  nameText: {
+    paddingHorizontal: 16,
+    fontSize: TextSize.lg,
+    fontWeight: "bold",
+    color: colors.primaryLight,
+  },
+
+  descriptionContainer: {
+    marginTop: 8,
+    width: "100%",
+    paddingHorizontal: 16,
   },
 
   description: {
     color: colors.textSecondary,
     fontSize: 14,
-    lineHeight: 24,
-    paddingTop: 16,
-    paddingRight: 16,
-    textAlign: "justify" as const,
+    lineHeight: 20,
+    textAlign: "left",
   },
 }));

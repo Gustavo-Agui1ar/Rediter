@@ -7,7 +7,7 @@ export const useStylesButton = makeStyles((colors: ThemeColors) => ({
     justifyContent: "center",
     alignItems: "center",
     gap: 8,
-    borderRadius: 14,
+    borderRadius: 8,
 
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
@@ -39,9 +39,9 @@ export const useStylesButton = makeStyles((colors: ThemeColors) => ({
   },
 
   fill: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.primaryDark,
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: colors.primaryDark,
   },
 
   fillPressed: {
@@ -52,13 +52,13 @@ export const useStylesButton = makeStyles((colors: ThemeColors) => ({
   border: {
     backgroundColor: "transparent" as const,
     borderWidth: 2,
-    borderColor: colors.primary,
+    borderColor: colors.primaryDark,
     elevation: 0,
     shadowOpacity: 0,
   },
 
   borderPressed: {
-    backgroundColor: `${colors.primary}15`,
+    backgroundColor: `${colors.primaryDark}15`,
   },
 
   remove_fill: {
@@ -89,7 +89,7 @@ export const useStylesButton = makeStyles((colors: ThemeColors) => ({
   },
 
   buttonText: {
-    fontWeight: "700" as const,
+    fontWeight: "600" as const,
     letterSpacing: 0.5,
     textAlign: "center" as const,
     textTransform: "uppercase" as const,
@@ -100,8 +100,8 @@ export const useStylesButton = makeStyles((colors: ThemeColors) => ({
   textMedium: { fontSize: 14 },
   textLarge: { fontSize: 16 },
 
-  textOnFill: { color: colors.white },
-  textBorder: { color: colors.primary },
+  textOnFill: { color: colors.textPrimary },
+  textBorder: { color: colors.primaryDark },
   textRemove: { color: colors.error },
 
   icon: {

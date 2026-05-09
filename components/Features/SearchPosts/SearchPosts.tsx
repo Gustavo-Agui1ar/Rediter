@@ -120,17 +120,19 @@ export default function SearchPosts({
         ) : undefined
       }
       contentContainerStyle={[styles.listContent, { minHeight: "100%" }]}
-      ListEmptyComponent={() => {
-        if (initialLoading) return null;
-        return (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              {searchTerm
-                ? `Nenhum post encontrado para "${searchTerm}"`
-                : "Digite algo para pesquisar"}
-            </Text>
-          </View>
-        );
+      renderSectionFooter={({ section }) => {
+        if (section.data.length === 0 && !initialLoading) {
+          return (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>
+                {searchTerm
+                  ? `Nenhum post encontrado para "${searchTerm}"`
+                  : "Comece a digitar para buscar postagens!"}
+              </Text>
+            </View>
+          );
+        }
+        return null;
       }}
       ListFooterComponent={
         loadingMore ? (

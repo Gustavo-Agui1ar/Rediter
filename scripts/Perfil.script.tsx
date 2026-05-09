@@ -18,12 +18,20 @@ export function usePerfil() {
   });
 
   const applyProfile = useCallback((data: any) => {
-    setForm({
-      imageUrl: data.imageUrl || "",
-      coverUrl: data.coverUrl || "",
-      userName: data.userName || "",
-      email: data.email || "",
-      description: data.description || "",
+    setForm((prevForm) => {
+      const newForm = {
+        imageUrl: data.imageUrl || "",
+        coverUrl: data.coverUrl || "",
+        userName: data.userName || "",
+        email: data.email || "",
+        description: data.description || "",
+      };
+
+      if (JSON.stringify(prevForm) === JSON.stringify(newForm)) {
+        return prevForm;
+      }
+
+      return newForm;
     });
   }, []);
 

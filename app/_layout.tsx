@@ -29,6 +29,7 @@ function AppStack() {
       <Stack.Screen name="forgotPassword" />
       <Stack.Screen name="NewPost" />
       <Stack.Screen name="sendEmail" />
+      <Stack.Screen name="profile/[id]" />
     </Stack>
   );
 }

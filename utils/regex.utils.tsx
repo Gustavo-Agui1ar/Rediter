@@ -1,19 +1,27 @@
-export const escapeRegex = (str: string): string => {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+export const escapeRegex = (str?: string): string => {
+  return (str || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 };
 
-export const getHighlightedParts = (text: string, searchTerm: string) => {
-  if (!searchTerm.trim()) return [text];
+export const getHighlightedParts = (text?: string, searchTerm?: string) => {
+  const safeText = text || "";
+  const safeSearch = searchTerm || "";
 
-  const escapedTerm = escapeRegex(searchTerm);
+  if (!safeSearch.trim()) return [safeText];
+
+  const escapedTerm = escapeRegex(safeSearch);
   const regex = new RegExp(`(${escapedTerm})`, "gi");
 
-  return text.split(regex);
+  return safeText.split(regex);
 };
 
-export const isMatch = (part: string, searchTerm: string): boolean => {
-  if (!searchTerm.trim()) return false;
-  const escapedTerm = escapeRegex(searchTerm);
+export const isMatch = (part?: string, searchTerm?: string): boolean => {
+  const safePart = part || "";
+  const safeSearch = searchTerm || "";
+
+  if (!safeSearch.trim()) return false;
+
+  const escapedTerm = escapeRegex(safeSearch);
   const regex = new RegExp(`^${escapedTerm}$`, "i");
-  return regex.test(part);
+
+  return regex.test(safePart);
 };

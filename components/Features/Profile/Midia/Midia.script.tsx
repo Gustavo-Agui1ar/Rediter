@@ -4,13 +4,13 @@ import { DeviceEventEmitter } from "react-native";
 
 interface UseMediaGridProps {
   userProfileId?: string;
-  isMyProfile: boolean;
+  refresh_id: string;
 }
 
 export function useMediaGrid({
   userProfileId,
-  isMyProfile,
-}: UseMediaGridProps) {
+  refresh_id,
+}: UseMediaGridProps & { refresh_id: string }) {
   const [data, setData] = useState<string[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [initialIndex, setInitialIndex] = useState(0);
@@ -27,16 +27,17 @@ export function useMediaGrid({
       if (!isRefresh) setIsLocalLoading(true);
 
       try {
-        if (!isMyProfile && !userProfileId) return;
+        if (!userProfileId) return;
 
-        const endpoint = isMyProfile
-          ? `/api/posts/me/media`
-          : `/api/posts/${userProfileId}/media`;
+        const endpoint =
+          userProfileId === null || userProfileId === undefined
+            ? `/api/posts/me/media`
+            : `/api/posts/user/${userProfileId}/media`;
 
         const response = await request({
           urlComplement: endpoint,
           method: "GET",
-          requireAuth: isMyProfile,
+          requireAuth: !(userProfileId === null || userProfileId === undefined),
         });
 
         if (response.ok) {
@@ -52,13 +53,13 @@ export function useMediaGrid({
         setIsLocalLoading(false);
       }
     },
-    [isMyProfile, userProfileId, request],
+    [userProfileId, request],
   );
 
   useEffect(() => {
     fetchMedia(false);
 
-    const sub = DeviceEventEmitter.addListener("refresh_media", () => {
+    const sub = DeviceEventEmitter.addListener(`${refresh_id}`, () => {
       fetchMedia(true);
     });
 

@@ -35,7 +35,6 @@ export async function deleteTokens() {
 }
 
 /* -------- PROFILE -------- */
-
 export async function saveProfileBasic(data: Omit<ProfileBasic, "updatedAt">) {
   const payload: ProfileBasic = {
     ...data,

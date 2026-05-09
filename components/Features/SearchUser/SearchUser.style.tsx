@@ -28,11 +28,16 @@ export const useStylesSearchUsers = makeStyles((colors: ThemeColors) => ({
     alignItems: "center",
   },
   emptyContainer: {
-    padding: 40,
+    flex: 1,
     alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
   },
   emptyText: {
-    color: colors.textSecondary,
     textAlign: "center",
+    marginTop: 50,
+    color: colors.textMuted,
+    fontSize: 16,
+    fontWeight: "bold",
   },
 }));

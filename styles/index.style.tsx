@@ -3,40 +3,43 @@ import { ThemeColors } from "./types/theme.types";
 
 export const useIndexStyle = makeStyles((colors: ThemeColors) => ({
   content_login: {
-    flex: 1,
-    flexGrow: 0.7,
-    width: "80%",
-    gap: 20,
-    alignItems: "center",
+    width: "100%",
+    maxWidth: 420,
+    alignSelf: "center",
+    padding: 20,
     justifyContent: "center",
-    margin: "auto",
+    alignItems: "stretch",
+    gap: 24,
   },
 
   content_fields: {
     width: "100%",
-    gap: 24,
+    gap: 20,
   },
 
   fieldContainer: {
-    marginBottom: 0,
-    gap: 8,
+    width: "100%",
+    gap: 4,
   },
 
   helperText: {
-    paddingLeft: 8,
+    paddingLeft: 4,
   },
 
   forgotPasswordLink: {
     alignSelf: "flex-end",
-    marginBottom: 24,
+    marginTop: -8,
+    marginBottom: 8,
   },
 
   googleIcon: {
-    width: 20,
-    height: 20,
+    width: 24,
+    height: 24,
   },
 
   signUpRow: {
-    marginTop: 10,
+    marginTop: 16,
+    alignItems: "center",
+    justifyContent: "center",
   },
 }));

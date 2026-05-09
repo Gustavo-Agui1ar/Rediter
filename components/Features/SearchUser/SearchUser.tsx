@@ -11,7 +11,6 @@ import {
 import { useSearchUsers } from "./SearchUser.script";
 import { useStylesSearchUsers } from "./SearchUser.style";
 
-// Componente de Skeleton para usuários
 const UserSkeleton = () => {
   const styles = useStylesSearchUsers();
   return (
@@ -50,12 +49,15 @@ export default function SearchUsers({
       ] as any)
     : users;
 
-  const renderItem = useCallback(({ item }: { item: any }) => {
-    if (item._isSkeleton) {
-      return <UserSkeleton />;
-    }
-    return <UserItem user={item} searchTerm={searchTerm} />;
-  }, []);
+  const renderItem = useCallback(
+    ({ item }: { item: any }) => {
+      if (item._isSkeleton) {
+        return <UserSkeleton />;
+      }
+      return <UserItem user={item} searchTerm={searchTerm} />;
+    },
+    [searchTerm],
+  );
 
   return (
     <SectionList
@@ -65,6 +67,20 @@ export default function SearchUsers({
       ListHeaderComponent={profileHeader}
       renderSectionHeader={() => tabBar || <></>}
       stickySectionHeadersEnabled={true}
+      renderSectionFooter={({ section }) => {
+        if (section.data.length === 0 && !initialLoading) {
+          return (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>
+                {searchTerm
+                  ? `Nenhum usuário encontrado para "${searchTerm}"`
+                  : "Comece a digitar para buscar pessoas"}
+              </Text>
+            </View>
+          );
+        }
+        return null;
+      }}
       onEndReachedThreshold={0.3}
       onEndReached={() => {
         if (!initialLoading && !loadingMore) loadMore();
@@ -75,17 +91,6 @@ export default function SearchUsers({
         ) : undefined
       }
       contentContainerStyle={[styles.listContent, { minHeight: "100%" }]}
-      ListEmptyComponent={() =>
-        !initialLoading && (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              {searchTerm
-                ? `Nenhum usuário encontrado para "${searchTerm}"`
-                : "Comece a digitar para buscar pessoas"}
-            </Text>
-          </View>
-        )
-      }
       ListFooterComponent={
         loadingMore ? (
           <View style={styles.footerLoading}>

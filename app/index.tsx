@@ -32,12 +32,14 @@ export default function Index() {
   return (
     <KeyboardAvoidingView style={[styles.container]} behavior="padding">
       {loading && <LoadingOverlay />}
+
+      <Header title="Bem-vindo ao Rediter" />
+
       <ScrollView
         style={[styles.container]}
         contentContainerStyle={styles.scroll_content}
         keyboardShouldPersistTaps="handled"
       >
-        <Header title="Bem-vindo ao Rediter" />
         <View style={indexStyles.content_login}>
           <AlertBanner
             message={state.serverError}

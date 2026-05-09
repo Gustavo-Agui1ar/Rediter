@@ -2,17 +2,19 @@ import ProfileImage from "@/components/Features/Profile/ProfileImage";
 import Button from "@/components/UI/Button/button";
 import HighlightedText from "@/components/UI/HighLightText";
 import { useTheme } from "@/context/ThemeContext";
+import { useRouter } from "expo-router";
 import React, { memo } from "react";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { useFollow } from "./UserItem.script";
 import { useStylesUserItem } from "./UserItem.style";
 
 interface UserItemProps {
   user: {
-    userid: number;
+    userID: number;
     userName: string;
     profileImageName: string;
     description: string;
+    ownProfile: boolean;
   };
   searchTerm: string;
 }
@@ -20,13 +22,23 @@ interface UserItemProps {
 const UserItem = ({ user, searchTerm }: UserItemProps) => {
   const styles = useStylesUserItem();
   const { colors } = useTheme();
+  const router = useRouter();
   const { handleFollowToggle, buttonTitle, buttonType } = useFollow(
-    user.userid,
+    user.userID,
   );
+  const handleGoToProfile = () => {
+    router.push({
+      pathname: `/profile/${user.userID}` as any,
+      params: { isOwnProfile: user.ownProfile } as any,
+    });
+  };
 
   return (
     <View style={styles.container}>
-      <View style={styles.userInfo}>
+      <Pressable
+        onPress={handleGoToProfile}
+        style={({ pressed }) => [styles.userInfo, pressed && { opacity: 0.6 }]}
+      >
         <ProfileImage size={44} imageName={user.profileImageName} />
         <View style={styles.containerUser}>
           <Text style={styles.userName} numberOfLines={1} ellipsizeMode="tail">
@@ -41,7 +53,7 @@ const UserItem = ({ user, searchTerm }: UserItemProps) => {
             {user.description || ""}
           </Text>
         </View>
-      </View>
+      </Pressable>
 
       <View style={styles.buttonContainer}>
         <Button

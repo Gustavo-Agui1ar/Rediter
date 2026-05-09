@@ -34,7 +34,6 @@ export function useSearchUsers(searchTerm: string) {
 
         if (response.ok) {
           const data = await response.json();
-
           setUsers((prev) => (isMore ? [...prev, ...data] : data));
           setHasMore(data.length === 12);
         }

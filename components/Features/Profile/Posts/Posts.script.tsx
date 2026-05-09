@@ -24,7 +24,7 @@ const mergePosts = (oldPosts: PostItem[], newPosts: PostItem[]) => {
   return [...oldPosts, ...filtered];
 };
 
-export function usePosts() {
+export function usePosts(refresh_id: string, userId?: string) {
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -47,7 +47,10 @@ export function usePosts() {
       }
 
       try {
-        let url = `/api/posts/me?pageSize=${PAGE_SIZE}`;
+        let url = userId
+          ? `/api/posts/user/${userId}?pageSize=${PAGE_SIZE}`
+          : `/api/posts/me?pageSize=${PAGE_SIZE}`;
+
         if (!isRefresh && lastItemRef.current) {
           const { id, createdAt } = lastItemRef.current;
           url += `&lastCreatedAt=${encodeURIComponent(createdAt)}&lastId=${id}`;
@@ -82,7 +85,7 @@ export function usePosts() {
   useEffect(() => {
     fetchPosts(true);
 
-    const sub = DeviceEventEmitter.addListener("refresh_posts", () =>
+    const sub = DeviceEventEmitter.addListener(`${refresh_id}`, () =>
       fetchPosts(true),
     );
 

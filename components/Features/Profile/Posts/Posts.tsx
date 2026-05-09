@@ -11,8 +11,6 @@ import {
 import { getId, usePosts } from "./Posts.script";
 import { useStylesPosts } from "./Posts.style";
 
-const MemoizedPost = memo(Post);
-
 const PostSkeleton = () => {
   const styles = useStylesPosts();
   return (
@@ -34,23 +32,30 @@ const PostSkeleton = () => {
 };
 
 interface PostsProps {
-  myProfile: boolean;
+  userId?: string;
   onRefresh?: () => Promise<void>;
   refreshing?: boolean;
   profileHeader?: React.ReactElement;
   tabBar?: React.ReactElement;
+  refresh_id: string;
+  ownProfile: boolean;
 }
 
-export default function Posts({
-  myProfile,
+function Posts({
+  userId,
   onRefresh,
   refreshing = false,
   profileHeader,
   tabBar,
+  refresh_id,
+  ownProfile = false,
 }: PostsProps) {
   const { colors } = useTheme();
   const styles = useStylesPosts();
-  const { posts, initialLoading, loadingMore, loadMore } = usePosts();
+  const { posts, initialLoading, loadingMore, loadMore } = usePosts(
+    refresh_id,
+    userId,
+  );
 
   const displayData = initialLoading
     ? ([
@@ -64,10 +69,9 @@ export default function Posts({
       if (item._isSkeleton) {
         return <PostSkeleton />;
       }
-
       return (
         <View style={styles.PostContainer}>
-          <MemoizedPost
+          <Post
             userName={item.userName}
             text={item.text}
             imageProfileUrl={item.imageProfileUrl}
@@ -76,12 +80,13 @@ export default function Posts({
             Location={item.Location || item.location}
             edited={item.edited}
             createdAt={item.createdAt}
-            myProfile={myProfile}
+            userId={userId}
+            ownProfile={ownProfile}
           />
         </View>
       );
     },
-    [myProfile],
+    [userId, ownProfile],
   );
 
   return (
@@ -133,3 +138,5 @@ export default function Posts({
     />
   );
 }
+
+export default memo(Posts);

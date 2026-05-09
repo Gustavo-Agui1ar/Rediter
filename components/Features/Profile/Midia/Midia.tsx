@@ -20,11 +20,11 @@ import { useMidiaStyles } from "./Midia.styles";
 const SCREEN_WIDTH = Dimensions.get("window").width;
 interface MediaGridProps {
   userProfileId?: string;
-  isMyProfile: boolean;
   onRefresh?: () => Promise<void> | void;
   refreshing?: boolean;
   profileHeader?: React.ReactElement;
   tabBar?: React.ReactElement;
+  refresh_id: string;
 }
 
 const getImageUri = (item: string | { uri: string }) => {
@@ -64,11 +64,11 @@ const SkeletonItem = ({ styles }: { styles: any }) => {
 
 export default function MediaGrid({
   userProfileId,
-  isMyProfile,
   onRefresh,
   refreshing = false,
   profileHeader,
   tabBar,
+  refresh_id,
 }: MediaGridProps) {
   const styles = useMidiaStyles();
 
@@ -79,7 +79,7 @@ export default function MediaGrid({
     initialIndex,
     openCarousel,
     closeModal,
-  } = useMediaGrid({ userProfileId, isMyProfile });
+  } = useMediaGrid({ userProfileId, refresh_id });
 
   const displayData = isLocalLoading
     ? Array.from({ length: 6 }).map((_, i) => `skeleton-${i}`)

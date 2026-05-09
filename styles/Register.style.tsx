@@ -1,16 +1,17 @@
 import { ThemeColors } from "@/styles/types/theme.types";
 import { makeStyles } from "@/utils/makeStyles.utils";
 
-export const useStylesForgotPassword = makeStyles((colors: ThemeColors) => ({
+export const useRegisterStyle = makeStyles((colors: ThemeColors) => ({
   content_card: {
     width: "100%",
+    height: "100%",
     maxWidth: 420,
     alignSelf: "center",
-    padding: 32,
-    justifyContent: "center",
+    paddingVertical: 48,
+    paddingHorizontal: 20,
+    justifyContent: "flex-start",
     alignItems: "stretch",
-    borderRadius: 16,
-    gap: 24,
+    gap: 20,
   },
 
   instructionText: {
@@ -28,5 +29,13 @@ export const useStylesForgotPassword = makeStyles((colors: ThemeColors) => ({
 
   helperText: {
     paddingLeft: 4,
+  },
+
+  loginRow: {
+    marginTop: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
   },
 }));
