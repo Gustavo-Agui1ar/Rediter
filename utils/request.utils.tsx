@@ -26,6 +26,7 @@ export interface RequestOptions {
   multipart?: boolean;
   requireAuth?: boolean;
   _isRetry?: boolean;
+  hasLoading?: boolean;
 }
 export class ApiError extends Error {
   status: number;
@@ -173,12 +174,18 @@ export function useApi() {
 
   const request = useCallback(
     async (options: RequestOptions): Promise<Response> => {
-      const { urlComplement, method, body, _isRetry = false } = options;
+      const {
+        urlComplement,
+        method,
+        body,
+        _isRetry = false,
+        hasLoading = true,
+      } = options;
       const url = `${getBaseURL()}${urlComplement}`;
 
       try {
         if (!_isRetry) {
-          setLoading(true);
+          if (hasLoading) setLoading(true);
           setError(null);
         }
 

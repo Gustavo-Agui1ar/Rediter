@@ -14,7 +14,6 @@ export default function Perfil() {
   const styles = useGlobalStyles();
   const stylesPerfil = useStylesPerfil();
   const { state, actions } = usePerfil();
-
   const ProfileHeader = useMemo(
     () => (
       <View style={{ width: "100%" }}>
@@ -44,6 +43,7 @@ export default function Perfil() {
           headerComponent={ProfileHeader}
           onRefreshProfile={actions.fetchProfile}
           refresh_id="perfil_refresh"
+          ownProfile={true}
         />
       </View>
     </View>

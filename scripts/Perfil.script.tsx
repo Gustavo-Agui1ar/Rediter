@@ -15,6 +15,7 @@ export function usePerfil() {
     userName: "UserName",
     email: "",
     description: "",
+    isFollowing: false,
   });
 
   const applyProfile = useCallback((data: any) => {
@@ -25,6 +26,7 @@ export function usePerfil() {
         userName: data.userName || "",
         email: data.email || "",
         description: data.description || "",
+        isFollowing: data.isFollowing || false,
       };
 
       if (JSON.stringify(prevForm) === JSON.stringify(newForm)) {
@@ -51,6 +53,7 @@ export function usePerfil() {
           userName: json.name,
           email: json.email,
           description: json.description,
+          isFollowing: json.isFollowing || false,
         };
 
         applyProfile(data);

@@ -16,14 +16,13 @@ export default function ProfileActions({
   OwnProfile = false,
   userName = "Usuário",
   description = "",
-  initialIsFollowing = false,
+  initialIsFollowing,
 }: ProfileActionsProps) {
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const styles = useProfileActionsStyles();
 
   const updateFollowStatus = () => setIsFollowing((prev) => !prev);
   const goToConfig = () => OwnProfile && router.push("/Configs");
-
   return (
     <View style={styles.container}>
       <View style={styles.actionsRow}>

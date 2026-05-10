@@ -1,6 +1,6 @@
 import Post from "@/components/Features/Post/Post";
 import { useTheme } from "@/context/ThemeContext";
-import React, { memo, useCallback } from "react";
+import React, { useCallback } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -10,8 +10,6 @@ import {
 } from "react-native";
 import { useStylesPosts } from "./SearchPost.style";
 import { getId, useSearchPosts } from "./SearchPosts.script";
-
-const MemoizedPost = memo(Post);
 
 const PostSkeleton = () => {
   const styles = useStylesPosts();
@@ -74,7 +72,7 @@ export default function SearchPosts({
 
       return (
         <View style={styles.PostContainer}>
-          <MemoizedPost
+          <Post
             userName={item.userName}
             text={item.text}
             imageProfileUrl={item.imageProfileUrl}
@@ -83,8 +81,12 @@ export default function SearchPosts({
             Location={item.Location || item.location}
             edited={item.edited}
             createdAt={item.createdAt}
-            myProfile={myProfile}
+            ownProfile={myProfile}
             searchTerm={searchTerm}
+            countLikes={item.likesCount}
+            liked={item.likedByCurrentUser}
+            userId={item.postUserId}
+            canGoToProfile={true}
           />
         </View>
       );

@@ -69,7 +69,6 @@ export function useSearchPosts(searchTerm: string, onlyWithMedia = false) {
         if (!res || !res.ok) throw new Error("Erro na requisição de busca");
 
         const data: PostItem[] = (await res.json()) || [];
-
         if (data.length > 0) {
           const last = data[data.length - 1];
           lastItemRef.current = {

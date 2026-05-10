@@ -1,5 +1,9 @@
-import { iconMapping } from "@/styles/icons";
+import { useLoading } from "@/context/loadingContext";
+import { useTheme } from "@/context/ThemeContext";
+// 1. Importamos o mapeamento estático e a tipagem diretamente
+import { iconMapping, IconName } from "@/styles/icons";
 import { ReactNode, useMemo } from "react";
+
 import {
   ActivityIndicator,
   StyleSheet,
@@ -7,15 +11,11 @@ import {
   TouchableOpacityProps,
 } from "react-native";
 
-import { useLoading } from "@/context/loadingContext";
-import { useTheme } from "@/context/ThemeContext";
 import {
   IconButtonType,
   useIconButtonStyles,
   useIconColorsByType,
 } from "./iconButton.style";
-
-type IconName = keyof typeof iconMapping;
 
 interface IconButtonProps extends TouchableOpacityProps {
   icon: IconName;
@@ -23,6 +23,7 @@ interface IconButtonProps extends TouchableOpacityProps {
   type?: IconButtonType;
   fullSize?: boolean;
   circle?: boolean;
+  iconColor?: string; // 2. Adicionamos essa prop para forçar cores do tema quando necessário
 }
 
 export default function IconButton({
@@ -33,23 +34,24 @@ export default function IconButton({
   disabled,
   fullSize = false,
   circle = true,
+  iconColor,
   ...rest
 }: IconButtonProps) {
   const { loading } = useLoading();
   const { colors } = useTheme();
+
   const iconButtonStyles = useIconButtonStyles();
   const iconColors = useIconColorsByType();
-
   const isDisabled = disabled || loading;
-
   const color = isDisabled
     ? colors.disabled
-    : iconColors[type] || colors.textPrimary;
+    : iconColor || iconColors[type] || colors.textPrimary;
 
   const Icon = iconMapping[icon];
 
   const dynamicStyle = useMemo(() => {
     if (fullSize) return StyleSheet.absoluteFillObject;
+
     return {
       width: size,
       height: size,

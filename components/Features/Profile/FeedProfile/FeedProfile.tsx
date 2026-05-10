@@ -1,44 +1,31 @@
-import React, { useCallback, useMemo, useState } from "react";
-import { DeviceEventEmitter, View } from "react-native";
-
 import Midiagrid from "@/components/Features/Profile/Midia/Midia";
 import Posts from "@/components/Features/Profile/Posts/Posts";
 import TabBar from "@/components/Layout/TabBar/TabBar";
-import { useLoading } from "@/context/loadingContext";
+import { useTheme } from "@/context/ThemeContext";
+import React, { useMemo } from "react";
+import { ActivityIndicator, Animated, View } from "react-native";
+import { useFeedProfile } from "./FeedProfile.script";
 import { useFeedStyles } from "./FeedProfile.style";
 
 interface FeedProfileProps {
-  headerComponent: React.ReactNode;
-  onRefreshProfile: () => Promise<void>;
+  headerComponent: React.ReactElement;
   userId?: string;
+  ownProfile: boolean;
   refresh_id: string;
-  ownProfile?: boolean;
+  onRefreshProfile: () => Promise<void>;
 }
 
-export default function FeedProfile({
-  headerComponent,
-  onRefreshProfile,
-  userId,
-  ownProfile = false,
-  refresh_id,
-}: FeedProfileProps) {
+export default function FeedProfile(props: FeedProfileProps) {
+  const { headerComponent, userId, ownProfile, refresh_id } = props;
   const styles = useFeedStyles();
+  const { colors } = useTheme();
 
-  const [activeTab, setActiveTab] = useState("posts");
-
-  const { setLoading, loading } = useLoading();
-
-  const handleGlobalRefresh = useCallback(async () => {
-    setLoading(true);
-
-    try {
-      await onRefreshProfile();
-
-      DeviceEventEmitter.emit(`${refresh_id}_${activeTab}`);
-    } finally {
-      setLoading(false);
-    }
-  }, [activeTab, onRefreshProfile, refresh_id, setLoading]);
+  const { state, actions, animations, panHandlers, getTabStyle } =
+    useFeedProfile({
+      onRefreshProfile: props.onRefreshProfile,
+      refresh_id: props.refresh_id,
+      activeTab: "",
+    });
 
   const tabs = useMemo(
     () => [
@@ -49,60 +36,88 @@ export default function FeedProfile({
     [],
   );
 
-  const profileHeader = useMemo(
-    () => <View style={styles.headerWrapper}>{headerComponent}</View>,
-    [headerComponent, styles.headerWrapper],
+  return (
+    <View style={styles.container}>
+      <View style={{ flex: 1, position: "relative" }}>
+        <Animated.View
+          {...panHandlers}
+          style={[
+            styles.headerAnimatedContainer,
+            {
+              transform: [{ translateY: animations.headerTranslateY }],
+              backgroundColor: colors.background || "#121212",
+            },
+          ]}
+        >
+          <Animated.View
+            pointerEvents="none"
+            style={[styles.customSpinner, animations.spinnerStyle]}
+          >
+            <ActivityIndicator size="small" color={colors.primary} />
+          </Animated.View>
+
+          <View style={styles.headerWrapper}>{headerComponent}</View>
+
+          <TabBar
+            items={tabs}
+            active={state.activeTab}
+            onChange={actions.handleTabChange}
+          />
+        </Animated.View>
+
+        {state.renderedTabs.posts && (
+          <View
+            style={getTabStyle("posts")}
+            pointerEvents={state.activeTab === "posts" ? "auto" : "none"}
+          >
+            <Posts
+              key="tab-posts"
+              userId={userId}
+              ownProfile={ownProfile}
+              onRefresh={actions.handleGlobalRefresh}
+              refreshing={state.loading}
+              refresh_id={`${refresh_id}_posts`}
+              onScroll={actions.onScrollEvent}
+              headerHeight={state.HEADER_HEIGHT}
+            />
+          </View>
+        )}
+
+        {state.renderedTabs.media && (
+          <View
+            style={getTabStyle("media")}
+            pointerEvents={state.activeTab === "media" ? "auto" : "none"}
+          >
+            <Midiagrid
+              key="tab-media"
+              userProfileId={userId}
+              onRefresh={actions.handleGlobalRefresh}
+              refreshing={state.loading}
+              refresh_id={`${refresh_id}_media`}
+              onScroll={actions.onScrollEvent}
+              headerHeight={state.HEADER_HEIGHT + 10}
+            />
+          </View>
+        )}
+
+        {state.renderedTabs.likes && (
+          <View
+            style={getTabStyle("likes")}
+            pointerEvents={state.activeTab === "likes" ? "auto" : "none"}
+          >
+            <Posts
+              key="tab-likes"
+              userId={userId}
+              ownProfile={ownProfile}
+              onRefresh={actions.handleGlobalRefresh}
+              refreshing={state.loading}
+              refresh_id={`${refresh_id}_likes`}
+              onScroll={actions.onScrollEvent}
+              headerHeight={state.HEADER_HEIGHT}
+            />
+          </View>
+        )}
+      </View>
+    </View>
   );
-
-  const tabBarComponent = useMemo(
-    () => <TabBar items={tabs} active={activeTab} onChange={setActiveTab} />,
-    [tabs, activeTab],
-  );
-
-  function renderContent() {
-    switch (activeTab) {
-      case "posts":
-        return (
-          <Posts
-            userId={userId}
-            ownProfile={ownProfile}
-            onRefresh={handleGlobalRefresh}
-            refreshing={loading}
-            profileHeader={profileHeader}
-            tabBar={tabBarComponent}
-            refresh_id={`${refresh_id}_posts`}
-          />
-        );
-
-      case "media":
-        return (
-          <Midiagrid
-            userProfileId={userId}
-            onRefresh={handleGlobalRefresh}
-            refreshing={loading}
-            profileHeader={profileHeader}
-            tabBar={tabBarComponent}
-            refresh_id={`${refresh_id}_media`}
-          />
-        );
-
-      case "likes":
-        return (
-          <Posts
-            userId={userId}
-            ownProfile={ownProfile}
-            onRefresh={handleGlobalRefresh}
-            refreshing={loading}
-            profileHeader={profileHeader}
-            tabBar={tabBarComponent}
-            refresh_id={`${refresh_id}_likes`}
-          />
-        );
-
-      default:
-        return null;
-    }
-  }
-
-  return <View style={styles.container}>{renderContent()}</View>;
 }

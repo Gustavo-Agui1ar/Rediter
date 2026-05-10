@@ -27,8 +27,6 @@ export function useMediaGrid({
       if (!isRefresh) setIsLocalLoading(true);
 
       try {
-        if (!userProfileId) return;
-
         const endpoint =
           userProfileId === null || userProfileId === undefined
             ? `/api/posts/me/media`
@@ -37,7 +35,7 @@ export function useMediaGrid({
         const response = await request({
           urlComplement: endpoint,
           method: "GET",
-          requireAuth: !(userProfileId === null || userProfileId === undefined),
+          requireAuth: userProfileId === null || userProfileId === undefined,
         });
 
         if (response.ok) {

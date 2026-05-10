@@ -3,8 +3,9 @@ import { useTheme } from "@/context/ThemeContext";
 import React, { memo, useCallback } from "react";
 import {
   ActivityIndicator,
+  Animated,
+  Platform,
   RefreshControl,
-  SectionList,
   Text,
   View,
 } from "react-native";
@@ -35,20 +36,20 @@ interface PostsProps {
   userId?: string;
   onRefresh?: () => Promise<void>;
   refreshing?: boolean;
-  profileHeader?: React.ReactElement;
-  tabBar?: React.ReactElement;
   refresh_id: string;
   ownProfile: boolean;
+  onScroll?: any;
+  headerHeight?: number;
 }
 
 function Posts({
   userId,
   onRefresh,
   refreshing = false,
-  profileHeader,
-  tabBar,
   refresh_id,
   ownProfile = false,
+  onScroll,
+  headerHeight = 0,
 }: PostsProps) {
   const { colors } = useTheme();
   const styles = useStylesPosts();
@@ -80,17 +81,20 @@ function Posts({
             Location={item.Location || item.location}
             edited={item.edited}
             createdAt={item.createdAt}
-            userId={userId}
             ownProfile={ownProfile}
+            countLikes={item.likesCount}
+            liked={item.likedByCurrentUser}
+            canGoToProfile={false}
+            userId={userId || ""}
           />
         </View>
       );
     },
-    [userId, ownProfile],
+    [userId, ownProfile, styles.PostContainer],
   );
 
   return (
-    <SectionList
+    <Animated.SectionList
       sections={[{ data: displayData }]}
       renderItem={renderItem}
       keyExtractor={(item, index) => {
@@ -99,9 +103,8 @@ function Posts({
         const id = getId(item);
         return id ? id.toString() : `idx-${index}`;
       }}
-      ListHeaderComponent={profileHeader}
-      renderSectionHeader={() => tabBar || <></>}
-      stickySectionHeadersEnabled={true}
+      onScroll={onScroll}
+      scrollEventThrottle={16}
       initialNumToRender={6}
       maxToRenderPerBatch={10}
       windowSize={5}
@@ -114,10 +117,25 @@ function Posts({
       }}
       refreshControl={
         onRefresh ? (
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="transparent"
+            colors={["transparent"]}
+            progressBackgroundColor="transparent"
+            progressViewOffset={-1000}
+          />
         ) : undefined
       }
-      contentContainerStyle={[styles.listContent, { minHeight: "100%" }]}
+      contentContainerStyle={[
+        styles.listContent,
+        { minHeight: "100%" },
+        Platform.OS === "android" ? { paddingTop: headerHeight } : {},
+      ]}
+      contentInset={Platform.OS === "ios" ? { top: headerHeight } : undefined}
+      contentOffset={
+        Platform.OS === "ios" ? { x: 0, y: -headerHeight } : undefined
+      }
       ListEmptyComponent={() => {
         if (initialLoading) return null;
         return (

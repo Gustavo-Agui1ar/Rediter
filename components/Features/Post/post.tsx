@@ -1,6 +1,3 @@
-import React from "react";
-import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
-
 import ProfileImage from "@/components/Features/Profile/ProfileImage";
 import DisplayImages from "@/components/Feedback/DisplayImages/DisplayImage";
 import HighlightedText from "@/components/UI/HighLightText";
@@ -8,7 +5,8 @@ import IconButton from "@/components/UI/IconButton/IconButton";
 import { useTheme } from "@/context/ThemeContext";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { formatDate } from "@/utils/datePost.utils";
-import { memo } from "react";
+import React, { memo } from "react";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import { usePost } from "./Post.script";
 import { usePostStyles } from "./Post.style";
 
@@ -20,10 +18,13 @@ interface PostProps {
   postId: string;
   Location?: string;
   edited?: boolean;
-  userId?: string;
   createdAt?: string;
   searchTerm?: string;
   ownProfile: boolean;
+  countLikes?: number;
+  liked?: boolean;
+  canGoToProfile?: boolean;
+  userId: string;
 }
 
 function Post({
@@ -34,10 +35,13 @@ function Post({
   postId,
   Location,
   edited = false,
-  userId = undefined,
   createdAt,
   searchTerm = "",
   ownProfile = false,
+  countLikes = 0,
+  liked = false,
+  canGoToProfile = true,
+  userId,
 }: PostProps) {
   const styles = useGlobalStyles();
   const postStyles = usePostStyles();
@@ -46,25 +50,40 @@ function Post({
   const {
     showOptions,
     isDownloading,
+    isLiked,
+    likesCount,
     toggleOptions,
     handleEditPost,
     handleDeletePost,
     handleDownloadMedia,
+    handleLikePost,
+    handleGoToProfile,
   } = usePost({
     postId,
     text,
     Location,
     postImageUrl,
+    countLikes,
+    liked,
+    userId,
   });
 
   const hasImages = postImageUrl && postImageUrl.length > 0;
   const hasOptions = !ownProfile || hasImages;
-
   return (
     <View style={postStyles.container}>
       <View style={postStyles.header}>
         <View style={postStyles.userInfo}>
-          <ProfileImage size={44} wrapper={false} imageName={imageProfileUrl} />
+          <TouchableOpacity
+            disabled={!canGoToProfile}
+            onPress={handleGoToProfile}
+          >
+            <ProfileImage
+              size={44}
+              wrapper={false}
+              imageName={imageProfileUrl}
+            />
+          </TouchableOpacity>
           <View style={postStyles.userTextContainer}>
             <View style={postStyles.metaDataContainer}>
               <HighlightedText
@@ -133,7 +152,10 @@ function Post({
                           gap: 6,
                         }}
                       >
-                        <ActivityIndicator size="small" color="#007AFF" />
+                        <ActivityIndicator
+                          size="small"
+                          color={colors.primary}
+                        />
                         <Text style={postStyles.optionText}>Baixando...</Text>
                       </View>
                     ) : (
@@ -180,8 +202,22 @@ function Post({
         </TouchableOpacity>
 
         <TouchableOpacity activeOpacity={0.6} style={postStyles.actionGroup}>
-          <IconButton type="none" icon="like" circle={false} size={44} />
-          <Text style={postStyles.actionLabel}>0</Text>
+          <IconButton
+            type="none"
+            icon={isLiked ? "likeFilled" : "like"}
+            iconColor={isLiked ? colors.primaryDark : undefined}
+            circle={false}
+            size={44}
+            onPress={handleLikePost}
+          />
+          <Text
+            style={[
+              postStyles.actionLabel,
+              isLiked && { color: colors.textPrimary },
+            ]}
+          >
+            {likesCount}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

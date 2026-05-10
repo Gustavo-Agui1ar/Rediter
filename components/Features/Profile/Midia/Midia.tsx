@@ -7,9 +7,9 @@ import {
   Dimensions,
   FlatList,
   Modal,
+  Platform,
   RefreshControl,
   SafeAreaView,
-  SectionList,
   Text,
   TouchableOpacity,
   View,
@@ -18,13 +18,14 @@ import { useMediaGrid } from "./Midia.script";
 import { useMidiaStyles } from "./Midia.styles";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
+
 interface MediaGridProps {
   userProfileId?: string;
   onRefresh?: () => Promise<void> | void;
   refreshing?: boolean;
-  profileHeader?: React.ReactElement;
-  tabBar?: React.ReactElement;
   refresh_id: string;
+  onScroll?: any;
+  headerHeight?: number;
 }
 
 const getImageUri = (item: string | { uri: string }) => {
@@ -66,12 +67,11 @@ export default function MediaGrid({
   userProfileId,
   onRefresh,
   refreshing = false,
-  profileHeader,
-  tabBar,
   refresh_id,
+  onScroll,
+  headerHeight = 0,
 }: MediaGridProps) {
   const styles = useMidiaStyles();
-
   const {
     data,
     isLocalLoading,
@@ -155,19 +155,32 @@ export default function MediaGrid({
 
   return (
     <>
-      <SectionList
+      <Animated.SectionList
         sections={[{ data: chunkedData }]}
         keyExtractor={(item, index) => `media-row-${index}`}
         renderItem={renderRow}
-        ListHeaderComponent={profileHeader}
-        renderSectionHeader={() => tabBar || <></>}
-        stickySectionHeadersEnabled={true}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         refreshControl={
           onRefresh ? (
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="transparent"
+              colors={["transparent"]}
+              progressBackgroundColor="transparent"
+            />
           ) : undefined
         }
-        contentContainerStyle={[styles.listContainer, { minHeight: 400 }]}
+        contentContainerStyle={[
+          styles.listContainer,
+          { minHeight: 400 },
+          Platform.OS === "android" ? { paddingTop: headerHeight } : {},
+        ]}
+        contentInset={Platform.OS === "ios" ? { top: headerHeight } : undefined}
+        contentOffset={
+          Platform.OS === "ios" ? { x: 0, y: -headerHeight } : undefined
+        }
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={renderEmptyComponent}
       />

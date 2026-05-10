@@ -15,6 +15,7 @@ interface UserItemProps {
     profileImageName: string;
     description: string;
     ownProfile: boolean;
+    isFollowing: boolean;
   };
   searchTerm: string;
 }
@@ -25,6 +26,7 @@ const UserItem = ({ user, searchTerm }: UserItemProps) => {
   const router = useRouter();
   const { handleFollowToggle, buttonTitle, buttonType } = useFollow(
     user.userID,
+    user.isFollowing,
   );
   const handleGoToProfile = () => {
     router.push({

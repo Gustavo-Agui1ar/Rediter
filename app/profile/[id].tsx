@@ -24,6 +24,7 @@ export default function UserProfileScreen() {
   const stylesPerfil = useStylesPerfil();
   const { colors } = useTheme();
   const { state, actions } = useUserProfile(id);
+  const isFollowing = state.profile?.isFollowing || false;
 
   if (state.loading && !state.profile) {
     return (
@@ -89,6 +90,7 @@ export default function UserProfileScreen() {
           OwnProfile={ownProfile}
           userName={state.profile.name}
           description={state.profile.description}
+          initialIsFollowing={isFollowing}
         />
       </View>
     </View>

@@ -11,6 +11,9 @@ interface UsePostProps {
   text: string;
   Location?: string;
   postImageUrl?: string[];
+  countLikes?: number;
+  liked?: boolean;
+  userId: string;
 }
 
 export function usePost({
@@ -18,10 +21,16 @@ export function usePost({
   text,
   Location,
   postImageUrl,
+  countLikes = 0,
+  liked = false,
+  userId,
 }: UsePostProps) {
   const [showOptions, setShowOptions] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isLiked, setIsLiked] = useState(liked);
+  const [likesCount, setLikesCount] = useState(countLikes);
   const { request } = useApi();
+
   const toggleOptions = useCallback(() => setShowOptions((prev) => !prev), []);
   const closeOptions = useCallback(() => setShowOptions(false), []);
 
@@ -130,13 +139,47 @@ export function usePost({
     }
   }, [postImageUrl, closeOptions]);
 
+  const handleLikePost = useCallback(() => {
+    console.log("Toggling like for post:", postId);
+    const wasLiked = isLiked;
+
+    setIsLiked((prev) => !prev);
+    setLikesCount((prev) => (wasLiked ? prev - 1 : prev + 1));
+
+    request({
+      urlComplement: `/api/posts/${postId}/like`,
+      method: wasLiked ? "DELETE" : "POST",
+      hasLoading: false,
+    })
+      .then((response) => {
+        if (response && !response.ok) {
+          throw new Error("Erro na API");
+        }
+      })
+      .catch((error) => {
+        console.error("Erro ao curtir:", error);
+        setIsLiked(wasLiked);
+        setLikesCount((prev) => (wasLiked ? prev + 1 : prev - 1));
+      });
+  }, [isLiked, postId, request]);
+
+  const handleGoToProfile = () => {
+    router.push({
+      pathname: `/profile/${userId}` as any,
+      params: { isOwnProfile: true } as any,
+    });
+  };
   return {
     showOptions,
     isDownloading,
+    isLiked,
+    likesCount,
     toggleOptions,
     closeOptions,
     handleEditPost,
     handleDeletePost,
     handleDownloadMedia,
+    handleLikePost,
+    handleGoToProfile,
   };
 }
