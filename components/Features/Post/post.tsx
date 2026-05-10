@@ -6,7 +6,14 @@ import { useTheme } from "@/context/ThemeContext";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { formatDate } from "@/utils/datePost.utils";
 import React, { memo } from "react";
-import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+// 1. Adicione o Pressable nas importações
+import {
+  ActivityIndicator,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { usePost } from "./Post.script";
 import { usePostStyles } from "./Post.style";
 
@@ -58,6 +65,7 @@ function Post({
     handleDownloadMedia,
     handleLikePost,
     handleGoToProfile,
+    handleClickPost,
   } = usePost({
     postId,
     text,
@@ -70,8 +78,9 @@ function Post({
 
   const hasImages = postImageUrl && postImageUrl.length > 0;
   const hasOptions = !ownProfile || hasImages;
+
   return (
-    <View style={postStyles.container}>
+    <Pressable style={postStyles.container} onPress={handleClickPost}>
       <View style={postStyles.header}>
         <View style={postStyles.userInfo}>
           <TouchableOpacity
@@ -220,7 +229,7 @@ function Post({
           </Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </Pressable>
   );
 }
 

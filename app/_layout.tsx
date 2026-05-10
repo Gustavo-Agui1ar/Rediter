@@ -30,6 +30,7 @@ function AppStack() {
       <Stack.Screen name="NewPost" />
       <Stack.Screen name="sendEmail" />
       <Stack.Screen name="profile/[id]" />
+      <Stack.Screen name="posts/[id]" />
     </Stack>
   );
 }

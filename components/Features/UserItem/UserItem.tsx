@@ -56,16 +56,17 @@ const UserItem = ({ user, searchTerm }: UserItemProps) => {
           </Text>
         </View>
       </Pressable>
-
-      <View style={styles.buttonContainer}>
-        <Button
-          title={buttonTitle}
-          type={buttonType}
-          size="small"
-          onPress={handleFollowToggle}
-          fullWidth={false}
-        />
-      </View>
+      {!user.ownProfile && (
+        <View style={styles.buttonContainer}>
+          <Button
+            title={buttonTitle}
+            type={buttonType}
+            size="small"
+            onPress={handleFollowToggle}
+            fullWidth={false}
+          />
+        </View>
+      )}
     </View>
   );
 };

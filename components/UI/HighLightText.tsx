@@ -4,14 +4,14 @@ import { StyleProp, Text, TextStyle } from "react-native";
 
 interface HighlightedTextProps {
   text: string;
-  searchTerm: string;
+  searchTerm?: string;
   textStyle?: StyleProp<TextStyle>;
   highlightColor?: string;
 }
 
 const HighlightedText = ({
   text,
-  searchTerm,
+  searchTerm = "",
   textStyle,
   highlightColor,
 }: HighlightedTextProps) => {

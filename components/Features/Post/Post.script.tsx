@@ -169,6 +169,13 @@ export function usePost({
       params: { isOwnProfile: true } as any,
     });
   };
+
+  const handleClickPost = () => {
+    router.push({
+      pathname: `/posts/${postId}` as any,
+    });
+  };
+
   return {
     showOptions,
     isDownloading,
@@ -181,5 +188,6 @@ export function usePost({
     handleDownloadMedia,
     handleLikePost,
     handleGoToProfile,
+    handleClickPost,
   };
 }

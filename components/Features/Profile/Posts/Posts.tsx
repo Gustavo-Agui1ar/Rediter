@@ -12,7 +12,7 @@ import {
 import { getId, usePosts } from "./Posts.script";
 import { useStylesPosts } from "./Posts.style";
 
-const PostSkeleton = () => {
+export const PostSkeleton = () => {
   const styles = useStylesPosts();
   return (
     <View style={styles.postContainer}>
