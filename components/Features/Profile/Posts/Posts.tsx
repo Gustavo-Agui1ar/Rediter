@@ -5,7 +5,6 @@ import {
   ActivityIndicator,
   Animated,
   Platform,
-  RefreshControl,
   Text,
   View,
 } from "react-native";
@@ -34,8 +33,6 @@ export const PostSkeleton = () => {
 
 interface PostsProps {
   userId?: string;
-  onRefresh?: () => Promise<void>;
-  refreshing?: boolean;
   refresh_id: string;
   ownProfile: boolean;
   onScroll?: any;
@@ -44,8 +41,6 @@ interface PostsProps {
 
 function Posts({
   userId,
-  onRefresh,
-  refreshing = false,
   refresh_id,
   ownProfile = false,
   onScroll,
@@ -115,18 +110,6 @@ function Posts({
           loadMore();
         }
       }}
-      refreshControl={
-        onRefresh ? (
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor="transparent"
-            colors={["transparent"]}
-            progressBackgroundColor="transparent"
-            progressViewOffset={-1000}
-          />
-        ) : undefined
-      }
       contentContainerStyle={[
         styles.listContent,
         { minHeight: "100%" },

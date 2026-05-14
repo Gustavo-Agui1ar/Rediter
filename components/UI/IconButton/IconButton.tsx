@@ -23,7 +23,7 @@ interface IconButtonProps extends TouchableOpacityProps {
   type?: IconButtonType;
   fullSize?: boolean;
   circle?: boolean;
-  iconColor?: string; // 2. Adicionamos essa prop para forçar cores do tema quando necessário
+  iconColor?: string;
 }
 
 export default function IconButton({

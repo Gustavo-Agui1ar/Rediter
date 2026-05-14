@@ -2,6 +2,7 @@ import { ThemeColors } from "@/styles/types/theme.types";
 import { makeStyles } from "@/utils/makeStyles.utils";
 
 export const usePostStyles = makeStyles((colors: ThemeColors) => ({
+  // --- ESTILOS DO CONTAINER ---
   container: {
     width: "100%",
     paddingVertical: 16,
@@ -11,6 +12,15 @@ export const usePostStyles = makeStyles((colors: ThemeColors) => ({
     borderColor: colors.divider,
     borderRadius: 12,
   },
+  containerReply: {
+    paddingHorizontal: 0,
+    backgroundColor: "transparent",
+    borderWidth: 0,
+    borderRadius: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.divider,
+  },
+
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -45,6 +55,7 @@ export const usePostStyles = makeStyles((colors: ThemeColors) => ({
     color: colors.textMuted,
     fontStyle: "italic",
   },
+
   optionsWrapper: {
     position: "relative",
     left: 8,
@@ -66,11 +77,36 @@ export const usePostStyles = makeStyles((colors: ThemeColors) => ({
     shadowRadius: 8,
     zIndex: 999,
   },
+  itemOptionsContainer: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.divider,
+  },
+  itemOptionsContainerLast: {
+    borderBottomWidth: 0,
+  },
+  optionText: {
+    color: colors.textPrimary,
+    fontSize: 15,
+    fontWeight: "500",
+  },
+  optionTextDelete: {
+    color: colors.error,
+    fontSize: 15,
+    fontWeight: "500",
+  },
+
   contentBody: {
     marginTop: 12,
     zIndex: 1,
   },
+  contentBodyReply: {
+    marginTop: 4,
+  },
   description: {
+    marginTop: 8,
+    marginLeft: 12,
     fontSize: 15,
     lineHeight: 22,
     color: colors.textPrimary,
@@ -93,11 +129,16 @@ export const usePostStyles = makeStyles((colors: ThemeColors) => ({
     fontWeight: "500",
     color: colors.textSecondary,
   },
+
   buttonContainer: {
     flexDirection: "row",
     marginTop: 18,
     justifyContent: "space-between",
     paddingRight: 40,
+  },
+  buttonContainerReply: {
+    marginTop: 12,
+    paddingRight: 80,
   },
   actionGroup: {
     flexDirection: "row",
@@ -110,23 +151,9 @@ export const usePostStyles = makeStyles((colors: ThemeColors) => ({
     color: colors.textMuted,
     fontWeight: "500",
   },
-  itemOptionsContainer: {
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.divider,
-  },
-  itemOptionsContainerLast: {
-    borderBottomWidth: 0,
-  },
-  optionText: {
-    color: colors.textPrimary,
-    fontSize: 15,
-    fontWeight: "500",
-  },
-  optionTextDelete: {
-    color: colors.error,
-    fontSize: 15,
-    fontWeight: "500",
+  downloadingIndicator: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
 }));

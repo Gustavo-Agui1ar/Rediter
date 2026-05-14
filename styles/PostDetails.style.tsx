@@ -72,6 +72,24 @@ export function usePostDetailsStyles() {
       fontSize: 14,
       color: colors.textPrimary,
     },
+    commentHeader: {
+      paddingTop: 8,
+      paddingBottom: 16,
+      paddingHorizontal: 8,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    countCommentsText: {
+      fontSize: 15,
+      fontWeight: "600",
+      color: colors.textPrimary,
+    },
+    moreRecentText: {
+      fontSize: 13,
+      color: colors.textSecondary,
+      fontWeight: "400",
+    },
     notFound: {
       flex: 1,
       justifyContent: "center",
@@ -89,6 +107,28 @@ export function usePostDetailsStyles() {
       overflow: "hidden",
       justifyContent: "center",
       marginLeft: "auto",
+    },
+    bottomInputContainer: {
+      flexDirection: "column",
+      paddingHorizontal: 16,
+      paddingBottom: 12,
+      backgroundColor: colors.background,
+    },
+    inputWrapper: {
+      flexDirection: "row",
+      alignItems: "flex-end",
+      width: "100%",
+    },
+    toolbarContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginTop: 8,
+      paddingHorizontal: 4,
+    },
+    toolbarIcons: {
+      flexDirection: "row",
+      gap: 16,
     },
   });
 }

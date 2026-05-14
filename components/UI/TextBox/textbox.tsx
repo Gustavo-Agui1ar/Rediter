@@ -1,24 +1,26 @@
 import { useTheme } from "@/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Pressable, TextInput, View } from "react-native";
+import { Pressable, TextInput, TextInputProps, View } from "react-native";
 import { useTextboxStyles } from "./textbox.style";
+interface TextBoxProps extends TextInputProps {
+  children?: React.ReactNode;
+  icon?: keyof typeof Ionicons.glyphMap;
+  onIconPress?: () => void;
+}
 
 export default function TextBox({
   children,
-  isSearch,
-  onSearch,
+  icon,
+  onIconPress,
   ...props
-}: any) {
+}: TextBoxProps) {
   const { colors } = useTheme();
   const styles = useTextboxStyles();
-
   const isPassword = props.secureTextEntry;
   const [secure, setSecure] = useState(isPassword);
   const [focused, setFocused] = useState(false);
-
-  const hasRightIcon = isPassword || isSearch;
-
+  const hasRightIcon = isPassword || !!icon;
   const isMultiline =
     !isPassword && props.numberOfLines && props.numberOfLines > 1;
 
@@ -32,7 +34,9 @@ export default function TextBox({
             {
               paddingRight: hasRightIcon ? 36 : 0,
               textAlignVertical: isMultiline ? "top" : "center",
-              minHeight: isMultiline ? props.numberOfLines * 24 : "auto",
+              minHeight: isMultiline
+                ? (props.numberOfLines ? props.numberOfLines : 1) * 24
+                : "auto",
             },
             props.style,
           ]}
@@ -63,14 +67,14 @@ export default function TextBox({
           </Pressable>
         )}
 
-        {isSearch && !isPassword && (
+        {!isPassword && icon && (
           <Pressable
             style={styles.icon}
-            onPress={onSearch}
+            onPress={onIconPress}
             hitSlop={10}
-            disabled={!onSearch}
+            disabled={!onIconPress}
           >
-            <Ionicons name="search" size={20} color={colors.textMuted} />
+            <Ionicons name={icon} size={20} color={colors.textMuted} />
           </Pressable>
         )}
       </View>

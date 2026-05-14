@@ -2,8 +2,8 @@ import { configs } from "@/utils/configs.utils";
 import { useApi } from "@/utils/request.utils";
 import * as FileSystem from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
-import { router } from "expo-router";
-import { useCallback, useState } from "react";
+import { router, useNavigation } from "expo-router";
+import { useCallback, useMemo, useState } from "react";
 import { Alert, DeviceEventEmitter } from "react-native";
 
 interface UsePostProps {
@@ -14,6 +14,7 @@ interface UsePostProps {
   countLikes?: number;
   liked?: boolean;
   userId: string;
+  isOwnProfile: boolean;
 }
 
 export function usePost({
@@ -24,13 +25,14 @@ export function usePost({
   countLikes = 0,
   liked = false,
   userId,
+  isOwnProfile,
 }: UsePostProps) {
   const [showOptions, setShowOptions] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isLiked, setIsLiked] = useState(liked);
   const [likesCount, setLikesCount] = useState(countLikes);
   const { request } = useApi();
-
+  const navigation = useNavigation();
   const toggleOptions = useCallback(() => setShowOptions((prev) => !prev), []);
   const closeOptions = useCallback(() => setShowOptions(false), []);
 
@@ -40,8 +42,8 @@ export function usePost({
       pathname: "/NewPost",
       params: {
         isEditing: "true",
-        postId: postId,
-        text: text,
+        postId,
+        text,
         location: Location || "",
         imageUrls: JSON.stringify(postImageUrl || []),
       },
@@ -63,7 +65,7 @@ export function usePost({
               urlComplement: `/api/posts/${postId}`,
               method: "DELETE",
             });
-            if (response.ok) {
+            if (response?.ok) {
               DeviceEventEmitter.emit("refresh_posts");
             }
           },
@@ -79,25 +81,24 @@ export function usePost({
       return;
     }
 
+    let permission = await MediaLibrary.getPermissionsAsync();
+    if (!permission.granted) {
+      permission = await MediaLibrary.requestPermissionsAsync();
+    }
+
+    if (!permission.granted) {
+      Alert.alert(
+        "Permissão negada",
+        "Precisamos de acesso à galeria para salvar a imagem.",
+      );
+      closeOptions();
+      return;
+    }
+
     setIsDownloading(true);
 
     try {
-      let permission = await MediaLibrary.getPermissionsAsync();
-
-      if (!permission.granted) {
-        permission = await MediaLibrary.requestPermissionsAsync();
-      }
-
-      if (!permission.granted) {
-        Alert.alert(
-          "Permissão negada",
-          "Precisamos de acesso à galeria para salvar a imagem.",
-        );
-        closeOptions();
-        return;
-      }
-
-      const downloadPromises = postImageUrl.map(async (imageUrl) => {
+      for (const imageUrl of postImageUrl) {
         let validUrl = imageUrl;
 
         if (
@@ -124,23 +125,19 @@ export function usePost({
           throw new Error(`Erro HTTP ${downloadedFile.status}`);
         }
 
-        return MediaLibrary.saveToLibraryAsync(downloadedFile.uri);
-      });
-
-      await Promise.all(downloadPromises);
+        await MediaLibrary.saveToLibraryAsync(downloadedFile.uri);
+      }
 
       Alert.alert("Sucesso", "Mídia(s) salva(s) na sua galeria!");
-      closeOptions();
     } catch (error) {
       Alert.alert("Erro", "Não foi possível concluir o download da mídia.");
-      closeOptions();
     } finally {
       setIsDownloading(false);
+      closeOptions();
     }
   }, [postImageUrl, closeOptions]);
 
   const handleLikePost = useCallback(() => {
-    console.log("Toggling like for post:", postId);
     const wasLiked = isLiked;
 
     setIsLiked((prev) => !prev);
@@ -163,31 +160,47 @@ export function usePost({
       });
   }, [isLiked, postId, request]);
 
-  const handleGoToProfile = () => {
-    router.push({
-      pathname: `/profile/${userId}` as any,
-      params: { isOwnProfile: true } as any,
+  const handleGoToProfile = useCallback(() => {
+    (navigation as any).push("profile/[id]", {
+      id: userId,
+      isOwnProfile: isOwnProfile,
     });
-  };
+  }, [userId, isOwnProfile, navigation]);
 
-  const handleClickPost = () => {
-    router.push({
-      pathname: `/posts/${postId}` as any,
+  const handleClickPost = useCallback(() => {
+    (navigation as any).push("posts/[id]", {
+      id: postId,
     });
-  };
+  }, [postId, navigation]);
 
-  return {
-    showOptions,
-    isDownloading,
-    isLiked,
-    likesCount,
-    toggleOptions,
-    closeOptions,
-    handleEditPost,
-    handleDeletePost,
-    handleDownloadMedia,
-    handleLikePost,
-    handleGoToProfile,
-    handleClickPost,
-  };
+  return useMemo(
+    () => ({
+      showOptions,
+      isDownloading,
+      isLiked,
+      likesCount,
+      toggleOptions,
+      closeOptions,
+      handleEditPost,
+      handleDeletePost,
+      handleDownloadMedia,
+      handleLikePost,
+      handleGoToProfile,
+      handleClickPost,
+    }),
+    [
+      showOptions,
+      isDownloading,
+      isLiked,
+      likesCount,
+      toggleOptions,
+      closeOptions,
+      handleEditPost,
+      handleDeletePost,
+      handleDownloadMedia,
+      handleLikePost,
+      handleGoToProfile,
+      handleClickPost,
+    ],
+  );
 }

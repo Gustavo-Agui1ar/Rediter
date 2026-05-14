@@ -2,7 +2,7 @@ import {
   Header,
   SearchPosts,
   SearchUser,
-  TextBox
+  TextBox,
 } from "@/components/components";
 import TabBar from "@/components/Layout/TabBar/TabBar";
 import { useLoading } from "@/context/loadingContext";
@@ -29,8 +29,8 @@ export default function Search() {
           placeholder="O que você quer ler hoje?"
           value={state.searchQuery}
           onChangeText={actions.setSearchQuery}
-          isSearch={true}
-          onSearch={actions.handleSearch}
+          icon="search"
+          onIconPress={actions.handleSearch}
           style={{ width: "100%" }}
           editable={!globalLoading}
         />
