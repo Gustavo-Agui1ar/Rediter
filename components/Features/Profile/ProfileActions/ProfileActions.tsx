@@ -36,6 +36,7 @@ export default function ProfileActions({
               style={styles.followButton}
             />
             <IconButton icon="message" type="border" size={36} />
+            <IconButton icon="block" type="border" size={36} />
           </>
         ) : (
           <IconButton
@@ -56,6 +57,10 @@ export default function ProfileActions({
           <Text style={styles.description}>{description}</Text>
         </View>
       )}
+      <View style={styles.followInfo}>
+        <Text style={styles.followInfoText}>10k seguidores</Text>
+        <Text style={styles.followInfoText}>500 seguindo</Text>
+      </View>
     </View>
   );
 }

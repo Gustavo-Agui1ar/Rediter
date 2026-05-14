@@ -1,7 +1,7 @@
 import IconButton from "@/components/UI/IconButton/IconButton";
 import { getBaseURL } from "@/utils/configs.utils";
 import { Image } from "expo-image";
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import {
   Animated,
   Dimensions,
@@ -18,7 +18,6 @@ import { useMediaGrid } from "./Midia.script";
 import { useMidiaStyles } from "./Midia.styles";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
-
 interface MediaGridProps {
   userProfileId?: string;
   onRefresh?: () => Promise<void> | void;
@@ -36,7 +35,7 @@ const getImageUri = (item: string | { uri: string }) => {
   return "";
 };
 
-const SkeletonItem = ({ styles }: { styles: any }) => {
+const SkeletonItem = memo(({ styles }: { styles: any }) => {
   const pulseAnim = useRef(new Animated.Value(0.5)).current;
 
   useEffect(() => {
@@ -61,9 +60,9 @@ const SkeletonItem = ({ styles }: { styles: any }) => {
       style={[styles.imageWrapper, styles.skeletonItem, { opacity: pulseAnim }]}
     />
   );
-};
+});
 
-export default function MediaGrid({
+function MediaGrid({
   userProfileId,
   onRefresh,
   refreshing = false,
@@ -81,63 +80,32 @@ export default function MediaGrid({
     closeModal,
   } = useMediaGrid({ userProfileId, refresh_id });
 
-  const displayData = isLocalLoading
-    ? Array.from({ length: 6 }).map((_, i) => `skeleton-${i}`)
-    : data;
+  const displayData = useMemo(() => {
+    return isLocalLoading
+      ? Array.from({ length: 6 }).map((_, i) => `skeleton-${i}`)
+      : data || []; // Fallback seguro
+  }, [isLocalLoading, data]);
 
-  const chunkedData = [];
-  for (let i = 0; i < displayData.length; i += 2) {
-    chunkedData.push(displayData.slice(i, i + 2));
-  }
+  const renderItem = useCallback(
+    ({ item, index }: { item: string | { uri: string }; index: number }) => {
+      if (typeof item === "string" && item.startsWith("skeleton-")) {
+        return <SkeletonItem styles={styles} />;
+      }
 
-  const renderRow = useCallback(
-    ({
-      item: rowItems,
-      index: rowIndex,
-    }: {
-      item: string[];
-      index: number;
-    }) => {
       return (
-        <View
-          style={[
-            styles.columnWrapper,
-            { flexDirection: "row", width: "100%" },
-          ]}
+        <TouchableOpacity
+          style={styles.imageWrapper}
+          activeOpacity={0.85}
+          onPress={() => openCarousel(index)}
         >
-          {rowItems.map((item, colIndex) => {
-            const actualIndex = rowIndex * 2 + colIndex;
-
-            if (item.startsWith("skeleton-")) {
-              return (
-                <SkeletonItem key={`skel-${actualIndex}`} styles={styles} />
-              );
-            }
-
-            return (
-              <TouchableOpacity
-                key={`media-${actualIndex}`}
-                style={styles.imageWrapper}
-                activeOpacity={0.85}
-                onPress={() => openCarousel(actualIndex)}
-              >
-                <Image
-                  source={{ uri: getImageUri(item) }}
-                  style={styles.image}
-                  contentFit="cover"
-                  transition={200}
-                  cachePolicy="memory-disk"
-                />
-              </TouchableOpacity>
-            );
-          })}
-
-          {rowItems.length === 1 && (
-            <View
-              style={[styles.imageWrapper, { backgroundColor: "transparent" }]}
-            />
-          )}
-        </View>
+          <Image
+            source={{ uri: getImageUri(item) }}
+            style={styles.image}
+            contentFit="cover"
+            transition={200}
+            cachePolicy="memory-disk"
+          />
+        </TouchableOpacity>
       );
     },
     [openCarousel, styles],
@@ -153,12 +121,37 @@ export default function MediaGrid({
     );
   }, [isLocalLoading, styles]);
 
+  const listContentStyle = useMemo(
+    () => [
+      styles.listContainer,
+      { minHeight: 400 },
+      Platform.OS === "android" ? { paddingTop: headerHeight } : {},
+    ],
+    [styles.listContainer, headerHeight],
+  );
+
+  const contentInsetIOS = useMemo(
+    () => (Platform.OS === "ios" ? { top: headerHeight } : undefined),
+    [headerHeight],
+  );
+
+  const contentOffsetIOS = useMemo(
+    () => (Platform.OS === "ios" ? { x: 0, y: -headerHeight } : undefined),
+    [headerHeight],
+  );
+
   return (
     <>
-      <Animated.SectionList
-        sections={[{ data: chunkedData }]}
-        keyExtractor={(item, index) => `media-row-${index}`}
-        renderItem={renderRow}
+      <Animated.FlatList
+        data={displayData}
+        numColumns={2}
+        columnWrapperStyle={styles.columnWrapper}
+        keyExtractor={(item, index) =>
+          typeof item === "string"
+            ? `media-${item}-${index}`
+            : `media-obj-${index}`
+        }
+        renderItem={renderItem}
         onScroll={onScroll}
         scrollEventThrottle={16}
         refreshControl={
@@ -172,17 +165,12 @@ export default function MediaGrid({
             />
           ) : undefined
         }
-        contentContainerStyle={[
-          styles.listContainer,
-          { minHeight: 400 },
-          Platform.OS === "android" ? { paddingTop: headerHeight } : {},
-        ]}
-        contentInset={Platform.OS === "ios" ? { top: headerHeight } : undefined}
-        contentOffset={
-          Platform.OS === "ios" ? { x: 0, y: -headerHeight } : undefined
-        }
+        contentContainerStyle={listContentStyle}
+        contentInset={contentInsetIOS}
+        contentOffset={contentOffsetIOS}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={renderEmptyComponent}
+        removeClippedSubviews={true}
       />
 
       <Modal
@@ -214,7 +202,7 @@ export default function MediaGrid({
               offset: SCREEN_WIDTH * i,
               index: i,
             })}
-            keyExtractor={(item, i) => `modal-img-${item}-${i}`}
+            keyExtractor={(item, i) => `modal-img-${i}`}
             renderItem={({ item }) => (
               <View style={[styles.modalCarouselItem, { width: SCREEN_WIDTH }]}>
                 <Image
@@ -231,3 +219,5 @@ export default function MediaGrid({
     </>
   );
 }
+
+export default memo(MediaGrid);

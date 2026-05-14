@@ -80,14 +80,16 @@ export function useSearchPosts(searchTerm: string, onlyWithMedia = false) {
         setPosts((prev) => (isRefresh ? data : mergePosts(prev, data)));
         setHasMore(data.length >= PAGE_SIZE);
       } catch (e: any) {
-        console.error("[useSearchPosts ERROR]", e?.message);
+        if (__DEV__) {
+          console.error("[useSearchPosts ERROR]", e?.message);
+        }
       } finally {
         fetchingRef.current = false;
         setInitialLoading(false);
         setLoadingMore(false);
       }
     },
-    [request],
+    [request, onlyWithMedia],
   );
 
   useEffect(() => {

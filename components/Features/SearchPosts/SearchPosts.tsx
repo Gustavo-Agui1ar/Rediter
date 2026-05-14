@@ -1,17 +1,19 @@
 import Post from "@/components/Features/Post/Post";
 import { useTheme } from "@/context/ThemeContext";
-import React, { useCallback } from "react";
+import React, { memo, useCallback, useMemo } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
   SectionList,
+  StyleProp,
   Text,
   View,
+  ViewStyle,
 } from "react-native";
 import { useStylesPosts } from "./SearchPost.style";
 import { getId, useSearchPosts } from "./SearchPosts.script";
 
-const PostSkeleton = () => {
+const PostSkeleton = memo(() => {
   const styles = useStylesPosts();
   return (
     <View style={styles.postContainer}>
@@ -29,8 +31,12 @@ const PostSkeleton = () => {
       <View style={styles.skeletonImage} />
     </View>
   );
-};
+});
 
+const SKELETON_DATA = [
+  { _isSkeleton: true, id: "skel-1" },
+  { _isSkeleton: true, id: "skel-2" },
+];
 interface SearchPostsProps {
   searchTerm: string;
   onlyWithMedia?: boolean;
@@ -41,7 +47,7 @@ interface SearchPostsProps {
   tabBar?: React.ReactElement;
 }
 
-export default function SearchPosts({
+const SearchPosts = ({
   searchTerm,
   onlyWithMedia = false,
   myProfile = false,
@@ -49,7 +55,7 @@ export default function SearchPosts({
   refreshing = false,
   profileHeader,
   tabBar,
-}: SearchPostsProps) {
+}: SearchPostsProps) => {
   const { colors } = useTheme();
   const styles = useStylesPosts();
   const { posts, initialLoading, loadingMore, loadMore } = useSearchPosts(
@@ -57,12 +63,8 @@ export default function SearchPosts({
     onlyWithMedia,
   );
 
-  const displayData = initialLoading
-    ? ([
-        { _isSkeleton: true, id: "skel-1" },
-        { _isSkeleton: true, id: "skel-2" },
-      ] as any)
-    : posts || [];
+  const displayData = initialLoading ? SKELETON_DATA : posts || [];
+  const sections = useMemo(() => [{ data: displayData }], [displayData]);
 
   const renderItem = useCallback(
     ({ item }: { item: any }) => {
@@ -91,60 +93,80 @@ export default function SearchPosts({
         </View>
       );
     },
-    [myProfile, searchTerm],
+    [myProfile, searchTerm, styles.PostContainer],
+  );
+
+  const handleKeyExtractor = useCallback((item: any, index: number) => {
+    if (item._isSkeleton) return item.id;
+    const id = getId(item);
+    return id ? id.toString() : `idx-${index}`;
+  }, []);
+
+  const handleEndReached = useCallback(() => {
+    if (!initialLoading) {
+      loadMore();
+    }
+  }, [initialLoading, loadMore]);
+
+  const renderSectionHeader = useCallback(() => tabBar || <></>, [tabBar]);
+
+  const renderSectionFooter = useCallback(
+    ({ section }: any) => {
+      if (section.data.length === 0 && !initialLoading) {
+        return (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>
+              {searchTerm
+                ? `Nenhum post encontrado para "${searchTerm}"`
+                : "Comece a digitar para buscar postagens!"}
+            </Text>
+          </View>
+        );
+      }
+      return null;
+    },
+    [initialLoading, searchTerm, styles.emptyContainer, styles.emptyText],
+  );
+
+  const ListFooterComponent = useMemo(() => {
+    return loadingMore ? (
+      <View style={styles.footerLoading}>
+        <ActivityIndicator size="small" color={colors.primary} />
+      </View>
+    ) : (
+      <View style={{ height: 40 }} />
+    );
+  }, [loadingMore, colors.primary, styles.footerLoading]);
+
+  const contentContainerStyle = useMemo<StyleProp<ViewStyle>>(
+    () => [styles.listContent, { minHeight: "100%" }],
+    [styles.listContent],
   );
 
   return (
     <SectionList
-      sections={[{ data: displayData }]}
+      sections={sections}
       renderItem={renderItem}
-      keyExtractor={(item, index) => {
-        if (item._isSkeleton) return item.id;
-        const id = getId(item);
-        return id ? id.toString() : `idx-${index}`;
-      }}
+      keyExtractor={handleKeyExtractor}
       ListHeaderComponent={profileHeader}
-      renderSectionHeader={() => tabBar || <></>}
+      renderSectionHeader={renderSectionHeader}
       stickySectionHeadersEnabled={true}
       initialNumToRender={6}
       maxToRenderPerBatch={10}
       windowSize={5}
-      removeClippedSubviews
+      removeClippedSubviews={true}
       onEndReachedThreshold={0.3}
-      onEndReached={() => {
-        if (!initialLoading) {
-          loadMore();
-        }
-      }}
+      onEndReached={handleEndReached}
       refreshControl={
         onRefresh ? (
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         ) : undefined
       }
-      contentContainerStyle={[styles.listContent, { minHeight: "100%" }]}
-      renderSectionFooter={({ section }) => {
-        if (section.data.length === 0 && !initialLoading) {
-          return (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>
-                {searchTerm
-                  ? `Nenhum post encontrado para "${searchTerm}"`
-                  : "Comece a digitar para buscar postagens!"}
-              </Text>
-            </View>
-          );
-        }
-        return null;
-      }}
-      ListFooterComponent={
-        loadingMore ? (
-          <View style={styles.footerLoading}>
-            <ActivityIndicator size="small" color={colors.primary} />
-          </View>
-        ) : (
-          <View style={{ height: 40 }} />
-        )
-      }
+      contentContainerStyle={contentContainerStyle}
+      renderSectionFooter={renderSectionFooter}
+      ListFooterComponent={ListFooterComponent}
     />
   );
-}
+};
+
+export default memo(SearchPosts);

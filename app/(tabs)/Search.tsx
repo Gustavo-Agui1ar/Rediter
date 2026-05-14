@@ -17,11 +17,6 @@ export default function Search() {
   const { state, actions } = useSearch();
   const { loading: globalLoading } = useLoading();
 
-  const users = [
-    { id: 1, name: "John Doe" },
-    { id: 2, name: "Jane Smith" },
-  ];
-
   function renderHeader() {
     return (
       <Header divider={false}>
@@ -30,7 +25,6 @@ export default function Search() {
           value={state.searchQuery}
           onChangeText={actions.setSearchQuery}
           icon="search"
-          onIconPress={actions.handleSearch}
           style={{ width: "100%" }}
           editable={!globalLoading}
         />
@@ -46,7 +40,6 @@ export default function Search() {
             <SearchUser
               key={`tab-${state.activeTab}`}
               searchTerm={state.searchQuery}
-              onRefresh={actions.handleSearch}
               refreshing={globalLoading}
             />
           </View>
@@ -60,7 +53,6 @@ export default function Search() {
               key={`tab-${state.activeTab}`}
               searchTerm={state.searchQuery}
               myProfile={false}
-              onRefresh={actions.handleSearch}
               refreshing={globalLoading}
               onlyWithMedia={state.activeTab === "media"}
             />

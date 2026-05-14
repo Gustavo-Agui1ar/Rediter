@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
 export function useSearch() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -10,12 +10,8 @@ export function useSearch() {
     { id: "media", label: "Mídias" },
   ];
 
-  const handleSearch = useCallback(async () => {
-    console.log("Buscando por:", searchQuery);
-  }, [searchQuery]);
-
   return {
     state: { searchQuery, activeTab, tabs },
-    actions: { setSearchQuery, setActiveTab, handleSearch },
+    actions: { setSearchQuery, setActiveTab },
   };
 }

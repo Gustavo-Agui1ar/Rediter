@@ -1,5 +1,6 @@
 import {
   ArrowLeft,
+  Ban,
   CirclePlus,
   CircleX,
   EditIcon,
@@ -39,6 +40,7 @@ const AnimatedLocation = anim(MapPin);
 const AnimatedMoreVertical = anim(EllipsisVertical);
 const AnimatedMoon = anim(MoonStar);
 const AnimatedSearch = anim(Search);
+const AnimatedBlock = anim(Ban);
 
 const HeartFilledBase = forwardRef<any, any>((props, ref) => (
   <Heart
@@ -71,6 +73,7 @@ export const ICON_NAMES = [
   "more-vertical",
   "moon",
   "search",
+  "block",
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];
@@ -94,4 +97,5 @@ export const iconMapping: Record<IconName, any> = {
   "more-vertical": AnimatedMoreVertical,
   moon: AnimatedMoon,
   search: AnimatedSearch,
+  block: AnimatedBlock,
 };

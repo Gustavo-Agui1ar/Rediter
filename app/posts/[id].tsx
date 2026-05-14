@@ -33,6 +33,7 @@ export default function PostDetailsScreen() {
     isFollowing,
     comments,
     isLoadingComments,
+    hasMoreComments,
     commentText,
     isInputFocused,
     replyFiles,
@@ -181,10 +182,10 @@ export default function PostDetailsScreen() {
 
   const keyExtractor = useCallback((item: any) => item.id.toString(), []);
   const handleEndReached = useCallback(() => {
-    if (comments.length > 0 && !isLoadingComments) {
-      fetchComments(comments[comments.length - 1]);
+    if (hasMoreComments && !isLoadingComments) {
+      fetchComments(true);
     }
-  }, [comments, isLoadingComments, fetchComments]);
+  }, [hasMoreComments, isLoadingComments, fetchComments]);
 
   const renderCommentItem = useCallback(
     ({ item }: any) => (
@@ -209,7 +210,7 @@ export default function PostDetailsScreen() {
   );
 
   const emptyComponent = useMemo(() => {
-    if (isLoadingComments && postData) {
+    if (isLoadingComments && comments.length === 0 && postData) {
       return (
         <ActivityIndicator
           size="small"
@@ -219,7 +220,20 @@ export default function PostDetailsScreen() {
       );
     }
     return null;
-  }, [isLoadingComments, postData, colors.primary]);
+  }, [isLoadingComments, comments.length, postData, colors.primary]);
+
+  const footerComponent = useMemo(() => {
+    if (isLoadingComments && comments.length > 0) {
+      return (
+        <ActivityIndicator
+          size="small"
+          color={colors.primary}
+          style={{ marginVertical: 20 }}
+        />
+      );
+    }
+    return null;
+  }, [isLoadingComments, comments.length, colors.primary]);
 
   return (
     <KeyboardAvoidingView
@@ -236,6 +250,7 @@ export default function PostDetailsScreen() {
         onEndReachedThreshold={0.5}
         ListHeaderComponent={listHeader}
         ListEmptyComponent={emptyComponent}
+        ListFooterComponent={footerComponent}
         renderItem={renderCommentItem}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}

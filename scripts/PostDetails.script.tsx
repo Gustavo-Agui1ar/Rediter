@@ -29,7 +29,10 @@ export function usePostDetails() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [comments, setComments] = useState<SinglePostData[]>([]);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
+  const [hasMoreComments, setHasMoreComments] = useState(true);
   const isFetchingCommentsRef = useRef(false);
+  const hasMoreCommentsRef = useRef(true);
+  const lastCursorRef = useRef<{ createdAt: string; id: string } | null>(null);
   const [commentText, setCommentText] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [replyFiles, setReplyFiles] = useState<any[]>([]);
@@ -38,17 +41,26 @@ export function usePostDetails() {
   const [isSendingReply, setIsSendingReply] = useState(false);
 
   const fetchComments = useCallback(
-    async (lastCommentToLoadMore?: SinglePostData) => {
+    async (isLoadMore: boolean = false) => {
       if (!id || isFetchingCommentsRef.current) return;
+      if (isLoadMore && !hasMoreCommentsRef.current) return;
 
       try {
         isFetchingCommentsRef.current = true;
         setIsLoadingComments(true);
 
-        let queryString = `?pageSize=10`;
-        if (lastCommentToLoadMore) {
-          queryString += `&lastCreatedAt=${encodeURIComponent(lastCommentToLoadMore.createdAt)}`;
-          queryString += `&lastId=${encodeURIComponent(lastCommentToLoadMore.id)}`;
+        if (!isLoadMore) {
+          hasMoreCommentsRef.current = true;
+          setHasMoreComments(true);
+          lastCursorRef.current = null;
+        }
+
+        const pageSize = 10;
+        let queryString = `?pageSize=${pageSize}`;
+
+        if (isLoadMore && lastCursorRef.current) {
+          queryString += `&lastCreatedAt=${encodeURIComponent(lastCursorRef.current.createdAt)}`;
+          queryString += `&lastId=${encodeURIComponent(lastCursorRef.current.id)}`;
         }
 
         const response = await request({
@@ -58,10 +70,22 @@ export function usePostDetails() {
         });
 
         if (response?.ok) {
-          const data = await response.json();
-          setComments((prev) =>
-            lastCommentToLoadMore ? [...prev, ...data] : data,
-          );
+          const data: SinglePostData[] = await response.json();
+
+          if (data.length < pageSize) {
+            hasMoreCommentsRef.current = false;
+            setHasMoreComments(false);
+          }
+
+          if (data.length > 0) {
+            const lastItem = data[data.length - 1];
+            lastCursorRef.current = {
+              createdAt: lastItem.createdAt,
+              id: lastItem.id,
+            };
+          }
+
+          setComments((prev) => (isLoadMore ? [...prev, ...data] : data));
         }
       } catch (error) {
         console.error("Erro ao carregar comentários:", error);
@@ -113,13 +137,13 @@ export function usePostDetails() {
   }, [id, request]);
 
   useEffect(() => {
-    if (id) fetchComments();
+    if (id) fetchComments(false);
   }, [id, fetchComments]);
 
   useEffect(() => {
     const subscription = DeviceEventEmitter.addListener(
       "refresh_comments",
-      () => fetchComments(),
+      () => fetchComments(false),
     );
     return () => subscription.remove();
   }, [fetchComments]);
@@ -249,6 +273,7 @@ export function usePostDetails() {
         isFollowing,
         comments,
         isLoadingComments,
+        hasMoreComments,
         commentText,
         isInputFocused,
         replyFiles,
@@ -278,13 +303,13 @@ export function usePostDetails() {
       isFollowing,
       comments,
       isLoadingComments,
+      hasMoreComments,
       commentText,
       isInputFocused,
       replyFiles,
       replyLocation,
       showEmoji,
       isSendingReply,
-
       fetchComments,
       handleLikePost,
       syncFollowState,

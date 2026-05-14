@@ -45,4 +45,19 @@ export const useProfileActionsStyles = makeStyles((colors: ThemeColors) => ({
     lineHeight: 20,
     textAlign: "left",
   },
+
+  followInfo: {
+    marginTop: 12,
+    marginHorizontal: 16,
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    gap: 20,
+  },
+
+  followInfoText: {
+    color: colors.textPrimary,
+    fontSize: 14,
+    fontWeight: "500",
+  },
 }));

@@ -74,11 +74,9 @@ export default function FeedProfile(props: FeedProfileProps) {
               key="tab-posts"
               userId={userId}
               ownProfile={ownProfile}
-              onRefresh={actions.handleGlobalRefresh}
-              refreshing={state.loading}
               refresh_id={`${refresh_id}_posts`}
               onScroll={actions.onScrollEvent}
-              headerHeight={state.HEADER_HEIGHT}
+              headerHeight={state.HEADER_HEIGHT + 24}
             />
           </View>
         )}
@@ -109,8 +107,6 @@ export default function FeedProfile(props: FeedProfileProps) {
               key="tab-likes"
               userId={userId}
               ownProfile={ownProfile}
-              onRefresh={actions.handleGlobalRefresh}
-              refreshing={state.loading}
               refresh_id={`${refresh_id}_likes`}
               onScroll={actions.onScrollEvent}
               headerHeight={state.HEADER_HEIGHT}
