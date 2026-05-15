@@ -71,7 +71,7 @@ export default function PostDetailsScreen() {
           <ProfileImage
             size={50}
             wrapper={false}
-            imageName={postData.imageProfileUrl}
+            imageName={postData.profileImageName}
           />
           <View style={styles.headerText}>
             <Text
@@ -193,11 +193,12 @@ export default function PostDetailsScreen() {
         <Post
           userName={item.userName}
           text={item.text}
-          imageProfileUrl={item.imageProfileUrl}
+          imageProfileUrl={item.profileImageName}
           postImageUrl={item.imageUrls || []}
           postId={item.id}
           createdAt={item.createdAt}
           countLikes={item.likesCount}
+          countComments={item.commentsCount}
           liked={item.likedByCurrentUser}
           userId={item.userId}
           ownProfile={item.ownPost || false}

@@ -187,6 +187,7 @@ export function usePost({
       handleLikePost,
       handleGoToProfile,
       handleClickPost,
+      setShowOptions,
     }),
     [
       showOptions,
@@ -201,6 +202,7 @@ export function usePost({
       handleLikePost,
       handleGoToProfile,
       handleClickPost,
+      setShowOptions,
     ],
   );
 }

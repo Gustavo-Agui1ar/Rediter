@@ -1,28 +1,31 @@
 import { default as Button } from "@/components/UI/Button/button";
 import IconButton from "@/components/UI/IconButton/IconButton";
-import { router } from "expo-router";
-import { useState } from "react";
 import { Text, View } from "react-native";
-import { useProfileActionsStyles } from "./profileActions.style";
+import { useProfileActions } from "./ProfileActions.script";
+import { useProfileActionsStyles } from "./ProfileActions.style";
 
 interface ProfileActionsProps {
   OwnProfile?: boolean;
   userName?: string;
   description?: string;
-  initialIsFollowing?: boolean;
+  initialIsFollowing: boolean;
+  userId?: string;
 }
 
 export default function ProfileActions({
   OwnProfile = false,
   userName = "Usuário",
   description = "",
-  initialIsFollowing,
+  initialIsFollowing = false,
+  userId,
 }: ProfileActionsProps) {
-  const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const styles = useProfileActionsStyles();
+  const { isFollowing, handleFollowToggle, handleGoToConfig } =
+    useProfileActions({
+      userId: userId,
+      initialIsFollowing,
+    });
 
-  const updateFollowStatus = () => setIsFollowing((prev) => !prev);
-  const goToConfig = () => OwnProfile && router.push("/Configs");
   return (
     <View style={styles.container}>
       <View style={styles.actionsRow}>
@@ -32,7 +35,7 @@ export default function ProfileActions({
               title={isFollowing ? "Seguindo" : "Seguir"}
               type={isFollowing ? "border" : "fill"}
               size="small"
-              onPress={updateFollowStatus}
+              onPress={handleFollowToggle}
               style={styles.followButton}
             />
             <IconButton icon="message" type="border" size={36} />
@@ -43,7 +46,7 @@ export default function ProfileActions({
             icon="configuration"
             type="border"
             size={36}
-            onPress={goToConfig}
+            onPress={handleGoToConfig}
           />
         )}
       </View>

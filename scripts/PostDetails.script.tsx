@@ -8,7 +8,7 @@ export interface SinglePostData {
   id: string;
   userName: string;
   text: string;
-  imageProfileUrl?: string;
+  profileImageName?: string;
   imageUrls?: string[];
   location?: string;
   edited?: boolean;

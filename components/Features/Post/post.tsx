@@ -11,7 +11,7 @@ import {
   Pressable,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import { usePost } from "./Post.script";
 import { usePostStyles } from "./Post.style";
@@ -28,6 +28,7 @@ interface PostProps {
   searchTerm?: string;
   ownProfile: boolean;
   countLikes?: number;
+  countComments?: number;
   liked?: boolean;
   canGoToProfile?: boolean;
   userId: string;
@@ -48,6 +49,7 @@ function Post({
   searchTerm = "",
   ownProfile = false,
   countLikes = 0,
+  countComments = 0,
   liked = false,
   canGoToProfile = true,
   userId,
@@ -69,6 +71,7 @@ function Post({
     handleLikePost,
     handleGoToProfile,
     handleClickPost,
+    setShowOptions,
   } = usePost({
     postId,
     text,
@@ -139,51 +142,66 @@ function Post({
             />
 
             {showOptions && (
-              <View style={[styles.editorContainer, postStyles.dropdownMenu]}>
-                {!ownProfile && (
-                  <>
-                    <TouchableOpacity
-                      onPress={handleEditPost}
-                      style={postStyles.itemOptionsContainer}
-                    >
-                      <Text style={postStyles.optionText}>Editar Post</Text>
-                    </TouchableOpacity>
+              <>
+                {/* 1. Camada invisível que cobre a área ao redor para fechar o menu */}
+                <Pressable
+                  style={postStyles.invisibleOverlay}
+                  onPress={() => setShowOptions(false)}
+                />
 
-                    <TouchableOpacity
-                      onPress={handleDeletePost}
-                      style={postStyles.itemOptionsContainer}
-                    >
-                      <Text style={postStyles.optionTextDelete}>
-                        Excluir Post
-                      </Text>
-                    </TouchableOpacity>
-                  </>
-                )}
+                {/* 2. Seu Menu Original (precisa de um zIndex maior que o overlay) */}
+                <View
+                  style={[
+                    styles.editorContainer,
+                    postStyles.dropdownMenu,
+                    { zIndex: 10 },
+                  ]}
+                >
+                  {ownProfile && (
+                    <>
+                      <TouchableOpacity
+                        onPress={handleEditPost}
+                        style={postStyles.itemOptionsContainer}
+                      >
+                        <Text style={postStyles.optionText}>Editar Post</Text>
+                      </TouchableOpacity>
 
-                {hasImages && (
-                  <TouchableOpacity
-                    disabled={isDownloading}
-                    onPress={handleDownloadMedia}
-                    style={[
-                      postStyles.itemOptionsContainer,
-                      postStyles.itemOptionsContainerLast,
-                      downloadingOpacityStyle,
-                    ]}
-                  >
-                    {isDownloading ? (
-                      <View style={postStyles.downloadingIndicator}>
-                        <ActivityIndicator
-                          size="small"
-                          color={colors.primary}
-                        />
-                        <Text style={postStyles.optionText}>Baixando...</Text>
-                      </View>
-                    ) : (
-                      <Text style={postStyles.optionText}>Salvar Mídia</Text>
-                    )}
-                  </TouchableOpacity>
-                )}
-              </View>
+                      <TouchableOpacity
+                        onPress={handleDeletePost}
+                        style={postStyles.itemOptionsContainer}
+                      >
+                        <Text style={postStyles.optionTextDelete}>
+                          Excluir Post
+                        </Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+
+                  {hasImages && (
+                    <TouchableOpacity
+                      disabled={isDownloading}
+                      onPress={handleDownloadMedia}
+                      style={[
+                        postStyles.itemOptionsContainer,
+                        postStyles.itemOptionsContainerLast,
+                        downloadingOpacityStyle,
+                      ]}
+                    >
+                      {isDownloading ? (
+                        <View style={postStyles.downloadingIndicator}>
+                          <ActivityIndicator
+                            size="small"
+                            color={colors.primary}
+                          />
+                          <Text style={postStyles.optionText}>Baixando...</Text>
+                        </View>
+                      ) : (
+                        <Text style={postStyles.optionText}>Salvar Mídia</Text>
+                      )}
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </>
             )}
           </View>
         )}
@@ -222,7 +240,7 @@ function Post({
       >
         <TouchableOpacity activeOpacity={0.6} style={postStyles.actionGroup}>
           <IconButton type="none" icon="message" circle={false} size={44} />
-          <Text style={postStyles.actionLabel}>0</Text>
+          <Text style={postStyles.actionLabel}>{countComments}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity activeOpacity={0.6} style={postStyles.actionGroup}>
@@ -253,6 +271,7 @@ const areEqual = (prevProps: PostProps, nextProps: PostProps) => {
     prevProps.postId === nextProps.postId &&
     prevProps.liked === nextProps.liked &&
     prevProps.countLikes === nextProps.countLikes &&
+    prevProps.countComments === nextProps.countComments &&
     prevProps.searchTerm === nextProps.searchTerm &&
     prevProps.isReply === nextProps.isReply &&
     prevProps.postImageUrl?.length === nextProps.postImageUrl?.length

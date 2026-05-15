@@ -91,6 +91,7 @@ export default function UserProfileScreen() {
           userName={state.profile.name}
           description={state.profile.description}
           initialIsFollowing={isFollowing}
+          userId={state.profile.userID}
         />
       </View>
     </View>

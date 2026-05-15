@@ -29,6 +29,8 @@ export default function Perfil() {
             OwnProfile={true}
             userName={state.form.userName}
             description={state.form.description}
+            initialIsFollowing={state.form.isFollowing}
+            userId={state.form.userId}
           />
         </View>
       </View>

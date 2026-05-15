@@ -70,14 +70,15 @@ function Posts({
           <Post
             userName={item.userName}
             text={item.text}
-            imageProfileUrl={item.imageProfileUrl}
+            imageProfileUrl={item.profileImageName}
             postImageUrl={item.imageUrls}
             postId={getId(item) as string}
             Location={item.Location || item.location}
             edited={item.edited}
             createdAt={item.createdAt}
-            ownProfile={ownProfile}
+            ownProfile={item.ownPost}
             countLikes={item.likesCount}
+            countComments={item.commentsCount}
             liked={item.likedByCurrentUser}
             canGoToProfile={false}
             userId={userId || ""}

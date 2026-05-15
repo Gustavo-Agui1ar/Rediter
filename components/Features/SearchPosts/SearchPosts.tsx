@@ -77,17 +77,18 @@ const SearchPosts = ({
           <Post
             userName={item.userName}
             text={item.text}
-            imageProfileUrl={item.imageProfileUrl}
+            imageProfileUrl={item.profileImageName}
             postImageUrl={item.imageUrls}
             postId={getId(item) as string}
             Location={item.Location || item.location}
             edited={item.edited}
             createdAt={item.createdAt}
-            ownProfile={myProfile}
+            ownProfile={item.ownPost}
             searchTerm={searchTerm}
             countLikes={item.likesCount}
+            countComments={item.commentsCount}
             liked={item.likedByCurrentUser}
-            userId={item.postUserId}
+            userId={item.postUserID}
             canGoToProfile={true}
           />
         </View>

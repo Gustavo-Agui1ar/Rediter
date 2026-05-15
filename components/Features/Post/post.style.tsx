@@ -61,6 +61,14 @@ export const usePostStyles = makeStyles((colors: ThemeColors) => ({
     left: 8,
     top: -8,
   },
+  invisibleOverlay: {
+    position: "absolute",
+    top: -1000,
+    bottom: -1000,
+    left: -1000,
+    right: -1000,
+    zIndex: 9,
+  },
   dropdownMenu: {
     position: "absolute",
     right: 0,
