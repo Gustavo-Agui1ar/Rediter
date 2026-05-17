@@ -1,14 +1,11 @@
-import Midiagrid from "@/components/Features/Profile/Midia/Midia";
-import Posts from "@/components/Features/Profile/Posts/Posts";
+import Midiagrid, {
+  MediaGridRef,
+} from "@/components/Features/Profile/Midia/Midia";
+import Posts, { PostsRef } from "@/components/Features/Profile/Posts/Posts";
 import TabBar from "@/components/Layout/TabBar/TabBar";
 import { useTheme } from "@/context/ThemeContext";
-import React, { useMemo } from "react";
-import {
-  ActivityIndicator,
-  Animated,
-  DeviceEventEmitter,
-  View,
-} from "react-native";
+import React, { useMemo, useRef } from "react";
+import { ActivityIndicator, Animated, View } from "react-native";
 import { useFeedProfile } from "./FeedProfile.script";
 import { useFeedStyles } from "./FeedProfile.style";
 
@@ -23,14 +20,19 @@ interface FeedProfileProps {
 export default function FeedProfile(props: FeedProfileProps) {
   const { headerComponent, userId, ownProfile, refresh_id, onRefreshProfile } =
     props;
+
   const styles = useFeedStyles();
   const { colors } = useTheme();
 
+  const postsRef = useRef<PostsRef>(null);
+  const mediaRef = useRef<MediaGridRef>(null);
+  const likesRef = useRef<PostsRef>(null);
+
   const { state, actions, animations, panHandlers, getTabStyle } =
     useFeedProfile({
-      onRefreshProfile: onRefreshProfile,
-      refresh_id: refresh_id,
-      activeTab: "",
+      onRefreshProfile,
+      refresh_id,
+      activeTab: "posts",
     });
 
   const tabs = useMemo(
@@ -42,14 +44,36 @@ export default function FeedProfile(props: FeedProfileProps) {
     [],
   );
 
+  const handleTabChange = (tabId: string) => {
+    actions.handleTabChange(tabId);
+
+    requestAnimationFrame(() => {
+      switch (tabId) {
+        case "posts":
+          postsRef.current?.scrollToTop();
+          break;
+
+        case "media":
+          mediaRef.current?.scrollToTop();
+          break;
+
+        case "likes":
+          likesRef.current?.scrollToTop();
+          break;
+      }
+    });
+  };
+
   const renderedPostsTab = useMemo(() => {
     if (!state.renderedTabs.posts) return null;
+
     return (
       <View
         style={getTabStyle("posts")}
         pointerEvents={state.activeTab === "posts" ? "auto" : "none"}
       >
         <Posts
+          ref={postsRef}
           key="tab-posts"
           userId={userId}
           ownProfile={ownProfile}
@@ -72,12 +96,14 @@ export default function FeedProfile(props: FeedProfileProps) {
 
   const renderedMediaTab = useMemo(() => {
     if (!state.renderedTabs.media) return null;
+
     return (
       <View
         style={getTabStyle("media")}
         pointerEvents={state.activeTab === "media" ? "auto" : "none"}
       >
         <Midiagrid
+          ref={mediaRef}
           key="tab-media"
           userProfileId={userId}
           onRefresh={actions.handleGlobalRefresh}
@@ -102,19 +128,21 @@ export default function FeedProfile(props: FeedProfileProps) {
 
   const renderedLikesTab = useMemo(() => {
     if (!state.renderedTabs.likes) return null;
+
     return (
       <View
         style={getTabStyle("likes")}
         pointerEvents={state.activeTab === "likes" ? "auto" : "none"}
       >
         <Posts
+          ref={likesRef}
           key="tab-likes"
           userId={userId}
           ownProfile={false}
           onlyLiked={true}
           refresh_id={`${refresh_id}_likes`}
           onScroll={actions.onScrollEvent}
-          headerHeight={state.HEADER_HEIGHT}
+          headerHeight={state.HEADER_HEIGHT + 24}
         />
       </View>
     );
@@ -123,7 +151,6 @@ export default function FeedProfile(props: FeedProfileProps) {
     state.activeTab,
     getTabStyle,
     userId,
-    ownProfile,
     refresh_id,
     actions.onScrollEvent,
     state.HEADER_HEIGHT,
@@ -154,11 +181,7 @@ export default function FeedProfile(props: FeedProfileProps) {
           <TabBar
             items={tabs}
             active={state.activeTab}
-            onChange={(tabId) => {
-              actions.handleTabChange(tabId);
-
-              DeviceEventEmitter.emit(`scrollToTop_${refresh_id}_${tabId}`);
-            }}
+            onChange={handleTabChange}
           />
         </Animated.View>
 

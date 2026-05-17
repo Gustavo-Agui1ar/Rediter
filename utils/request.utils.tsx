@@ -28,6 +28,7 @@ export interface RequestOptions {
 
 export class ApiError extends Error {
   status: number;
+
   constructor(message: string, status: number) {
     super(message);
     this.name = "ApiError";
@@ -36,26 +37,109 @@ export class ApiError extends Error {
 }
 
 // ============================================================================
-// CACHE EM MEMÓRIA
+// CACHE GLOBAL E FILA DE CONCORRÊNCIA
 // ============================================================================
+
 let isRefreshing = false;
-let refreshPromise: Promise<string | null> | null = null;
+let failedQueue: Array<{
+  resolve: (token: string) => void;
+  reject: (err: any) => void;
+}> = [];
 let cachedAccessToken: string | null = null;
 
 export const clearTokenCache = () => {
   cachedAccessToken = null;
 };
 
+const processQueue = (error: Error | null, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else if (token) {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+// ============================================================================
+// TOKEN
+// ============================================================================
+
 async function getAccessTokenOptimized(): Promise<string | null> {
+  if (isRefreshing) {
+    try {
+      const refreshedToken = await new Promise<string>((resolve, reject) => {
+        failedQueue.push({ resolve, reject });
+      });
+      return refreshedToken;
+    } catch (error) {
+      return null;
+    }
+  }
+
   if (cachedAccessToken) {
     return cachedAccessToken;
   }
 
-  const t0 = performance.now();
   cachedAccessToken = await getStoreageItem(STORAGE_KEYS.ACCESS_TOKEN);
   return cachedAccessToken;
 }
 
+// ============================================================================
+// REFRESH TOKEN (Apenas responsável por chamar a API)
+// ============================================================================
+async function refreshAccessToken(): Promise<string | null> {
+  try {
+    const refreshToken = await getStoreageItem(STORAGE_KEYS.REFRESH_TOKEN);
+
+    if (!refreshToken) {
+      return null;
+    }
+
+    const refreshUrl = `${getBaseURL()}/api/auth/refresh-token`;
+    const response = await fetch(refreshUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        refreshToken,
+      }),
+    });
+
+    const responseText = await response.text();
+
+    if (!response.ok) {
+      return null;
+    }
+
+    let result: any;
+    try {
+      result = JSON.parse(responseText);
+    } catch (err) {
+      return null;
+    }
+
+    const newAccess = result.accessToken || result.access;
+    const newRefresh = result.refreshToken || result.refresh;
+
+    if (!newAccess) {
+      return null;
+    }
+
+    await saveTokens(newAccess, newRefresh ?? refreshToken);
+    cachedAccessToken = newAccess;
+
+    return newAccess;
+  } catch (err) {
+    return null;
+  }
+}
+
+// ============================================================================
+// REQUEST OPTIONS & TIMEOUT (Sem alterações)
+// ============================================================================
 async function buildRequestOptions(
   options: RequestOptions,
 ): Promise<RequestInit> {
@@ -63,10 +147,12 @@ async function buildRequestOptions(
   const isFormData = body instanceof FormData;
   const requestHeaders = new Headers(headers);
 
+  // AUTH
   if (requireAuth) {
     const accessToken = await getAccessTokenOptimized();
     if (accessToken) {
       requestHeaders.set("Authorization", `Bearer ${accessToken}`);
+    } else {
     }
   }
 
@@ -76,6 +162,7 @@ async function buildRequestOptions(
     headers: requestHeaders,
   };
 
+  // BODY
   if (body && method !== "GET") {
     if (isFormData) {
       requestInit.body = body;
@@ -104,18 +191,25 @@ async function fetchWithTimeout(
     });
   }
 
-  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, timeout);
 
   try {
-    return await fetch(url, { ...options, signal: controller.signal });
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
   } finally {
     clearTimeout(timeoutId);
   }
 }
 
-async function handleApiError(response: Response, url: string): Promise<never> {
+async function handleApiError(response: Response): Promise<never> {
   let errorMessage = `HTTP ${response.status} - ${response.statusText}`;
   const textResponse = await response.text();
+
+  console.log("❌ API ERROR RESPONSE:", textResponse);
 
   if (textResponse) {
     try {
@@ -125,48 +219,12 @@ async function handleApiError(response: Response, url: string): Promise<never> {
       errorMessage = textResponse;
     }
   }
+
   throw new ApiError(errorMessage, response.status);
 }
 
-async function refreshAccessToken(): Promise<string | null> {
-  if (isRefreshing && refreshPromise) return refreshPromise;
-
-  isRefreshing = true;
-  refreshPromise = (async () => {
-    try {
-      const refreshToken = await getStoreageItem(STORAGE_KEYS.REFRESH_TOKEN);
-      if (!refreshToken) return null;
-
-      const refreshUrl = `${getBaseURL()}/api/auth/refresh-token`;
-      const response = await fetch(refreshUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(refreshToken),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        const newAccess = result.accessToken || result.access;
-        const newRefresh = result.refreshToken || result.refresh;
-
-        await saveTokens(newAccess, newRefresh);
-        cachedAccessToken = newAccess;
-        return newAccess;
-      }
-      return null;
-    } catch (error) {
-      return null;
-    } finally {
-      isRefreshing = false;
-      refreshPromise = null;
-    }
-  })();
-
-  return refreshPromise;
-}
-
 // ============================================================================
-// O USE API OTIMIZADO (COM LOGS DE TEMPO)
+// USE API
 // ============================================================================
 export function useApi() {
   const { loading, setLoading } = useLoading();
@@ -181,11 +239,11 @@ export function useApi() {
         _isRetry = false,
         hasLoading = true,
       } = options;
+
       const url = `${getBaseURL()}${urlComplement}`;
 
       console.log(`🚀 [API INÍCIO] ${method} ${urlComplement}`);
 
-      const startInteraction = performance.now();
       await new Promise<void>((resolve) =>
         InteractionManager.runAfterInteractions(() => resolve()),
       );
@@ -205,20 +263,66 @@ export function useApi() {
           configs.timeout,
         );
 
+        // ==========================================================
+        // TOKEN EXPIROU (401)
+        // ==========================================================
         if (response.status === 401 && !_isRetry) {
-          const newToken = await refreshAccessToken();
-          if (newToken) {
-            return await request({ ...options, _isRetry: true });
-          } else {
-            clearTokenCache();
-            await deleteTokens();
-            router.replace("/");
-            throw new ApiError("Sessão expirada. Faça login novamente.", 401);
+          console.log("🔄 Token expirado (401 detectado)");
+
+          if (isRefreshing) {
+            try {
+              const token = await new Promise<string>((resolve, reject) => {
+                failedQueue.push({ resolve, reject });
+              });
+
+              return await request({
+                ...options,
+                _isRetry: true,
+                headers: {
+                  ...options.headers,
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+            } catch (err) {
+              throw new ApiError(
+                "Sessão expirada enquanto aguardava fila.",
+                401,
+              );
+            }
           }
+
+          isRefreshing = true;
+
+          const newToken = await refreshAccessToken();
+
+          if (newToken) {
+            processQueue(null, newToken); // Avisa todo mundo da fila que deu bom!
+            isRefreshing = false; // Destrava a cancela global
+
+            return await request({
+              ...options,
+              _isRetry: true,
+              headers: {
+                ...options.headers,
+                Authorization: `Bearer ${newToken}`,
+              },
+            });
+          }
+
+          console.log("❌ Refresh falhou na raiz. Derrubando sessão...");
+          processQueue(new Error("Refresh failed")); // Avisa todo mundo da fila que deu ruim
+          isRefreshing = false;
+
+          clearTokenCache();
+          await deleteTokens();
+          router.replace("/");
+
+          throw new ApiError("Sessão expirada. Faça login novamente.", 401);
         }
 
         if (!response.ok) {
-          await handleApiError(response, url);
+          console.log("❌ Response não OK");
+          await handleApiError(response);
         }
 
         return response;
@@ -230,13 +334,18 @@ export function useApi() {
         if (!_isRetry) {
           requestAnimationFrame(() => setLoading(false));
         }
+
         console.log(
-          `🏁 [API FIM] Tempo TOTAL da operação: ${(performance.now() - startTotal).toFixed(2)}ms\n`,
+          `🏁 [API FIM] Tempo TOTAL: ${(performance.now() - startTotal).toFixed(2)}ms\n`,
         );
       }
     },
     [setLoading],
   );
 
-  return { request, loading, error };
+  return {
+    request,
+    loading,
+    error,
+  };
 }

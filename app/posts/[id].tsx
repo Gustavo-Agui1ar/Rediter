@@ -1,5 +1,5 @@
 import Post from "@/components/Features/Post/Post";
-import { PostSkeleton } from "@/components/Features/Profile/Posts/Posts";
+import { PostSkeleton } from "@/components/Features/Profile/Posts/PostSkeleton";
 import ProfileImage from "@/components/Features/Profile/ProfileImage";
 import DisplayImages from "@/components/Feedback/DisplayImages/DisplayImage";
 import HighLightText from "@/components/UI/HighLightText";

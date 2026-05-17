@@ -37,6 +37,7 @@ const SKELETON_DATA = [
   { _isSkeleton: true, id: "skel-1" },
   { _isSkeleton: true, id: "skel-2" },
 ];
+
 interface SearchPostsProps {
   searchTerm: string;
   onlyWithMedia?: boolean;
@@ -45,6 +46,7 @@ interface SearchPostsProps {
   refreshing?: boolean;
   profileHeader?: React.ReactElement;
   tabBar?: React.ReactElement;
+  feedMode?: "following" | "foryou";
 }
 
 const SearchPosts = ({
@@ -55,12 +57,14 @@ const SearchPosts = ({
   refreshing = false,
   profileHeader,
   tabBar,
+  feedMode,
 }: SearchPostsProps) => {
   const { colors } = useTheme();
   const styles = useStylesPosts();
   const { posts, initialLoading, loadingMore, loadMore } = useSearchPosts(
     searchTerm,
     onlyWithMedia,
+    feedMode,
   );
 
   const displayData = initialLoading ? SKELETON_DATA : posts || [];
@@ -114,19 +118,32 @@ const SearchPosts = ({
   const renderSectionFooter = useCallback(
     ({ section }: any) => {
       if (section.data.length === 0 && !initialLoading) {
+        let emptyMessage = "Nenhum post encontrado.";
+        if (feedMode === "following") {
+          emptyMessage = "Você não segue ninguém ou não há postagens recentes.";
+        } else if (feedMode === "foryou") {
+          emptyMessage = "Não há postagens novas no momento.";
+        } else {
+          emptyMessage = searchTerm
+            ? `Nenhum post encontrado para "${searchTerm}"`
+            : "Comece a digitar para buscar postagens!";
+        }
+
         return (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              {searchTerm
-                ? `Nenhum post encontrado para "${searchTerm}"`
-                : "Comece a digitar para buscar postagens!"}
-            </Text>
+            <Text style={styles.emptyText}>{emptyMessage}</Text>
           </View>
         );
       }
       return null;
     },
-    [initialLoading, searchTerm, styles.emptyContainer, styles.emptyText],
+    [
+      initialLoading,
+      searchTerm,
+      feedMode,
+      styles.emptyContainer,
+      styles.emptyText,
+    ],
   );
 
   const ListFooterComponent = useMemo(() => {

@@ -102,9 +102,13 @@ export function usePostDetails() {
   const handleGoToProfile = useCallback(() => {
     router.push({
       pathname: `/profile/${userId}` as any,
-      params: { isOwnProfile: isOwnProfile } as any,
+      params: {
+        isOwnProfile: isOwnProfile,
+        initialName: postData?.userName,
+        initialAvatar: postData?.profileImageName,
+      } as any,
     });
-  }, [userId, isOwnProfile]);
+  }, [userId, isOwnProfile, postData]);
 
   useEffect(() => {
     let isMounted = true;

@@ -1,7 +1,17 @@
 import IconButton from "@/components/UI/IconButton/IconButton";
 import { getBaseURL } from "@/utils/configs.utils";
 import { Image } from "expo-image";
-import React, { memo, useCallback, useEffect, useMemo, useRef } from "react";
+
+import React, {
+  forwardRef,
+  memo,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+} from "react";
+
 import {
   Animated,
   Dimensions,
@@ -14,80 +24,122 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
 import { useMediaGrid } from "./Midia.script";
 import { useMidiaStyles } from "./Midia.styles";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
+export interface MediaGridRef {
+  scrollToTop: () => void;
+}
+
 interface MediaGridProps {
   userProfileId?: string;
+  refresh_id: string;
+
   onRefresh?: () => Promise<void> | void;
   refreshing?: boolean;
-  refresh_id: string;
+
   onScroll?: any;
+
   headerHeight?: number;
 }
 
 const getImageUri = (item: string | { uri: string }) => {
-  if (typeof item === "object" && item?.uri) return item.uri;
-  if (typeof item === "string") {
-    return `${getBaseURL()}/api/pictures/${encodeURIComponent(item)}`;
+  if (typeof item === "object") {
+    return item.uri;
   }
-  return "";
+
+  return `${getBaseURL()}/api/pictures/${encodeURIComponent(item)}`;
 };
 
 const SkeletonItem = memo(({ styles }: { styles: any }) => {
-  const pulseAnim = useRef(new Animated.Value(0.5)).current;
+  const opacity = useRef(new Animated.Value(0.5)).current;
 
   useEffect(() => {
-    Animated.loop(
+    const animation = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulseAnim, {
+        Animated.timing(opacity, {
           toValue: 1,
           duration: 800,
           useNativeDriver: true,
         }),
-        Animated.timing(pulseAnim, {
+
+        Animated.timing(opacity, {
           toValue: 0.5,
           duration: 800,
           useNativeDriver: true,
         }),
       ]),
-    ).start();
-  }, [pulseAnim]);
+    );
+
+    animation.start();
+
+    return () => {
+      animation.stop();
+    };
+  }, [opacity]);
 
   return (
     <Animated.View
-      style={[styles.imageWrapper, styles.skeletonItem, { opacity: pulseAnim }]}
+      style={[styles.imageWrapper, styles.skeletonItem, { opacity }]}
     />
   );
 });
 
-function MediaGrid({
-  userProfileId,
-  onRefresh,
-  refreshing = false,
-  refresh_id,
-  onScroll,
-  headerHeight = 0,
-}: MediaGridProps) {
-  const styles = useMidiaStyles();
-
-  const { state, refs, actions } = useMediaGrid({
+const MediaGrid = forwardRef<MediaGridRef, MediaGridProps>(function MediaGrid(
+  {
     userProfileId,
     refresh_id,
-    headerHeight,
+
+    onRefresh,
+    refreshing = false,
+
+    onScroll,
+
+    headerHeight = 0,
+  },
+  ref,
+) {
+  const styles = useMidiaStyles();
+
+  const {
+    data,
+    loading,
+
+    modalVisible,
+    selectedIndex,
+
+    listRef,
+    modalListRef,
+
+    openModal,
+    closeModal,
+    scrollToTop,
+  } = useMediaGrid({
+    userProfileId,
+    refresh_id,
   });
 
-  const displayData = useMemo(() => {
-    return state.isLocalLoading
-      ? Array.from({ length: 12 }).map((_, i) => `skeleton-${i}`)
-      : state.data || [];
-  }, [state.isLocalLoading, state.data]);
+  useImperativeHandle(ref, () => ({
+    scrollToTop,
+  }));
 
-  const renderGridItem = useCallback(
-    ({ item, index }: { item: string | { uri: string }; index: number }) => {
-      if (typeof item === "string" && item.startsWith("skeleton-")) {
+  const displayData = useMemo(() => {
+    if (!loading) {
+      return data;
+    }
+
+    return Array.from({ length: 12 }, (_, i) => `skeleton-${i}`);
+  }, [data, loading]);
+
+  const renderItem = useCallback(
+    ({ item, index }: any) => {
+      const isSkeleton =
+        typeof item === "string" && item.startsWith("skeleton-");
+
+      if (isSkeleton) {
         return <SkeletonItem styles={styles} />;
       }
 
@@ -95,10 +147,12 @@ function MediaGrid({
         <TouchableOpacity
           style={styles.imageWrapper}
           activeOpacity={0.85}
-          onPress={() => actions.openCarousel(index)}
+          onPress={() => openModal(index)}
         >
           <Image
-            source={{ uri: getImageUri(item) }}
+            source={{
+              uri: getImageUri(item),
+            }}
             style={styles.image}
             contentFit="cover"
             transition={200}
@@ -107,23 +161,35 @@ function MediaGrid({
         </TouchableOpacity>
       );
     },
-    [actions, styles],
+    [openModal, styles],
   );
 
-  const renderEmptyComponent = useCallback(() => {
-    if (state.isLocalLoading) return null;
+  const renderEmpty = useCallback(() => {
+    if (loading) {
+      return null;
+    }
+
     return (
       <View style={styles.emptyStateContainer}>
         <Text style={styles.emptyStateText}>Nenhuma mídia encontrada.</Text>
       </View>
     );
-  }, [state.isLocalLoading, styles]);
+  }, [loading, styles]);
 
   const renderModalItem = useCallback(
-    ({ item }: { item: any }) => (
-      <View style={[styles.modalCarouselItem, { width: SCREEN_WIDTH }]}>
+    ({ item }: any) => (
+      <View
+        style={[
+          styles.modalCarouselItem,
+          {
+            width: SCREEN_WIDTH,
+          },
+        ]}
+      >
         <Image
-          source={{ uri: getImageUri(item) }}
+          source={{
+            uri: getImageUri(item),
+          }}
           style={styles.modalCarouselImage}
           contentFit="contain"
           cachePolicy="memory-disk"
@@ -133,58 +199,48 @@ function MediaGrid({
     [styles],
   );
 
-  const listContentStyle = useMemo(() => {
-    return [
+  const contentContainerStyle = useMemo(
+    () => [
       styles.listContainer,
       {
         flexGrow: 1,
         paddingBottom: headerHeight + 80,
       },
-      Platform.OS === "android" ? { paddingTop: headerHeight } : undefined,
-    ] as any;
-  }, [styles.listContainer, headerHeight]);
-
-  const modalKeyExtractor = useCallback(
-    (item: any, i: number) => `modal-img-${i}`,
-    [],
-  );
-  const modalItemLayout = useCallback(
-    (_: any, i: number) => ({
-      length: SCREEN_WIDTH,
-      offset: SCREEN_WIDTH * i,
-      index: i,
-    }),
-    [],
+    ],
+    [headerHeight, styles.listContainer],
   );
 
   return (
-    <View style={{ flex: 1, width: "100%", paddingTop: 36 }}>
+    <View
+      style={{
+        flex: 1,
+        width: "100%",
+      }}
+    >
       <Animated.FlatList
-        ref={refs.listRef}
+        ref={listRef}
         data={displayData}
         numColumns={2}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => `media-${index}-${String(item)}`}
         columnWrapperStyle={styles.columnWrapper}
-        keyExtractor={(item, index) =>
-          typeof item === "string"
-            ? `media-${item}-${index}`
-            : `media-obj-${index}`
+        contentContainerStyle={contentContainerStyle}
+        ListHeaderComponent={
+          <View
+            style={{
+              height: headerHeight,
+            }}
+          />
         }
-        renderItem={renderGridItem}
+        ListEmptyComponent={renderEmpty}
+        showsVerticalScrollIndicator={false}
+        nestedScrollEnabled
         onScroll={onScroll}
         scrollEventThrottle={16}
         initialNumToRender={8}
         maxToRenderPerBatch={8}
         windowSize={5}
         removeClippedSubviews={Platform.OS === "android"}
-        contentContainerStyle={listContentStyle}
-        ListHeaderComponent={
-          Platform.OS === "android" ? null : (
-            <View style={{ height: headerHeight }} />
-          )
-        }
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={renderEmptyComponent}
-        nestedScrollEnabled={true}
         refreshControl={
           onRefresh ? (
             <RefreshControl
@@ -199,14 +255,20 @@ function MediaGrid({
       />
 
       <Modal
-        visible={state.modalVisible}
+        visible={modalVisible}
         transparent
         animationType="fade"
-        onRequestClose={actions.closeModal}
+        onRequestClose={closeModal}
         statusBarTranslucent
       >
         <SafeAreaView
-          style={[styles.modalSafeArea, { flex: 1, backgroundColor: "#000" }]}
+          style={[
+            styles.modalSafeArea,
+            {
+              flex: 1,
+              backgroundColor: "#000",
+            },
+          ]}
         >
           <View style={styles.modalHeader}>
             <IconButton
@@ -214,35 +276,39 @@ function MediaGrid({
               type="none"
               size={44}
               style={styles.closeBtn}
-              onPress={actions.closeModal}
+              onPress={closeModal}
             />
           </View>
 
           <FlatList
-            ref={refs.modalListRef}
-            data={state.data}
+            ref={modalListRef}
+            data={data}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            initialScrollIndex={state.initialIndex}
-            getItemLayout={modalItemLayout}
-            keyExtractor={modalKeyExtractor}
+            initialScrollIndex={selectedIndex}
             renderItem={renderModalItem}
+            keyExtractor={(_, i) => `modal-${i}`}
+            style={{ flex: 1 }}
             windowSize={3}
+            getItemLayout={(_, index) => ({
+              length: SCREEN_WIDTH,
+              offset: SCREEN_WIDTH * index,
+              index,
+            })}
             onScrollToIndexFailed={(info) => {
               setTimeout(() => {
-                refs.modalListRef.current?.scrollToIndex({
+                modalListRef.current?.scrollToIndex({
                   index: info.index,
                   animated: false,
                 });
               }, 50);
             }}
-            style={{ flex: 1 }}
           />
         </SafeAreaView>
       </Modal>
     </View>
   );
-}
+});
 
 export default memo(MediaGrid);

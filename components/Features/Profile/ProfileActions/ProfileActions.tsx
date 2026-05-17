@@ -12,6 +12,8 @@ interface ProfileActionsProps {
   initialIsFollowing: boolean;
   initialIsBlocked?: boolean;
   userId?: string;
+  followersCount?: number;
+  followingCount?: number;
 }
 
 export default function ProfileActions({
@@ -21,6 +23,8 @@ export default function ProfileActions({
   initialIsFollowing = false,
   initialIsBlocked = false,
   userId,
+  followersCount = 0,
+  followingCount = 0,
 }: ProfileActionsProps) {
   const styles = useProfileActionsStyles();
 
@@ -93,8 +97,12 @@ export default function ProfileActions({
       )}
 
       <View style={styles.followInfo}>
-        <Text style={styles.followInfoText}>10k seguidores</Text>
-        <Text style={styles.followInfoText}>500 seguindo</Text>
+        <Text style={styles.followInfoText}>
+          {followersCount.toLocaleString()} seguidores
+        </Text>
+        <Text style={styles.followInfoText}>
+          {followingCount.toLocaleString()} seguindo
+        </Text>
       </View>
     </View>
   );

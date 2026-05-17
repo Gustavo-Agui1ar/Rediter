@@ -40,8 +40,9 @@ export function useProfileActions({
       urlComplement: `/api/users/${userId}/${isFollowing ? "unfollow" : "follow"}`,
       method: isFollowing ? "DELETE" : "POST",
       hasLoading: false,
-    }).catch(() => {
+    }).catch((ex) => {
       setIsFollowing((prev) => !prev);
+      console.error(ex);
       showAlert("Erro ao atualizar seguidor", "error");
     });
   }, [userId, isFollowing]);

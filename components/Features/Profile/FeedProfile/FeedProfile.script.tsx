@@ -1,10 +1,10 @@
 import { useLoading } from "@/context/loadingContext";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-    Animated,
-    DeviceEventEmitter,
-    PanResponder,
-    ViewStyle,
+  Animated,
+  DeviceEventEmitter,
+  PanResponder,
+  ViewStyle,
 } from "react-native";
 
 export interface UseFeedProfileProps {
@@ -129,7 +129,7 @@ export const useFeedProfile = (props: UseFeedProfileProps) => {
 
   const getTabStyle = useCallback(
     (tabName: string): ViewStyle => {
-      if (activeTab === tabName) return { flex: 1 };
+      if (activeTab === tabName) return { flex: 1, paddingTop: 28 };
       return {
         position: "absolute",
         opacity: 0,

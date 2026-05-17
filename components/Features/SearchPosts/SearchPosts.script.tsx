@@ -23,7 +23,11 @@ const mergePosts = (oldPosts: PostItem[], newPosts: PostItem[]) => {
   return [...oldPosts, ...filtered];
 };
 
-export function useSearchPosts(searchTerm: string, onlyWithMedia = false) {
+export function useSearchPosts(
+  searchTerm: string,
+  onlyWithMedia = false,
+  feedMode?: "following" | "foryou",
+) {
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
@@ -35,7 +39,7 @@ export function useSearchPosts(searchTerm: string, onlyWithMedia = false) {
 
   const fetchPosts = useCallback(
     async (isRefresh = false, currentTerm: string) => {
-      if (!currentTerm || currentTerm.trim() === "") {
+      if (!feedMode && (!currentTerm || currentTerm.trim() === "")) {
         setPosts([]);
         setHasMore(false);
         setInitialLoading(false);
@@ -54,7 +58,15 @@ export function useSearchPosts(searchTerm: string, onlyWithMedia = false) {
       }
 
       try {
-        let url = `/api/posts/search?query=${encodeURIComponent(currentTerm)}&pageSize=${PAGE_SIZE}`;
+        let url = "";
+
+        if (feedMode === "following") {
+          url = `/api/posts/feed/following?pageSize=${PAGE_SIZE}`;
+        } else if (feedMode === "foryou") {
+          url = `/api/posts/feed/discover?pageSize=${PAGE_SIZE}`;
+        } else {
+          url = `/api/posts/search?query=${encodeURIComponent(currentTerm)}&pageSize=${PAGE_SIZE}`;
+        }
 
         if (onlyWithMedia) {
           url += `&onlyWithMedia=true`;
@@ -66,7 +78,7 @@ export function useSearchPosts(searchTerm: string, onlyWithMedia = false) {
         }
 
         const res = await request({ urlComplement: url, method: "GET" });
-        if (!res || !res.ok) throw new Error("Erro na requisição de busca");
+        if (!res || !res.ok) throw new Error("Erro na requisição");
 
         const data: PostItem[] = (await res.json()) || [];
         if (data.length > 0) {
@@ -89,11 +101,11 @@ export function useSearchPosts(searchTerm: string, onlyWithMedia = false) {
         setLoadingMore(false);
       }
     },
-    [request, onlyWithMedia],
+    [request, onlyWithMedia, feedMode],
   );
 
   useEffect(() => {
-    if (!searchTerm || searchTerm.trim() === "") {
+    if (!feedMode && (!searchTerm || searchTerm.trim() === "")) {
       setPosts([]);
       setInitialLoading(false);
       setHasMore(false);
@@ -101,12 +113,14 @@ export function useSearchPosts(searchTerm: string, onlyWithMedia = false) {
       return;
     }
 
+    const delay = feedMode ? 0 : 500;
+
     const delayDebounceFn = setTimeout(() => {
       fetchPosts(true, searchTerm);
-    }, 500);
+    }, delay);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, fetchPosts]);
+  }, [searchTerm, feedMode, fetchPosts]);
 
   const loadMore = useCallback(() => {
     if (!hasMore || loadingMore || fetchingRef.current || initialLoading)

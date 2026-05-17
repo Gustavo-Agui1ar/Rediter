@@ -30,6 +30,7 @@ export const useStylesPosts = makeStyles((colors: ThemeColors) => ({
   },
   emptyText: {
     textAlign: "center",
+    paddingHorizontal: 12,
     marginTop: 50,
     color: colors.textMuted,
     fontSize: 16,

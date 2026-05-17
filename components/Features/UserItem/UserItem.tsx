@@ -31,7 +31,11 @@ const UserItem = ({ user, searchTerm, blocked, onUnblock }: UserItemProps) => {
   const handleGoToProfile = () => {
     router.push({
       pathname: `/profile/${user.userID}` as any,
-      params: { isOwnProfile: user.ownProfile } as any,
+      params: {
+        isOwnProfile: user.ownProfile,
+        initialName: user.userName,
+        initialAvatar: user.profileImageName,
+      } as any,
     });
   };
 

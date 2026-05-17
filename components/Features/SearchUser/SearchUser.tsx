@@ -1,4 +1,4 @@
-import { UserItem } from "@/components/components";
+import UserItem from "@/components/Features/UserItem/UserItem";
 import { useTheme } from "@/context/ThemeContext";
 import React, { useCallback } from "react";
 import {
