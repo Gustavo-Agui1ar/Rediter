@@ -1,22 +1,25 @@
 import { useApi } from "@/utils/request.utils";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DeviceEventEmitter } from "react-native";
+import { DeviceEventEmitter, FlatList } from "react-native";
 
 interface UseMediaGridProps {
   userProfileId?: string;
   refresh_id: string;
+  headerHeight?: number;
 }
 
 export function useMediaGrid({
   userProfileId,
   refresh_id,
-}: UseMediaGridProps & { refresh_id: string }) {
+  headerHeight = 0,
+}: UseMediaGridProps) {
   const [data, setData] = useState<string[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [initialIndex, setInitialIndex] = useState(0);
   const [isLocalLoading, setIsLocalLoading] = useState(true);
-
   const fetchingRef = useRef(false);
+  const modalListRef = useRef<FlatList>(null);
+  const listRef = useRef<any>(null);
   const { request } = useApi();
 
   const fetchMedia = useCallback(
@@ -54,16 +57,6 @@ export function useMediaGrid({
     [userProfileId, request],
   );
 
-  useEffect(() => {
-    fetchMedia(false);
-
-    const sub = DeviceEventEmitter.addListener(`${refresh_id}`, () => {
-      fetchMedia(true);
-    });
-
-    return () => sub.remove();
-  }, [fetchMedia]);
-
   const openCarousel = useCallback((index: number) => {
     setInitialIndex(index);
     requestAnimationFrame(() => setModalVisible(true));
@@ -73,12 +66,48 @@ export function useMediaGrid({
     setModalVisible(false);
   }, []);
 
+  useEffect(() => {
+    fetchMedia(false);
+
+    const sub = DeviceEventEmitter.addListener(`${refresh_id}`, () => {
+      fetchMedia(true);
+    });
+
+    return () => sub.remove();
+  }, [fetchMedia, refresh_id]);
+
+  useEffect(() => {
+    const subscription = DeviceEventEmitter.addListener(
+      `scrollToTop_${refresh_id}`,
+      () => {
+        setTimeout(() => {
+          if (!listRef.current) return;
+
+          listRef.current.scrollToOffset({
+            offset: 0,
+            animated: false,
+          });
+        }, 30);
+      },
+    );
+
+    return () => subscription.remove();
+  }, [refresh_id, headerHeight]);
+
   return {
-    data,
-    isLocalLoading,
-    modalVisible,
-    initialIndex,
-    openCarousel,
-    closeModal,
+    state: {
+      data,
+      isLocalLoading,
+      modalVisible,
+      initialIndex,
+    },
+    refs: {
+      listRef,
+      modalListRef,
+    },
+    actions: {
+      openCarousel,
+      closeModal,
+    },
   };
 }

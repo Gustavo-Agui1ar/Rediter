@@ -18,6 +18,7 @@ import { useMediaGrid } from "./Midia.script";
 import { useMidiaStyles } from "./Midia.styles";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
+
 interface MediaGridProps {
   userProfileId?: string;
   onRefresh?: () => Promise<void> | void;
@@ -71,22 +72,20 @@ function MediaGrid({
   headerHeight = 0,
 }: MediaGridProps) {
   const styles = useMidiaStyles();
-  const {
-    data,
-    isLocalLoading,
-    modalVisible,
-    initialIndex,
-    openCarousel,
-    closeModal,
-  } = useMediaGrid({ userProfileId, refresh_id });
+
+  const { state, refs, actions } = useMediaGrid({
+    userProfileId,
+    refresh_id,
+    headerHeight,
+  });
 
   const displayData = useMemo(() => {
-    return isLocalLoading
-      ? Array.from({ length: 6 }).map((_, i) => `skeleton-${i}`)
-      : data || []; // Fallback seguro
-  }, [isLocalLoading, data]);
+    return state.isLocalLoading
+      ? Array.from({ length: 12 }).map((_, i) => `skeleton-${i}`)
+      : state.data || [];
+  }, [state.isLocalLoading, state.data]);
 
-  const renderItem = useCallback(
+  const renderGridItem = useCallback(
     ({ item, index }: { item: string | { uri: string }; index: number }) => {
       if (typeof item === "string" && item.startsWith("skeleton-")) {
         return <SkeletonItem styles={styles} />;
@@ -96,7 +95,7 @@ function MediaGrid({
         <TouchableOpacity
           style={styles.imageWrapper}
           activeOpacity={0.85}
-          onPress={() => openCarousel(index)}
+          onPress={() => actions.openCarousel(index)}
         >
           <Image
             source={{ uri: getImageUri(item) }}
@@ -108,41 +107,60 @@ function MediaGrid({
         </TouchableOpacity>
       );
     },
-    [openCarousel, styles],
+    [actions, styles],
   );
 
   const renderEmptyComponent = useCallback(() => {
-    if (isLocalLoading) return null;
-
+    if (state.isLocalLoading) return null;
     return (
       <View style={styles.emptyStateContainer}>
         <Text style={styles.emptyStateText}>Nenhuma mídia encontrada.</Text>
       </View>
     );
-  }, [isLocalLoading, styles]);
+  }, [state.isLocalLoading, styles]);
 
-  const listContentStyle = useMemo(
-    () => [
+  const renderModalItem = useCallback(
+    ({ item }: { item: any }) => (
+      <View style={[styles.modalCarouselItem, { width: SCREEN_WIDTH }]}>
+        <Image
+          source={{ uri: getImageUri(item) }}
+          style={styles.modalCarouselImage}
+          contentFit="contain"
+          cachePolicy="memory-disk"
+        />
+      </View>
+    ),
+    [styles],
+  );
+
+  const listContentStyle = useMemo(() => {
+    return [
       styles.listContainer,
-      { minHeight: 400 },
-      Platform.OS === "android" ? { paddingTop: headerHeight } : {},
-    ],
-    [styles.listContainer, headerHeight],
-  );
+      {
+        flexGrow: 1,
+        paddingBottom: headerHeight + 80,
+      },
+      Platform.OS === "android" ? { paddingTop: headerHeight } : undefined,
+    ] as any;
+  }, [styles.listContainer, headerHeight]);
 
-  const contentInsetIOS = useMemo(
-    () => (Platform.OS === "ios" ? { top: headerHeight } : undefined),
-    [headerHeight],
+  const modalKeyExtractor = useCallback(
+    (item: any, i: number) => `modal-img-${i}`,
+    [],
   );
-
-  const contentOffsetIOS = useMemo(
-    () => (Platform.OS === "ios" ? { x: 0, y: -headerHeight } : undefined),
-    [headerHeight],
+  const modalItemLayout = useCallback(
+    (_: any, i: number) => ({
+      length: SCREEN_WIDTH,
+      offset: SCREEN_WIDTH * i,
+      index: i,
+    }),
+    [],
   );
 
   return (
-    <>
+    <View style={{ flex: 1, width: "100%", paddingTop: 36 }}>
       <Animated.FlatList
+        ref={refs.listRef}
         data={displayData}
         numColumns={2}
         columnWrapperStyle={styles.columnWrapper}
@@ -151,9 +169,22 @@ function MediaGrid({
             ? `media-${item}-${index}`
             : `media-obj-${index}`
         }
-        renderItem={renderItem}
+        renderItem={renderGridItem}
         onScroll={onScroll}
         scrollEventThrottle={16}
+        initialNumToRender={8}
+        maxToRenderPerBatch={8}
+        windowSize={5}
+        removeClippedSubviews={Platform.OS === "android"}
+        contentContainerStyle={listContentStyle}
+        ListHeaderComponent={
+          Platform.OS === "android" ? null : (
+            <View style={{ height: headerHeight }} />
+          )
+        }
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={renderEmptyComponent}
+        nestedScrollEnabled={true}
         refreshControl={
           onRefresh ? (
             <RefreshControl
@@ -165,58 +196,52 @@ function MediaGrid({
             />
           ) : undefined
         }
-        contentContainerStyle={listContentStyle}
-        contentInset={contentInsetIOS}
-        contentOffset={contentOffsetIOS}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={renderEmptyComponent}
-        removeClippedSubviews={true}
       />
 
       <Modal
-        visible={modalVisible}
+        visible={state.modalVisible}
         transparent
         animationType="fade"
-        onRequestClose={closeModal}
+        onRequestClose={actions.closeModal}
         statusBarTranslucent
       >
-        <SafeAreaView style={styles.modalSafeArea}>
+        <SafeAreaView
+          style={[styles.modalSafeArea, { flex: 1, backgroundColor: "#000" }]}
+        >
           <View style={styles.modalHeader}>
             <IconButton
               icon="close"
               type="none"
               size={44}
               style={styles.closeBtn}
-              onPress={closeModal}
+              onPress={actions.closeModal}
             />
           </View>
 
           <FlatList
-            data={data}
+            ref={refs.modalListRef}
+            data={state.data}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            initialScrollIndex={initialIndex}
-            getItemLayout={(_, i) => ({
-              length: SCREEN_WIDTH,
-              offset: SCREEN_WIDTH * i,
-              index: i,
-            })}
-            keyExtractor={(item, i) => `modal-img-${i}`}
-            renderItem={({ item }) => (
-              <View style={[styles.modalCarouselItem, { width: SCREEN_WIDTH }]}>
-                <Image
-                  source={{ uri: getImageUri(item) }}
-                  style={styles.modalCarouselImage}
-                  contentFit="contain"
-                  cachePolicy="memory-disk"
-                />
-              </View>
-            )}
+            initialScrollIndex={state.initialIndex}
+            getItemLayout={modalItemLayout}
+            keyExtractor={modalKeyExtractor}
+            renderItem={renderModalItem}
+            windowSize={3}
+            onScrollToIndexFailed={(info) => {
+              setTimeout(() => {
+                refs.modalListRef.current?.scrollToIndex({
+                  index: info.index,
+                  animated: false,
+                });
+              }, 50);
+            }}
+            style={{ flex: 1 }}
           />
         </SafeAreaView>
       </Modal>
-    </>
+    </View>
   );
 }
 

@@ -1,7 +1,6 @@
 import { useApi } from "@/utils/request.utils";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DeviceEventEmitter } from "react-native";
-
 export interface PostItem {
   id?: string;
   postId?: string;
@@ -24,7 +23,11 @@ const mergePosts = (oldPosts: PostItem[], newPosts: PostItem[]) => {
   return [...oldPosts, ...filtered];
 };
 
-export function usePosts(refresh_id: string, userId?: string) {
+export function usePosts(
+  refresh_id: string,
+  userId?: string,
+  onlyLiked = false,
+) {
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -47,14 +50,24 @@ export function usePosts(refresh_id: string, userId?: string) {
       }
 
       try {
-        let url = userId
-          ? `/api/posts/user/${userId}?pageSize=${PAGE_SIZE}`
-          : `/api/posts/me?pageSize=${PAGE_SIZE}`;
+        const searchParams = new URLSearchParams({
+          pageSize: String(PAGE_SIZE),
+        });
 
         if (!isRefresh && lastItemRef.current) {
           const { id, createdAt } = lastItemRef.current;
-          url += `&lastCreatedAt=${encodeURIComponent(createdAt)}&lastId=${id}`;
+          searchParams.append("lastCreatedAt", createdAt);
+          searchParams.append("lastId", id);
         }
+
+        let baseUrl = "";
+        if (onlyLiked) {
+          baseUrl = "/api/posts/liked";
+        } else {
+          baseUrl = userId ? `/api/posts/user/${userId}` : "/api/posts/me";
+        }
+
+        const url = `${baseUrl}?${searchParams.toString()}`;
 
         const res = await request({ urlComplement: url, method: "GET" });
         if (!res || !res.ok) throw new Error("Erro na requisição");
@@ -79,7 +92,7 @@ export function usePosts(refresh_id: string, userId?: string) {
         setLoadingMore(false);
       }
     },
-    [request],
+    [request, userId, onlyLiked],
   );
 
   useEffect(() => {
@@ -90,7 +103,7 @@ export function usePosts(refresh_id: string, userId?: string) {
     );
 
     return () => sub.remove();
-  }, [fetchPosts]);
+  }, [fetchPosts, refresh_id]);
 
   const loadMore = useCallback(() => {
     if (!hasMore || loadingMore || fetchingRef.current || initialLoading)

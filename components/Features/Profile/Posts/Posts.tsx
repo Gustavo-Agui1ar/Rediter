@@ -1,9 +1,10 @@
 import Post from "@/components/Features/Post/Post";
 import { useTheme } from "@/context/ThemeContext";
-import React, { memo, useCallback } from "react";
+import React, { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import {
   ActivityIndicator,
   Animated,
+  DeviceEventEmitter,
   Platform,
   Text,
   View,
@@ -11,7 +12,7 @@ import {
 import { getId, usePosts } from "./Posts.script";
 import { useStylesPosts } from "./Posts.style";
 
-export const PostSkeleton = () => {
+export const PostSkeleton = memo(() => {
   const styles = useStylesPosts();
   return (
     <View style={styles.postContainer}>
@@ -29,12 +30,13 @@ export const PostSkeleton = () => {
       <View style={styles.skeletonImage} />
     </View>
   );
-};
+});
 
 interface PostsProps {
   userId?: string;
   refresh_id: string;
   ownProfile: boolean;
+  onlyLiked?: boolean;
   onScroll?: any;
   headerHeight?: number;
 }
@@ -43,6 +45,7 @@ function Posts({
   userId,
   refresh_id,
   ownProfile = false,
+  onlyLiked = false,
   onScroll,
   headerHeight = 0,
 }: PostsProps) {
@@ -51,14 +54,19 @@ function Posts({
   const { posts, initialLoading, loadingMore, loadMore } = usePosts(
     refresh_id,
     userId,
+    onlyLiked,
   );
 
-  const displayData = initialLoading
-    ? ([
-        { _isSkeleton: true, id: "skel-1" },
-        { _isSkeleton: true, id: "skel-2" },
-      ] as any)
-    : posts || [];
+  const skeletons = useMemo(
+    () => [
+      { _isSkeleton: true, id: "skel-1" },
+      { _isSkeleton: true, id: "skel-2" },
+      { _isSkeleton: true, id: "skel-3" },
+    ],
+    [],
+  );
+
+  const displayData = initialLoading ? skeletons : posts || [];
 
   const renderItem = useCallback(
     ({ item }: { item: any }) => {
@@ -86,57 +94,93 @@ function Posts({
         </View>
       );
     },
-    [userId, ownProfile, styles.PostContainer],
+    [userId, styles.PostContainer],
   );
 
-  return (
-    <Animated.SectionList
-      sections={[{ data: displayData }]}
-      renderItem={renderItem}
-      keyExtractor={(item, index) => {
-        if (item._isSkeleton) return item.id;
+  const keyExtractor = useCallback((item: any, index: number) => {
+    if (item._isSkeleton) return item.id;
+    const id = getId(item);
+    return id ? id.toString() : `post-idx-${index}`;
+  }, []);
 
-        const id = getId(item);
-        return id ? id.toString() : `idx-${index}`;
-      }}
+  const handleEndReached = useCallback(() => {
+    if (!initialLoading && !loadingMore) {
+      loadMore();
+    }
+  }, [initialLoading, loadingMore, loadMore]);
+
+  const renderEmptyComponent = useCallback(() => {
+    if (initialLoading) return null;
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>Nenhum post encontrado</Text>
+      </View>
+    );
+  }, [initialLoading, styles]);
+
+  const renderFooterComponent = useCallback(() => {
+    if (loadingMore) {
+      return (
+        <View style={styles.footerLoading}>
+          <ActivityIndicator size="small" color={colors.primary} />
+        </View>
+      );
+    }
+    return <View style={{ height: 40 }} />;
+  }, [loadingMore, colors.primary, styles.footerLoading]);
+
+  const contentContainerStyle = useMemo(() => {
+    return [
+      styles.listContent,
+      { minHeight: "100%" },
+      Platform.OS === "android" ? { paddingTop: headerHeight } : undefined,
+    ] as any;
+  }, [styles.listContent, headerHeight]);
+
+  const contentOffset = useMemo(() => {
+    return Platform.OS === "ios" ? { x: 0, y: -headerHeight } : undefined;
+  }, [headerHeight]) as any;
+
+  const contentInset = useMemo(() => {
+    return Platform.OS === "ios" ? { top: headerHeight } : undefined;
+  }, [headerHeight]) as any;
+
+  const listRef = useRef<any>(null);
+
+  useEffect(() => {
+    const subscription = DeviceEventEmitter.addListener(
+      `scrollToTop_${refresh_id}`,
+      () => {
+        listRef.current?.scrollToOffset({
+          offset: Platform.OS === "ios" ? -headerHeight : 0,
+          animated: false,
+        });
+      },
+    );
+
+    return () => subscription.remove();
+  }, [refresh_id, headerHeight]);
+
+  return (
+    <Animated.FlatList
+      ref={listRef}
+      data={displayData}
+      renderItem={renderItem}
+      keyExtractor={keyExtractor}
       onScroll={onScroll}
       scrollEventThrottle={16}
-      initialNumToRender={6}
-      maxToRenderPerBatch={10}
+      initialNumToRender={5}
+      maxToRenderPerBatch={5}
       windowSize={5}
-      removeClippedSubviews
-      onEndReachedThreshold={0.3}
-      onEndReached={() => {
-        if (!initialLoading) {
-          loadMore();
-        }
-      }}
-      contentContainerStyle={[
-        styles.listContent,
-        { minHeight: "100%" },
-        Platform.OS === "android" ? { paddingTop: headerHeight } : {},
-      ]}
-      contentInset={Platform.OS === "ios" ? { top: headerHeight } : undefined}
-      contentOffset={
-        Platform.OS === "ios" ? { x: 0, y: -headerHeight } : undefined
-      }
-      ListEmptyComponent={() => {
-        if (initialLoading) return null;
-        return (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Nenhum post encontrado</Text>
-          </View>
-        );
-      }}
-      ListFooterComponent={
-        loadingMore ? (
-          <View style={styles.footerLoading}>
-            <ActivityIndicator size="small" color={colors.primary} />
-          </View>
-        ) : (
-          <View style={{ height: 40 }} />
-        )
-      }
+      removeClippedSubviews={Platform.OS === "android"}
+      showsVerticalScrollIndicator={false}
+      onEndReachedThreshold={0.5}
+      onEndReached={handleEndReached}
+      ListEmptyComponent={renderEmptyComponent}
+      ListFooterComponent={renderFooterComponent}
+      contentContainerStyle={contentContainerStyle}
+      contentInset={contentInset}
+      contentOffset={contentOffset}
     />
   );
 }

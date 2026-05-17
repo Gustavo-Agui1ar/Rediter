@@ -2,7 +2,6 @@ import { ThemeColors } from "@/styles/types/theme.types";
 import { makeStyles } from "@/utils/makeStyles.utils";
 
 const constValues = {
-  gap: 20,
   opacity: 0.6,
   postContainerPadding: 4,
   postContainerMarginBottom: 16,
@@ -23,7 +22,6 @@ export const useStylesPosts = makeStyles((colors: ThemeColors) => ({
   listContent: {
     flexGrow: 1,
     width: "100%",
-    gap: constValues.gap,
   },
   footerLoading: {
     paddingVertical: 20,
@@ -48,7 +46,8 @@ export const useStylesPosts = makeStyles((colors: ThemeColors) => ({
   },
 
   PostContainer: {
-    paddingHorizontal: constValues.postContainerPadding,
+    paddingTop: 28,
+    paddingHorizontal: 12,
   },
   // --- Estilos do Skeleton e Container ---
   postContainer: {
