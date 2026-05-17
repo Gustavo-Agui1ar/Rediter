@@ -52,6 +52,7 @@ export default function PostDetailsScreen() {
     onRemoveImage,
     onToggleEmoji,
     onAddLocation,
+    handleGoToProfile,
   } = functions;
 
   const listHeader = useMemo(() => {
@@ -68,23 +69,30 @@ export default function PostDetailsScreen() {
     return (
       <View>
         <View style={styles.header}>
-          <ProfileImage
-            size={50}
-            wrapper={false}
-            imageName={postData.profileImageName}
-          />
-          <View style={styles.headerText}>
-            <Text
-              style={styles.userName}
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {postData.userName}
-            </Text>
-            <Text style={styles.timeText}>
-              {formatDate(postData.createdAt)} {postData.edited && "• Editado"}
-            </Text>
-          </View>
+          <TouchableOpacity
+            style={styles.userinfo}
+            activeOpacity={0.7}
+            onPress={handleGoToProfile}
+          >
+            <ProfileImage
+              size={50}
+              wrapper={false}
+              imageName={postData.profileImageName}
+            />
+            <View style={styles.headerText}>
+              <Text
+                style={styles.userName}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {postData.userName}
+              </Text>
+              <Text style={styles.timeText}>
+                {formatDate(postData.createdAt)}{" "}
+                {postData.edited && "• Editado"}
+              </Text>
+            </View>
+          </TouchableOpacity>
 
           {!postData.ownPost && (
             <View style={styles.followButtonWrapper}>

@@ -16,6 +16,7 @@ export function usePerfil() {
     email: "",
     description: "",
     isFollowing: false,
+    isBlocked: false,
     userId: "",
   });
 
@@ -28,6 +29,7 @@ export function usePerfil() {
         email: data.email || "",
         description: data.description || "",
         isFollowing: data.isFollowing || false,
+        isBlocked: data.isBlocked || false,
         userId: data.userId || "",
       };
 
@@ -55,6 +57,7 @@ export function usePerfil() {
           email: json.email,
           description: json.description,
           isFollowing: json.isFollowing || false,
+          isBlocked: json.isBlocked || false,
         };
 
         applyProfile(data);

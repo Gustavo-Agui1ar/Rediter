@@ -40,6 +40,10 @@ export function useConfigs() {
     setSuccessMsg(null);
   }, []);
 
+  const goToBlockedUsers = useCallback(() => {
+    router.push("/BlockedUsers");
+  }, []);
+
   const onChangeForm = useCallback(
     (field: keyof FormState, value: string) => {
       setForm((prev) => {
@@ -312,6 +316,7 @@ export function useConfigs() {
       handleSave,
       deleteAccount,
       logOut,
+      goToBlockedUsers,
     }),
     [
       onChangeForm,
@@ -320,6 +325,7 @@ export function useConfigs() {
       handleSave,
       deleteAccount,
       logOut,
+      goToBlockedUsers,
     ],
   );
 

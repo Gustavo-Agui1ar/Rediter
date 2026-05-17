@@ -21,7 +21,12 @@ export const useStylesUserItem = makeStyles((colors: ThemeColors) => ({
     flexShrink: 1,
   },
   buttonContainer: {
-    minWidth: 80,
+    minWidth: 50,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  blockedContainer: {
     alignItems: "center",
     justifyContent: "center",
   },

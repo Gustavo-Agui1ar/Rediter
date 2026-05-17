@@ -1,99 +1,110 @@
 import { useApi } from "@/utils/request.utils";
 import { router } from "expo-router";
 import { useCallback, useState } from "react";
-import { Alert } from "react-native";
-
+import { Alert, DeviceEventEmitter } from "react-native";
 interface UseProfileActionsProps {
   userId?: string;
   initialIsFollowing: boolean;
+  initialIsBlocked?: boolean;
   OwnProfile?: boolean;
 }
 
 export function useProfileActions({
   userId,
   initialIsFollowing = false,
+  initialIsBlocked = false,
   OwnProfile = false,
 }: UseProfileActionsProps) {
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
-  const [isLoadingBlock, setIsLoadingBlock] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(initialIsBlocked);
+  const [bannerVisible, setBannerVisible] = useState(false);
+  const [bannerMessage, setBannerMessage] = useState("");
+  const [bannerType, setBannerType] = useState<
+    "error" | "success" | "info" | "warning"
+  >("info");
+
   const { request } = useApi();
+
+  const showAlert = (message: string, type: "error" | "success") => {
+    setBannerMessage(message);
+    setBannerType(type);
+    setBannerVisible(true);
+    setTimeout(() => setBannerVisible(false), 3000);
+  };
 
   const handleFollowToggle = useCallback(() => {
     if (!userId) return;
-
     setIsFollowing((prev) => !prev);
-    console.log(
-      `${isFollowing ? "Desseguir" : "Seguir"} usuário com ID:`,
-      userId,
-    );
+
     request({
       urlComplement: `/api/users/${userId}/${isFollowing ? "unfollow" : "follow"}`,
       method: isFollowing ? "DELETE" : "POST",
       hasLoading: false,
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Falha silenciosa");
-        }
-      })
-      .catch((error) => {
-        setIsFollowing((prev) => !prev);
-      });
+    }).catch(() => {
+      setIsFollowing((prev) => !prev);
+      showAlert("Erro ao atualizar seguidor", "error");
+    });
   }, [userId, isFollowing]);
 
-  const handleMessage = useCallback(() => {
-    if (!userId) return;
-    console.log("Ir para chat com usuário:", userId);
-    // router.push(`/chat/${userId}`);
-  }, [userId]);
-
-  // Ação de Bloquear Usuário
   const handleBlock = useCallback(async () => {
-    if (!userId || isLoadingBlock) return;
+    if (!userId) return;
 
     Alert.alert(
-      "Bloquear Usuário",
-      "Tem certeza que deseja bloquear este usuário?",
+      isBlocked ? "Desbloquear Usuário" : "Bloquear Usuário",
+      `Tem certeza que deseja ${isBlocked ? "desbloquear" : "bloquear"} este usuário?`,
       [
         { text: "Cancelar", style: "cancel" },
         {
-          text: "Bloquear",
+          text: isBlocked ? "Desbloquear" : "Bloquear",
           style: "destructive",
           onPress: async () => {
-            setIsLoadingBlock(true);
             try {
               const response = await request({
-                urlComplement: `/api/users/${userId}/block`,
-                method: "POST",
+                urlComplement: `/api/users/${userId}/${isBlocked ? "unblock" : "block"}`,
+                method: isBlocked ? "DELETE" : "POST",
               });
 
-              if (!response?.ok) throw new Error("Erro na API");
+              if (!response?.ok) throw new Error();
 
-              Alert.alert("Sucesso", "Usuário bloqueado.");
-              router.back();
+              showAlert(
+                "Usuário " +
+                  (isBlocked ? "desbloqueado" : "bloqueado") +
+                  " com sucesso",
+                "success",
+              );
+              if (isBlocked) {
+                DeviceEventEmitter.emit("updateBlockedUsers", {
+                  targetId: userId,
+                  action: "unblock",
+                });
+              }
+
+              setIsBlocked((prev) => !prev);
+              setTimeout(() => router.back(), 1500);
             } catch (error) {
-              Alert.alert("Erro", "Não foi possível bloquear o usuário.");
-            } finally {
-              setIsLoadingBlock(false);
+              showAlert(
+                "Não foi possível " +
+                  (isBlocked ? "desbloquear" : "bloquear") +
+                  " o usuário.",
+                "error",
+              );
             }
           },
         },
       ],
     );
-  }, [userId, isLoadingBlock]);
-
-  const handleGoToConfig = useCallback(() => {
-    if (OwnProfile) {
-      router.push("/Configs");
-    }
-  }, [OwnProfile]);
+  }, [userId, isBlocked, request]);
 
   return {
     isFollowing,
-    isLoadingBlock,
+    isBlocked,
     handleFollowToggle,
-    handleMessage,
     handleBlock,
-    handleGoToConfig,
+    handleGoToConfig: () => OwnProfile && router.push("/Configs"),
+    bannerProps: {
+      visible: bannerVisible,
+      message: bannerMessage,
+      alert_type: bannerType,
+    },
   };
 }

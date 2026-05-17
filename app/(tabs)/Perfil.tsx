@@ -1,7 +1,7 @@
 import {
-  ProfileActions,
-  ProfileCover,
-  ProfileImage,
+    ProfileActions,
+    ProfileCover,
+    ProfileImage,
 } from "@/components/components";
 import FeedProfile from "@/components/Features/Profile/FeedProfile/FeedProfile";
 import { usePerfil } from "@/scripts/Perfil.script";
@@ -30,6 +30,7 @@ export default function Perfil() {
             userName={state.form.userName}
             description={state.form.description}
             initialIsFollowing={state.form.isFollowing}
+            initialIsBlocked={state.form.isBlocked}
             userId={state.form.userId}
           />
         </View>

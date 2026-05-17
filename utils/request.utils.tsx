@@ -6,12 +6,9 @@ import {
 } from "@/utils/storage.utils";
 import { router } from "expo-router";
 import { useCallback, useState } from "react";
+import { InteractionManager } from "react-native";
 import { configs, getBaseURL } from "./configs.utils";
-import { writeLog } from "./logger.utils";
 
-// ============================================================================
-// CONSTANTES & TIPAGENS
-// ============================================================================
 const STORAGE_KEYS = {
   ACCESS_TOKEN: "user_token",
   REFRESH_TOKEN: "refresh_token",
@@ -28,6 +25,7 @@ export interface RequestOptions {
   _isRetry?: boolean;
   hasLoading?: boolean;
 }
+
 export class ApiError extends Error {
   status: number;
   constructor(message: string, status: number) {
@@ -38,14 +36,26 @@ export class ApiError extends Error {
 }
 
 // ============================================================================
-// ESTADO GLOBAL DE AUTENTICAÇÃO
+// CACHE EM MEMÓRIA
 // ============================================================================
 let isRefreshing = false;
 let refreshPromise: Promise<string | null> | null = null;
+let cachedAccessToken: string | null = null;
 
-// ============================================================================
-// AUXILIARES
-// ============================================================================
+export const clearTokenCache = () => {
+  cachedAccessToken = null;
+};
+
+async function getAccessTokenOptimized(): Promise<string | null> {
+  if (cachedAccessToken) {
+    return cachedAccessToken;
+  }
+
+  const t0 = performance.now();
+  cachedAccessToken = await getStoreageItem(STORAGE_KEYS.ACCESS_TOKEN);
+  return cachedAccessToken;
+}
+
 async function buildRequestOptions(
   options: RequestOptions,
 ): Promise<RequestInit> {
@@ -54,7 +64,7 @@ async function buildRequestOptions(
   const requestHeaders = new Headers(headers);
 
   if (requireAuth) {
-    const accessToken = await getStoreageItem(STORAGE_KEYS.ACCESS_TOKEN);
+    const accessToken = await getAccessTokenOptimized();
     if (accessToken) {
       requestHeaders.set("Authorization", `Bearer ${accessToken}`);
     }
@@ -115,26 +125,16 @@ async function handleApiError(response: Response, url: string): Promise<never> {
       errorMessage = textResponse;
     }
   }
-
-  await writeLog(`[HTTP ERROR] ${response.status} ${url} -> ${errorMessage}`);
-  console.error(`[HTTP ERROR] ${response.status} ${url} -> ${errorMessage}`);
   throw new ApiError(errorMessage, response.status);
 }
 
 async function refreshAccessToken(): Promise<string | null> {
-  if (isRefreshing && refreshPromise) {
-    await writeLog("[AUTH] Refresh já em andamento");
-    console.log("[AUTH] Refresh já em andamento, aguardando resultado...");
-    return refreshPromise;
-  }
+  if (isRefreshing && refreshPromise) return refreshPromise;
 
   isRefreshing = true;
   refreshPromise = (async () => {
     try {
-      await writeLog("[AUTH] Iniciando refresh token");
-      console.log("[AUTH] Iniciando refresh token...");
       const refreshToken = await getStoreageItem(STORAGE_KEYS.REFRESH_TOKEN);
-
       if (!refreshToken) return null;
 
       const refreshUrl = `${getBaseURL()}/api/auth/refresh-token`;
@@ -150,11 +150,11 @@ async function refreshAccessToken(): Promise<string | null> {
         const newRefresh = result.refreshToken || result.refresh;
 
         await saveTokens(newAccess, newRefresh);
+        cachedAccessToken = newAccess;
         return newAccess;
       }
       return null;
     } catch (error) {
-      console.error("[AUTH] Erro ao atualizar token:", error);
       return null;
     } finally {
       isRefreshing = false;
@@ -166,7 +166,7 @@ async function refreshAccessToken(): Promise<string | null> {
 }
 
 // ============================================================================
-// O USE API
+// O USE API OTIMIZADO (COM LOGS DE TEMPO)
 // ============================================================================
 export function useApi() {
   const { loading, setLoading } = useLoading();
@@ -174,40 +174,43 @@ export function useApi() {
 
   const request = useCallback(
     async (options: RequestOptions): Promise<Response> => {
+      const startTotal = performance.now();
       const {
         urlComplement,
         method,
-        body,
         _isRetry = false,
         hasLoading = true,
       } = options;
       const url = `${getBaseURL()}${urlComplement}`;
 
+      console.log(`🚀 [API INÍCIO] ${method} ${urlComplement}`);
+
+      const startInteraction = performance.now();
+      await new Promise<void>((resolve) =>
+        InteractionManager.runAfterInteractions(() => resolve()),
+      );
+
       try {
         if (!_isRetry) {
-          if (hasLoading) setLoading(true);
           setError(null);
+          if (hasLoading) {
+            requestAnimationFrame(() => setLoading(true));
+          }
         }
 
         const requestInit = await buildRequestOptions(options);
-
-        await writeLog(`[REQUEST] ${method} ${url}`);
-        console.log(`[REQUEST] ${method} ${url}`);
         const response = await fetchWithTimeout(
           url,
           requestInit,
           configs.timeout,
         );
-        await writeLog(`[RESPONSE] ${response.status} ${url}`);
 
         if (response.status === 401 && !_isRetry) {
-          await writeLog("[AUTH] Token expirado, tentando atualizar...");
-          console.log("[AUTH] Token expirado, tentando atualizar...");
           const newToken = await refreshAccessToken();
-
           if (newToken) {
             return await request({ ...options, _isRetry: true });
           } else {
+            clearTokenCache();
             await deleteTokens();
             router.replace("/");
             throw new ApiError("Sessão expirada. Faça login novamente.", 401);
@@ -221,26 +224,18 @@ export function useApi() {
         return response;
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err);
-        await writeLog(
-          `[REQUEST ERROR] ${method} ${urlComplement} -> ${errorMsg}`,
-        );
-        console.error(
-          `[REQUEST ERROR] ${method} ${urlComplement} -> ${errorMsg}`,
-        );
-
         setError(errorMsg);
-
-        if (errorMsg.includes("Sessão expirada")) {
-          throw err;
-        }
         throw err;
       } finally {
         if (!_isRetry) {
-          setLoading(false);
+          requestAnimationFrame(() => setLoading(false));
         }
+        console.log(
+          `🏁 [API FIM] Tempo TOTAL da operação: ${(performance.now() - startTotal).toFixed(2)}ms\n`,
+        );
       }
     },
-    [],
+    [setLoading],
   );
 
   return { request, loading, error };

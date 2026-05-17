@@ -14,10 +14,18 @@ export const useProfileActionsStyles = makeStyles((colors: ThemeColors) => ({
     alignItems: "center",
     width: "100%",
     gap: 16,
-    marginTop: -60,
-    marginBottom: 24,
+    paddingHorizontal: 8,
+    marginTop: -48,
+    marginBottom: 16,
     zIndex: 10,
     elevation: 10,
+  },
+
+  alertBanner: {
+    marginHorizontal: 8,
+    marginBottom: 16,
+    zIndex: 20,
+    elevation: 20,
   },
 
   followButton: {

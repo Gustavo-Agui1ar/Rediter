@@ -1,7 +1,7 @@
 import { pickImage } from "@/utils/filePicker.utils";
 import { handleGetLocation } from "@/utils/location.utils";
 import { useApi } from "@/utils/request.utils";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, DeviceEventEmitter, Keyboard } from "react-native";
 export interface SinglePostData {
@@ -39,6 +39,8 @@ export function usePostDetails() {
   const [replyLocation, setReplyLocation] = useState<string | null>(null);
   const [showEmoji, setShowEmoji] = useState(false);
   const [isSendingReply, setIsSendingReply] = useState(false);
+  const [userId, setUserId] = useState<string>("");
+  const [isOwnProfile, setIsOwnProfile] = useState(false);
 
   const fetchComments = useCallback(
     async (isLoadMore: boolean = false) => {
@@ -97,6 +99,13 @@ export function usePostDetails() {
     [id, request],
   );
 
+  const handleGoToProfile = useCallback(() => {
+    router.push({
+      pathname: `/profile/${userId}` as any,
+      params: { isOwnProfile: isOwnProfile } as any,
+    });
+  }, [userId, isOwnProfile]);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -116,6 +125,8 @@ export function usePostDetails() {
         if (isMounted && response?.ok) {
           const data = await response.json();
           setPostData(data);
+          setIsOwnProfile(data.ownPost || false);
+          setUserId(data.postUserID);
           setIsLiked(data.likedByCurrentUser);
           setLikesCount(data.likesCount);
           setIsFollowing(data.isFollowing || false);
@@ -282,6 +293,7 @@ export function usePostDetails() {
         isSendingReply,
       },
       functions: {
+        handleGoToProfile,
         fetchComments,
         setCommentText,
         setIsInputFocused,
@@ -310,6 +322,7 @@ export function usePostDetails() {
       replyLocation,
       showEmoji,
       isSendingReply,
+      handleGoToProfile,
       fetchComments,
       handleLikePost,
       syncFollowState,

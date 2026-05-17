@@ -1,6 +1,14 @@
+import { useTheme } from "@/context/ThemeContext";
+import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import React from "react";
-import { ImageSourcePropType, Text, View, ViewProps } from "react-native";
+import {
+  ImageSourcePropType,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewProps,
+} from "react-native";
 import { useStylesHeader } from "./header.style";
 
 interface HeaderProps extends ViewProps {
@@ -8,6 +16,7 @@ interface HeaderProps extends ViewProps {
   resource?: ImageSourcePropType;
   children?: React.ReactNode;
   divider?: boolean;
+  onBack?: () => void;
 }
 
 export default function Header({
@@ -15,10 +24,12 @@ export default function Header({
   resource,
   children,
   divider = true,
+  onBack,
   style,
   ...rest
 }: HeaderProps) {
   const stylesHeader = useStylesHeader();
+  const { colors } = useTheme();
   const defaultLogo = require("@/assets/logo/white_r.svg");
 
   return (
@@ -27,14 +38,26 @@ export default function Header({
       {...rest}
     >
       <View style={stylesHeader.left}>
-        <Image
-          source={resource ?? defaultLogo}
-          style={stylesHeader.logo}
-          contentFit="contain"
-        />
+        {onBack ? (
+          <TouchableOpacity
+            onPress={onBack}
+            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+          >
+            <Ionicons
+              name="arrow-back"
+              size={24}
+              color={colors.textPrimary || "#FFFFFF"}
+            />
+          </TouchableOpacity>
+        ) : (
+          <Image
+            source={resource ?? defaultLogo}
+            style={stylesHeader.logo}
+            contentFit="contain"
+          />
+        )}
       </View>
 
-      {/* Ocupa todo o meio do header */}
       <View style={stylesHeader.center}>
         {title ? (
           <Text numberOfLines={1} style={stylesHeader.title}>

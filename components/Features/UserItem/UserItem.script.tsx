@@ -2,7 +2,11 @@ import { ButtonType } from "@/components/UI/Button/button";
 import { useApi } from "@/utils/request.utils";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export function useFollow(userId: number, initialIsFollowing = false) {
+export function useFollow(
+  userId: number,
+  initialIsFollowing = false,
+  onSuccessRemove?: (userId: string) => void,
+) {
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const syncedStateRef = useRef(initialIsFollowing);
   const latestValueRef = useRef(initialIsFollowing);
@@ -11,6 +15,19 @@ export function useFollow(userId: number, initialIsFollowing = false) {
 
   const handleFollowToggle = () => {
     setIsFollowing((prev) => !prev);
+  };
+
+  const handleUnlockUser = () => {
+    request({
+      urlComplement: `/api/users/${userId}/unlock`,
+      method: "DELETE",
+    })
+      .then(() => {
+        onSuccessRemove?.(userId.toString());
+      })
+      .catch((error) => {
+        console.error("Erro ao desbloquear usuário:", error);
+      });
   };
 
   const executeSync = useCallback(
@@ -61,6 +78,7 @@ export function useFollow(userId: number, initialIsFollowing = false) {
   return {
     isFollowing,
     handleFollowToggle,
+    handleUnlockUser,
     buttonTitle: isFollowing ? "Seguindo" : "Seguir",
     buttonType: (isFollowing ? "border" : "fill") as ButtonType,
   };

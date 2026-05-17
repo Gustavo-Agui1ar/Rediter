@@ -17,17 +17,17 @@ interface UserItemProps {
     ownProfile: boolean;
     isFollowing: boolean;
   };
-  searchTerm: string;
+  searchTerm?: string;
+  blocked?: boolean;
+  onUnblock?: (userId: string) => void;
 }
 
-const UserItem = ({ user, searchTerm }: UserItemProps) => {
+const UserItem = ({ user, searchTerm, blocked, onUnblock }: UserItemProps) => {
   const styles = useStylesUserItem();
   const { colors } = useTheme();
   const router = useRouter();
-  const { handleFollowToggle, buttonTitle, buttonType } = useFollow(
-    user.userID,
-    user.isFollowing,
-  );
+  const { handleFollowToggle, buttonTitle, buttonType, handleUnlockUser } =
+    useFollow(user.userID, user.isFollowing, onUnblock);
   const handleGoToProfile = () => {
     router.push({
       pathname: `/profile/${user.userID}` as any,
@@ -56,13 +56,24 @@ const UserItem = ({ user, searchTerm }: UserItemProps) => {
           </Text>
         </View>
       </Pressable>
-      {!user.ownProfile && (
+      {!user.ownProfile && !blocked && (
         <View style={styles.buttonContainer}>
           <Button
             title={buttonTitle}
             type={buttonType}
             size="small"
             onPress={handleFollowToggle}
+            fullWidth={false}
+          />
+        </View>
+      )}
+      {blocked && (
+        <View style={styles.blockedContainer}>
+          <Button
+            title="Desbloquear"
+            type="remove_border"
+            size="small"
+            onPress={handleUnlockUser}
             fullWidth={false}
           />
         </View>

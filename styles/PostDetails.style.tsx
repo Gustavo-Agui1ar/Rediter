@@ -27,7 +27,12 @@ export function usePostDetailsStyles() {
       fontSize: 16,
       fontWeight: "bold",
       color: colors.textPrimary,
-      maxWidth: "85%",
+    },
+    userinfo: {
+      flexDirection: "row",
+      fontSize: 14,
+      color: colors.disabled,
+      marginTop: 2,
     },
     timeText: {
       fontSize: 14,

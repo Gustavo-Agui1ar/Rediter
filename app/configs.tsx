@@ -11,9 +11,16 @@ import {
 import { useTheme } from "@/context/ThemeContext";
 import { useConfigsStyles } from "@/styles/configs.style";
 import { useGlobalStyles } from "@/styles/global.styles";
-import { KeyboardAvoidingView, ScrollView, Text, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import { useConfigs } from "@/scripts/Configs.script";
+import { ChevronRight } from "lucide-react-native";
 
 export default function Configs() {
   const { state, actions } = useConfigs();
@@ -145,6 +152,19 @@ export default function Configs() {
               disabled={state.loading}
               onPress={actions.handleSave}
             />
+
+            <Divider text="Privacidade" />
+
+            <TouchableOpacity
+              style={configsStyles.labelContainer}
+              onPress={actions.goToBlockedUsers}
+            >
+              <View style={configsStyles.iconButtonContainer}>
+                <IconButton icon="block" type="none" />
+                <Text style={configsStyles.label}>Bloqueados</Text>
+              </View>
+              <ChevronRight size={24} color={colors.textSecondary} />
+            </TouchableOpacity>
 
             <Divider text="Visualização" />
 
