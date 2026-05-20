@@ -2,9 +2,10 @@ import ProfileImage from "@/components/Features/Profile/ProfileImage";
 import DisplayImages from "@/components/Feedback/DisplayImages/DisplayImage";
 import HighlightedText from "@/components/UI/HighLightText";
 import IconButton from "@/components/UI/IconButton/IconButton";
+import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useGlobalStyles } from "@/styles/global.styles";
-import { formatDate } from "@/utils/datePost.utils";
+import { useFormattedDate } from "@/utils/datePost.utils";
 import React, { memo, useMemo } from "react";
 import {
   ActivityIndicator,
@@ -83,6 +84,7 @@ function Post({
     isOwnProfile: ownProfile,
   });
 
+  const { t } = useLanguage();
   const safeImageUrls = postImageUrl || EMPTY_IMAGE_ARRAY;
   const hasImages = safeImageUrls.length > 0;
   const hasOptions = !ownProfile || hasImages;
@@ -124,9 +126,13 @@ function Post({
             </View>
             <View style={postStyles.metaDataContainer}>
               {createdAt && (
-                <Text style={postStyles.timeText}>{formatDate(createdAt)}</Text>
+                <Text style={postStyles.timeText}>
+                  {useFormattedDate(createdAt)}
+                </Text>
               )}
-              {edited && <Text style={postStyles.editedText}> • Editado</Text>}
+              {edited && (
+                <Text style={postStyles.editedText}> • {t("post_edited")}</Text>
+              )}
             </View>
           </View>
         </View>
@@ -143,13 +149,11 @@ function Post({
 
             {showOptions && (
               <>
-                {/* 1. Camada invisível que cobre a área ao redor para fechar o menu */}
                 <Pressable
                   style={postStyles.invisibleOverlay}
                   onPress={() => setShowOptions(false)}
                 />
 
-                {/* 2. Seu Menu Original (precisa de um zIndex maior que o overlay) */}
                 <View
                   style={[
                     styles.editorContainer,
@@ -163,7 +167,9 @@ function Post({
                         onPress={handleEditPost}
                         style={postStyles.itemOptionsContainer}
                       >
-                        <Text style={postStyles.optionText}>Editar Post</Text>
+                        <Text style={postStyles.optionText}>
+                          {t("btn_edit")}
+                        </Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity
@@ -171,7 +177,7 @@ function Post({
                         style={postStyles.itemOptionsContainer}
                       >
                         <Text style={postStyles.optionTextDelete}>
-                          Excluir Post
+                          {t("btn_delete")}
                         </Text>
                       </TouchableOpacity>
                     </>
@@ -193,10 +199,14 @@ function Post({
                             size="small"
                             color={colors.primary}
                           />
-                          <Text style={postStyles.optionText}>Baixando...</Text>
+                          <Text style={postStyles.optionText}>
+                            {t("comment_sending")}
+                          </Text>
                         </View>
                       ) : (
-                        <Text style={postStyles.optionText}>Salvar Mídia</Text>
+                        <Text style={postStyles.optionText}>
+                          {t("btn_save")}
+                        </Text>
                       )}
                     </TouchableOpacity>
                   )}

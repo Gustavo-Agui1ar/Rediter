@@ -47,6 +47,7 @@ export const useStylesPosts = makeStyles((colors: ThemeColors) => ({
 
   PostContainer: {
     paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   // --- Estilos do Skeleton e Container ---
   postContainer: {

@@ -3,6 +3,7 @@ import { useRootNavigationState, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 
 import { useLoading } from "@/context/loadingContext";
+import { useSignalR } from "@/context/NotificationsContext";
 import { configs } from "@/utils/configs.utils";
 import { LoginValidator } from "@/utils/login.utils";
 import { useApi } from "@/utils/request.utils";
@@ -21,6 +22,7 @@ export function useIndex() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [serverError, setServerError] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const { connectSignalR } = useSignalR();
 
   useEffect(() => {
     if (!rootNavigationState?.key) return;
@@ -81,6 +83,7 @@ export function useIndex() {
       }
 
       await StorageUtils.saveTokens(access, refresh);
+      await connectSignalR();
       router.replace("/home");
     } catch (error: any) {
       setServerError(error?.message || "Falha na conexão com o servidor.");
@@ -120,6 +123,7 @@ export function useIndex() {
       }
 
       await StorageUtils.saveTokens(access, refresh);
+      await connectSignalR();
       router.replace("/home");
     } catch (error: any) {
       console.error("Erro durante o Google Sign-In:", error);

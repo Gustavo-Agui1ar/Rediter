@@ -107,13 +107,10 @@ const MediaGrid = forwardRef<MediaGridRef, MediaGridProps>(function MediaGrid(
   const {
     data,
     loading,
-
     modalVisible,
     selectedIndex,
-
     listRef,
     modalListRef,
-
     openModal,
     closeModal,
     scrollToTop,

@@ -5,13 +5,14 @@ import {
   HelperText,
   TextBox,
 } from "@/components/components";
+import { useLanguage } from "@/context/LanguageContext";
 import { useLoading } from "@/context/loadingContext";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { useSendEmailStyle } from "@/styles/sendEmail.style";
 import { LoginValidator } from "@/utils/login.utils";
 import { useApi } from "@/utils/request.utils";
 import { router } from "expo-router";
-import { useState } from "react";
+import React, { useState } from "react";
 import { KeyboardAvoidingView, ScrollView, Text, View } from "react-native";
 
 export default function SendEmail() {
@@ -23,6 +24,7 @@ export default function SendEmail() {
   const { request } = useApi();
   const styles = useGlobalStyles();
   const sendStyles = useSendEmailStyle();
+  const { t } = useLanguage();
 
   const handleSendCode = async () => {
     setSubmitted(true);
@@ -46,9 +48,7 @@ export default function SendEmail() {
         params: { userEmail: email, mode: "reset" },
       });
     } catch (err) {
-      setServerError(
-        "Não foi possível enviar o código. Verifique o e-mail digitado.",
-      );
+      setServerError(t("error_send_code_failed"));
     } finally {
       setLoading(false);
     }
@@ -56,7 +56,7 @@ export default function SendEmail() {
 
   return (
     <KeyboardAvoidingView style={[styles.container]} behavior="padding">
-      <Header title="Recuperar senha" />
+      <Header title={t("send_email_title")} />
 
       <ScrollView
         style={[styles.container]}
@@ -65,8 +65,7 @@ export default function SendEmail() {
       >
         <View style={sendStyles.content_card}>
           <Text style={sendStyles.instructionText}>
-            Insira seu e-mail abaixo. Enviaremos um código de verificação para
-            você redefinir sua senha.
+            {t("send_email_instruction")}
           </Text>
 
           <AlertBanner
@@ -77,14 +76,14 @@ export default function SendEmail() {
 
           <View style={sendStyles.fieldContainer}>
             <TextBox
-              placeholder="Digite seu e-mail"
+              placeholder={t("send_email_placeholder")}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
             />
             <HelperText
-              message="E-mail inválido ou não preenchido"
+              message={t("validation_email_invalid_recovery")}
               visible={submitted && !LoginValidator.isEmailValid(email)}
               alert_type="error"
               style={sendStyles.helperText}
@@ -92,13 +91,13 @@ export default function SendEmail() {
           </View>
 
           <Button
-            title="Enviar código de recuperação"
+            title={t("send_email_btn_submit")}
             onPress={handleSendCode}
             type="fill"
           />
 
           <Button
-            title="Voltar para o login"
+            title={t("btn_back_to_login")}
             onPress={() => router.back()}
             type="border"
           />

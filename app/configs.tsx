@@ -1,3 +1,13 @@
+import { useLanguage } from "@/context/LanguageContext";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
 import {
   AlertBanner,
   Button,
@@ -8,48 +18,33 @@ import {
   TextBox,
   Toogle,
 } from "@/components/components";
+import { Dropdown } from "@/components/UI/DropDown/DropDown";
 import { useTheme } from "@/context/ThemeContext";
+import { useConfigs } from "@/scripts/Configs.script";
 import { useConfigsStyles } from "@/styles/configs.style";
 import { useGlobalStyles } from "@/styles/global.styles";
-import {
-  KeyboardAvoidingView,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-
-import { useConfigs } from "@/scripts/Configs.script";
 import { ChevronRight } from "lucide-react-native";
+import React from "react";
+
+const LANGUAGE_OPTIONS = [
+  { label: "Português", value: "pt" },
+  { label: "English", value: "en" },
+];
 
 export default function Configs() {
   const { state, actions } = useConfigs();
-  const { theme, toggleTheme } = useTheme();
-  const { colors } = useTheme();
   const configsStyles = useConfigsStyles();
   const styles = useGlobalStyles();
+  const { theme, toggleTheme, colors } = useTheme();
+  const { t } = useLanguage();
 
-  const renderCharCounter = () => {
-    const currentLength = state.form.description?.length ?? 0;
-    return (
-      <Text
-        style={{
-          alignSelf: "flex-end",
-          fontSize: 12,
-          fontWeight: "bold",
-          color:
-            currentLength >= state.maxDescriptionLength
-              ? colors.error
-              : colors.textSecondary,
-        }}
-      >
-        {currentLength} / {state.maxDescriptionLength}
-      </Text>
-    );
-  };
+  const currentDescLength = state.form.description?.length ?? 0;
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={"height"}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.scroll_content}
@@ -95,7 +90,7 @@ export default function Configs() {
           </View>
 
           <View style={configsStyles.contentTextFix}>
-            <Divider text="Sobre Você" />
+            <Divider text={t("config_section_about")} />
 
             <AlertBanner
               message={state.error || undefined}
@@ -109,7 +104,7 @@ export default function Configs() {
             />
 
             <TextBox
-              placeholder="Nome"
+              placeholder={t("config_placeholder_name")}
               value={state.form.name}
               onChangeText={(text: string) =>
                 actions.onChangeForm("name", text)
@@ -118,18 +113,31 @@ export default function Configs() {
             />
 
             <TextBox
-              placeholder="Descrição"
+              placeholder={t("config_placeholder_description")}
               value={state.form.description}
               onChangeText={(text: string) =>
                 actions.onChangeForm("description", text)
               }
             >
-              {renderCharCounter()}
+              <Text
+                style={{
+                  alignSelf: "flex-end",
+                  fontSize: 12,
+                  fontWeight: "bold",
+                  color:
+                    currentDescLength >= state.maxDescriptionLength
+                      ? colors.error
+                      : colors.textSecondary,
+                }}
+              >
+                {currentDescLength} / {state.maxDescriptionLength}
+              </Text>
             </TextBox>
-            <Divider text="Segurança" />
+
+            <Divider text={t("config_section_security")} />
 
             <TextBox
-              placeholder="Email"
+              placeholder={t("config_placeholder_email")}
               value={state.form.email}
               onChangeText={(text: string) =>
                 actions.onChangeForm("email", text)
@@ -138,7 +146,7 @@ export default function Configs() {
             />
 
             <TextBox
-              placeholder="Nova Senha"
+              placeholder={t("config_placeholder_password")}
               value={state.form.password}
               onChangeText={(text: string) =>
                 actions.onChangeForm("password", text)
@@ -148,12 +156,12 @@ export default function Configs() {
             />
 
             <Button
-              title="Salvar"
+              title={t("btn_save")}
               disabled={state.loading}
               onPress={actions.handleSave}
             />
 
-            <Divider text="Privacidade" />
+            <Divider text={t("config_section_privacy")} />
 
             <TouchableOpacity
               style={configsStyles.labelContainer}
@@ -161,32 +169,58 @@ export default function Configs() {
             >
               <View style={configsStyles.iconButtonContainer}>
                 <IconButton icon="block" type="none" />
-                <Text style={configsStyles.label}>Bloqueados</Text>
+                <Text style={configsStyles.label}>
+                  {t("config_label_blocked")}
+                </Text>
               </View>
               <ChevronRight size={24} color={colors.textSecondary} />
             </TouchableOpacity>
 
-            <Divider text="Visualização" />
+            <Divider text={t("config_section_appearance")} />
 
             <View style={configsStyles.labelContainer}>
               <View style={configsStyles.iconButtonContainer}>
                 <IconButton icon="moon" type="none" />
-                <Text style={configsStyles.label}>Modo Escuro</Text>
+                <Text style={configsStyles.label}>
+                  {t("config_label_dark_mode")}
+                </Text>
               </View>
               <Toogle value={theme === "dark"} onValueChange={toggleTheme} />
             </View>
 
-            <Divider text="Log-out" />
+            <View
+              style={[
+                configsStyles.labelContainer,
+                { alignItems: "center", justifyContent: "space-between" },
+              ]}
+            >
+              <View style={configsStyles.iconButtonContainer}>
+                <IconButton icon="language" type="none" />
+                <Text style={configsStyles.label}>
+                  {t("config_label_language")}
+                </Text>
+              </View>
+
+              <View style={{ width: 140 }}>
+                <Dropdown
+                  selectedValue={state.lan}
+                  onValueChange={(val: string) => actions.setLan(val)}
+                  options={LANGUAGE_OPTIONS}
+                />
+              </View>
+            </View>
+
+            <Divider text={t("config_section_logout")} />
             <View style={configsStyles.lastContainerConfig}>
               <Button
-                title="Excluir Conta"
+                title={t("btn_delete_account")}
                 type="remove_border"
                 onPress={() => actions.deleteAccount()}
                 disabled={state.loading}
               />
 
               <Button
-                title="Sair"
+                title={t("btn_logout")}
                 type="remove_fill"
                 onPress={() => actions.logOut()}
                 disabled={state.loading}

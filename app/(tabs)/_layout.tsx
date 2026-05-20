@@ -1,26 +1,35 @@
 import { Header, IconButton, NavBar } from "@/components/components";
+import { NavItem } from "@/components/Layout/NavBar/navbar";
+import { useLanguage } from "@/context/LanguageContext";
+import { useSignalR } from "@/context/NotificationsContext";
+import { useTheme } from "@/context/ThemeContext";
+import { useStylesMain } from "@/styles/main.style";
 import { Tabs, router } from "expo-router";
 import { useMemo } from "react";
 import { View } from "react-native";
 
-import { NavItem } from "@/components/Layout/NavBar/navbar";
-import { useTheme } from "@/context/ThemeContext";
-import { useStylesMain } from "@/styles/main.style";
-
-type Tab = "home" | "message" | "Perfil" | "Search";
+type Tab = "home" | "message" | "Perfil" | "Search" | "Notifications";
 
 export default function TabLayout() {
   const stylesMain = useStylesMain();
   const { colors } = useTheme();
+  const { t } = useLanguage();
+  const { unreadCount, setUnreadCount } = useSignalR();
 
   const navItems: NavItem<Tab>[] = useMemo(
     () => [
-      { id: "home", label: "Início", icon: "home" },
-      { id: "Search", label: "Buscar", icon: "search" },
-      { id: "message", label: "Mensagens", icon: "message" },
-      { id: "Perfil", label: "Perfil", icon: "profile" },
+      { id: "home", label: t("tab_home"), icon: "home" },
+      { id: "Search", label: t("tab_search"), icon: "search" },
+      {
+        id: "Notifications",
+        label: t("tab_notifications"),
+        icon: "notifications",
+        badge: unreadCount > 0 ? unreadCount : undefined,
+      },
+      { id: "message", label: t("tab_messages"), icon: "message" },
+      { id: "Perfil", label: t("tab_profile"), icon: "profile" },
     ],
-    [],
+    [t, unreadCount],
   );
 
   return (
@@ -40,6 +49,9 @@ export default function TabLayout() {
               items={navItems}
               activeId={currentRoute}
               onPress={(tabId) => {
+                if (tabId === "Notifications") {
+                  setUnreadCount(0);
+                }
                 navigation.navigate(tabId);
               }}
             />
@@ -71,6 +83,14 @@ export default function TabLayout() {
         name="message"
         options={{
           headerShown: true,
+          header: () => <Header />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="Notifications"
+        options={{
+          headerShown: false,
           header: () => <Header />,
         }}
       />

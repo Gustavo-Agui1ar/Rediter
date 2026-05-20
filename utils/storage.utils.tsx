@@ -76,6 +76,15 @@ export async function getColorTheme() {
   return theme === "dark" ? "dark" : "light";
 }
 
+export async function saveLanguage(lang: string) {
+  await SecureStore.setItemAsync("app_lang", lang);
+}
+
+export async function getLanguage() {
+  const lang = await SecureStore.getItemAsync("app_lang");
+  return lang || "pt";
+}
+
 export async function getValidProfileBasic(): Promise<ProfileBasic | null> {
   const cached = await getProfileBasic();
   if (!cached) return null;

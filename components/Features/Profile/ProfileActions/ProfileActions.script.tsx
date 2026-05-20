@@ -2,11 +2,15 @@ import { useApi } from "@/utils/request.utils";
 import { router } from "expo-router";
 import { useCallback, useState } from "react";
 import { Alert, DeviceEventEmitter } from "react-native";
+
 interface UseProfileActionsProps {
   userId?: string;
   initialIsFollowing: boolean;
   initialIsBlocked?: boolean;
   OwnProfile?: boolean;
+  onUpdateProfile?: (
+    updatedFields: Partial<{ isFollowing: boolean; isBlocked: boolean }>,
+  ) => void;
 }
 
 export function useProfileActions({
@@ -14,6 +18,7 @@ export function useProfileActions({
   initialIsFollowing = false,
   initialIsBlocked = false,
   OwnProfile = false,
+  onUpdateProfile,
 }: UseProfileActionsProps) {
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [isBlocked, setIsBlocked] = useState(initialIsBlocked);
@@ -34,7 +39,9 @@ export function useProfileActions({
 
   const handleFollowToggle = useCallback(() => {
     if (!userId) return;
+
     setIsFollowing((prev) => !prev);
+    if (onUpdateProfile) onUpdateProfile({ isFollowing: !isFollowing });
 
     request({
       urlComplement: `/api/users/${userId}/${isFollowing ? "unfollow" : "follow"}`,
@@ -42,10 +49,11 @@ export function useProfileActions({
       hasLoading: false,
     }).catch((ex) => {
       setIsFollowing((prev) => !prev);
+      if (onUpdateProfile) onUpdateProfile({ isFollowing: isFollowing });
       console.error(ex);
       showAlert("Erro ao atualizar seguidor", "error");
     });
-  }, [userId, isFollowing]);
+  }, [userId, isFollowing, onUpdateProfile, request]);
 
   const handleBlock = useCallback(async () => {
     if (!userId) return;
@@ -73,6 +81,7 @@ export function useProfileActions({
                   " com sucesso",
                 "success",
               );
+
               if (isBlocked) {
                 DeviceEventEmitter.emit("updateBlockedUsers", {
                   targetId: userId,
@@ -81,6 +90,9 @@ export function useProfileActions({
               }
 
               setIsBlocked((prev) => !prev);
+
+              if (onUpdateProfile) onUpdateProfile({ isBlocked: !isBlocked });
+
               setTimeout(() => router.back(), 1500);
             } catch (error) {
               showAlert(
@@ -94,7 +106,7 @@ export function useProfileActions({
         },
       ],
     );
-  }, [userId, isBlocked, request]);
+  }, [userId, isBlocked, request, onUpdateProfile]);
 
   return {
     isFollowing,

@@ -8,7 +8,7 @@ import { useUserProfile } from "@/scripts/UserProfile.script";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { useStylesPerfil } from "@/styles/perfil.style";
 import { Ionicons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { Animated, Pressable, View } from "react-native";
 
@@ -134,6 +134,12 @@ export default function UserProfileScreen() {
   const { state, actions } = useUserProfile(id);
   const isFollowing = state.profile?.isFollowing || false;
 
+  useFocusEffect(
+    useCallback(() => {
+      actions.fetchProfile();
+    }, [actions.fetchProfile]),
+  );
+
   const handleGoBack = useCallback(() => {
     if (router.canGoBack()) {
       router.back();
@@ -154,7 +160,7 @@ export default function UserProfileScreen() {
             onPress={handleGoBack}
             style={{
               position: "absolute",
-              top: 40,
+              opacity: 40,
               left: 16,
               backgroundColor: "rgba(0,0,0,0.4)",
               padding: 8,
@@ -181,11 +187,19 @@ export default function UserProfileScreen() {
             followersCount={state.profile.followers}
             followingCount={state.profile.following}
             userId={state.profile.userID}
+            onUpdateProfile={actions.updateLocalProfile}
           />
         </View>
       </View>
     );
-  }, [state.profile, ownProfile, isFollowing, handleGoBack, stylesPerfil]);
+  }, [
+    state.profile,
+    ownProfile,
+    isFollowing,
+    handleGoBack,
+    stylesPerfil,
+    actions.updateLocalProfile,
+  ]);
 
   if (state.loading || !state.profile) {
     return (

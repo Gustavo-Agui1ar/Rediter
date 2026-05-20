@@ -31,4 +31,25 @@ export const useNavStyles = makeStyles((colors: ThemeColors) => ({
   label: {
     fontSize: TextSize.xs,
   },
+  badgeContainer: {
+    position: "absolute",
+    top: -6,
+    right: -8,
+    backgroundColor: colors.error || "#FF3B30",
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 4,
+    borderWidth: 1.5,
+    borderColor: colors.background,
+    zIndex: 10,
+  },
+  badgeText: {
+    color: "#FFF",
+    fontSize: 10,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
 }));

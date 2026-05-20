@@ -5,10 +5,11 @@ import DisplayImages from "@/components/Feedback/DisplayImages/DisplayImage";
 import HighLightText from "@/components/UI/HighLightText";
 import IconButton from "@/components/UI/IconButton/IconButton";
 import { Button, Divider, TextBox } from "@/components/components";
+import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
 import { usePostDetails } from "@/scripts/PostDetails.script";
 import { usePostDetailsStyles } from "@/styles/PostDetails.style";
-import { formatDate } from "@/utils/datePost.utils";
+import { useFormattedDate } from "@/utils/datePost.utils";
 import React, { useCallback, useMemo } from "react";
 import {
   ActivityIndicator,
@@ -24,6 +25,7 @@ export default function PostDetailsScreen() {
   const { functions, states } = usePostDetails();
   const styles = usePostDetailsStyles();
   const { colors } = useTheme();
+  const { t } = useLanguage();
 
   const {
     postData,
@@ -54,6 +56,8 @@ export default function PostDetailsScreen() {
     onAddLocation,
     handleGoToProfile,
   } = functions;
+
+  const formattedDate = useFormattedDate(postData?.createdAt || "");
 
   const listHeader = useMemo(() => {
     if (isLoading) return <PostSkeleton />;
@@ -88,8 +92,7 @@ export default function PostDetailsScreen() {
                 {postData.userName}
               </Text>
               <Text style={styles.timeText}>
-                {formatDate(postData.createdAt)}{" "}
-                {postData.edited && "• Editado"}
+                {formattedDate} {postData.edited && "• Editado"}
               </Text>
             </View>
           </TouchableOpacity>
@@ -97,7 +100,7 @@ export default function PostDetailsScreen() {
           {!postData.ownPost && (
             <View style={styles.followButtonWrapper}>
               <Button
-                title={isFollowing ? "Seguindo" : "Seguir"}
+                title={isFollowing ? t("btn_following") : t("btn_follow")}
                 size="small"
                 type={isFollowing ? "border" : "fill"}
                 onPress={syncFollowState}
@@ -165,12 +168,14 @@ export default function PostDetailsScreen() {
         <View style={styles.commentHeader}>
           <Text style={styles.countCommentsText}>
             {comments.length > 0
-              ? `${comments.length} ${comments.length === 1 ? "Resposta" : "Respostas"}`
-              : "Nenhuma resposta"}
+              ? `${comments.length} ${comments.length === 1 ? t("comment_one") : t("comment_other")}`
+              : t("comment_none")}
           </Text>
 
           {comments.length > 0 && (
-            <Text style={styles.moreRecentText}>Mais recentes</Text>
+            <Text style={styles.moreRecentText}>
+              {t("comment_more_recent")}
+            </Text>
           )}
         </View>
       </View>
@@ -304,7 +309,7 @@ export default function PostDetailsScreen() {
               }}
             >
               <Text style={{ color: colors.primary, fontSize: 13 }}>
-                {replyFiles.length} Imagem(ns) anexada(s)
+                {replyFiles.length} {t("comment_attached_images")}
               </Text>
               <TouchableOpacity onPress={() => onRemoveImage(0)}>
                 <Text
@@ -314,7 +319,7 @@ export default function PostDetailsScreen() {
                     fontWeight: "bold",
                   }}
                 >
-                  Remover
+                  {t("btn_remove")}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -323,7 +328,7 @@ export default function PostDetailsScreen() {
           <View style={styles.inputWrapper}>
             <TextBox
               placeholder={
-                isSendingReply ? "Enviando..." : "Postar sua resposta..."
+                isSendingReply ? t("comment_sending") : t("comment_post")
               }
               placeholderTextColor={colors.disabled}
               multiline

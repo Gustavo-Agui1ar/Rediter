@@ -5,6 +5,7 @@ import {
   HelperText,
   TextBox,
 } from "@/components/components";
+import { useLanguage } from "@/context/LanguageContext"; // 1. IMPORTADO O CONTEXTO DE IDIOMA
 import { useStylesForgotPassword } from "@/styles/forgotPassword.style";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { useApi } from "@/utils/request.utils";
@@ -24,6 +25,7 @@ export default function ForgotPassword() {
   const { request } = useApi();
   const styles = useGlobalStyles();
   const forgotStyles = useStylesForgotPassword();
+  const { t } = useLanguage(); // 2. ACESSANDO A FUNÇÃO DE TRADUÇÃO
 
   const handleResetPassword = async () => {
     setSubmitted(true);
@@ -34,12 +36,13 @@ export default function ForgotPassword() {
     }
 
     if (form.password !== form.confirmPassword) {
-      setError("As senhas não coincidem.");
+      // 3. TRADUÇÃO DE ERROS EM TEMPO DE EXECUÇÃO
+      setError(t("validation_passwords_dont_match"));
       return;
     }
 
     try {
-      var formData = new FormData();
+      const formData = new FormData();
       formData.append("password", form.password);
 
       await request({
@@ -51,13 +54,13 @@ export default function ForgotPassword() {
       deleteTokens();
       router.replace("/");
     } catch (err) {
-      setError("Ocorreu um erro ao redefinir a senha.");
+      setError(t("error_reset_password_failed"));
     }
   };
 
   return (
     <KeyboardAvoidingView style={[styles.container]} behavior="padding">
-      <Header title="Redefinir senha" />
+      <Header title={t("forgot_password_title")} />
 
       <ScrollView
         style={[styles.container]}
@@ -66,8 +69,7 @@ export default function ForgotPassword() {
       >
         <View style={forgotStyles.content_card}>
           <Text style={forgotStyles.instructionText}>
-            Crie uma nova senha forte para a sua conta. Certifique-se de não
-            usar senhas antigas.
+            {t("forgot_password_instruction")}
           </Text>
 
           <AlertBanner
@@ -78,7 +80,7 @@ export default function ForgotPassword() {
 
           <View style={forgotStyles.fieldContainer}>
             <TextBox
-              placeholder="Nova senha"
+              placeholder={t("forgot_password_placeholder_new")}
               value={form.password}
               onChangeText={(text: string) =>
                 setForm({ ...form, password: text })
@@ -86,7 +88,7 @@ export default function ForgotPassword() {
               secureTextEntry
             />
             <HelperText
-              message="A senha não pode estar vazia"
+              message={t("validation_password_empty")}
               visible={submitted && !form.password}
               alert_type="error"
               style={forgotStyles.helperText}
@@ -95,7 +97,7 @@ export default function ForgotPassword() {
 
           <View style={forgotStyles.fieldContainer}>
             <TextBox
-              placeholder="Confirmar nova senha"
+              placeholder={t("forgot_password_placeholder_confirm")}
               value={form.confirmPassword}
               onChangeText={(text: string) =>
                 setForm({ ...form, confirmPassword: text })
@@ -103,7 +105,7 @@ export default function ForgotPassword() {
               secureTextEntry
             />
             <HelperText
-              message="As senhas não coincidem"
+              message={t("validation_passwords_dont_match")}
               visible={
                 submitted &&
                 form.password !== form.confirmPassword &&
@@ -115,7 +117,7 @@ export default function ForgotPassword() {
           </View>
 
           <Button
-            title="Redefinir senha"
+            title={t("forgot_password_btn_submit")}
             onPress={handleResetPassword}
             type="fill"
           />

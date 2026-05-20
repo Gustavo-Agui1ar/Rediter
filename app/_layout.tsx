@@ -1,4 +1,6 @@
+import { LanguageProvider } from "@/context/LanguageContext";
 import { LoadingProvider } from "@/context/loadingContext";
+import { SignalRProvider } from "@/context/NotificationsContext";
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 import { Stack } from "expo-router";
 
@@ -40,7 +42,11 @@ export default function Layout() {
   return (
     <LoadingProvider>
       <ThemeProvider>
-        <AppStack />
+        <LanguageProvider>
+          <SignalRProvider>
+            <AppStack />
+          </SignalRProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </LoadingProvider>
   );

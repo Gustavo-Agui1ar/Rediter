@@ -2,6 +2,7 @@
 export const DarkColors = {
   /* Base - Agora com um subton azulado para alinhar com o Light */
   background: "#0D0E14",
+  backgroundSecondary: "#1A1C2C", // Novo tom para elementos secundários
   surface: "#161824",
   surfaceAlt: "#1F2233",
 
@@ -39,6 +40,7 @@ export const DarkColors = {
 export const LightColors = {
   /* Base */
   background: "#F5F7FF",
+  backgroundSecondary: "#ECECFC", // Novo tom para elementos secundários
   surface: "#FFFFFF",
   surfaceAlt: "#ECECFC",
 

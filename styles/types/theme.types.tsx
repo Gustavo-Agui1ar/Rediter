@@ -1,5 +1,6 @@
 export interface ThemeColors {
   background: string;
+  backgroundSecondary: string;
   surface: string;
   surfaceAlt: string;
   primary: string;

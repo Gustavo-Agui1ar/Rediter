@@ -1,6 +1,7 @@
 export const configs = {
   DevelopURL: ["http://10.0.2.2:6969"],
   ProductionURL: ["http://159.112.185.202:6969"],
+  SIGNALR_URL: ["http://10.0.2.2:6969/Hubs/NotificationHub"],
   timeout: 20000,
   Production: false,
   GoogleClientID:

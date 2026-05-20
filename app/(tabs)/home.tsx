@@ -1,32 +1,29 @@
 import { Header, SearchPosts } from "@/components/components";
 import TabBar from "@/components/Layout/TabBar/TabBar";
+import { useLanguage } from "@/context/LanguageContext";
 import { useLoading } from "@/context/loadingContext";
 import { useTheme } from "@/context/ThemeContext";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Text, View } from "react-native";
-
-// ============================================================================
-// CONFIGURAÇÃO DAS ABAS
-// ============================================================================
-const FEED_TABS = [
-  { id: "following", label: "Seguindo" },
-  { id: "foryou", label: "Para Você" }, // Você também pode usar "Explorar"
-];
 
 export default function HomeFeedScreen() {
   const { colors } = useTheme();
   const { loading: globalLoading } = useLoading();
+  const { t } = useLanguage();
 
-  // Estado local para gerenciar a aba ativa (iniciando em 'Seguindo')
-  const [activeTab, setActiveTab] = useState(FEED_TABS[0].id);
+  const feedTabs = useMemo(
+    () => [
+      { id: "following", label: t("tab_following") },
+      { id: "foryou", label: t("tab_foryou") },
+    ],
+    [t],
+  );
 
-  // ============================================================================
-  // RENDERIZAÇÃO DO CABEÇALHO
-  // ============================================================================
+  const [activeTab, setActiveTab] = useState("following");
+
   function renderHeader() {
     return (
       <Header divider={false}>
-        {/* Substituímos o TextBox por um título simples do App ou da Seção */}
         <Text
           style={{
             fontSize: 24,
@@ -42,16 +39,13 @@ export default function HomeFeedScreen() {
     );
   }
 
-  // ============================================================================
-  // RENDERIZAÇÃO DO CONTEÚDO (FEED)
-  // ============================================================================
   function renderContent() {
     switch (activeTab) {
       case "following":
         return (
           <View style={{ flex: 1 }}>
             <SearchPosts
-              key={`tab-following`}
+              key="tab-following"
               searchTerm=""
               refreshing={globalLoading}
               feedMode="following"
@@ -63,7 +57,7 @@ export default function HomeFeedScreen() {
         return (
           <View style={{ flex: 1 }}>
             <SearchPosts
-              key={`tab-foryou`}
+              key="tab-foryou"
               searchTerm=""
               refreshing={globalLoading}
               feedMode="foryou"
@@ -76,16 +70,12 @@ export default function HomeFeedScreen() {
     }
   }
 
-  // ============================================================================
-  // RENDERIZAÇÃO PRINCIPAL
-  // ============================================================================
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       {renderHeader()}
 
-      <TabBar items={FEED_TABS} active={activeTab} onChange={setActiveTab} />
+      <TabBar items={feedTabs} active={activeTab} onChange={setActiveTab} />
 
-      {/* O flex: 1 garante que a lista ocupe todo o espaço restante abaixo da TabBar */}
       <View style={{ flex: 1 }}>{renderContent()}</View>
     </View>
   );

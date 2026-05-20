@@ -1,4 +1,5 @@
 import { Header, UserItem } from "@/components/components";
+import { useLanguage } from "@/context/LanguageContext"; // 1. IMPORTADO O CONTEXTO DE IDIOMA
 import { useTheme } from "@/context/ThemeContext";
 import { useBlockedUsers } from "@/scripts/BlockedUsers.script";
 import { useStylesBlockedUsers } from "@/styles/BlockedUsers.style";
@@ -38,6 +39,8 @@ export default function Blocks({
   const { colors } = useTheme();
   const styles = useStylesBlockedUsers();
   const router = useRouter();
+  const { t } = useLanguage();
+
   const { users, initialLoading, loadingMore, loadMore, unblockUserLocally } =
     useBlockedUsers();
 
@@ -79,12 +82,10 @@ export default function Blocks({
     if (initialLoading) return null;
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>
-          Você não possui nenhum usuário bloqueado.
-        </Text>
+        <Text style={styles.emptyText}>{t("blocked_users_empty")}</Text>
       </View>
     );
-  }, [initialLoading, styles]);
+  }, [initialLoading, styles.emptyContainer, styles.emptyText, t]);
 
   const renderListHeader = useCallback(() => {
     return (
@@ -108,7 +109,7 @@ export default function Blocks({
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <Header title="Usuários Bloqueados" onBack={() => router.back()} />
+      <Header title={t("blocked_users_title")} onBack={() => router.back()} />
 
       <FlatList
         data={displayData}

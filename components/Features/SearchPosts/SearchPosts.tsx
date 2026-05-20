@@ -1,4 +1,5 @@
 import Post from "@/components/Features/Post/Post";
+import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
 import React, { memo, useCallback, useMemo } from "react";
 import {
@@ -37,7 +38,6 @@ const SKELETON_DATA = [
   { _isSkeleton: true, id: "skel-1" },
   { _isSkeleton: true, id: "skel-2" },
 ];
-
 interface SearchPostsProps {
   searchTerm: string;
   onlyWithMedia?: boolean;
@@ -61,6 +61,8 @@ const SearchPosts = ({
 }: SearchPostsProps) => {
   const { colors } = useTheme();
   const styles = useStylesPosts();
+  const { t } = useLanguage();
+
   const { posts, initialLoading, loadingMore, loadMore } = useSearchPosts(
     searchTerm,
     onlyWithMedia,
@@ -118,15 +120,16 @@ const SearchPosts = ({
   const renderSectionFooter = useCallback(
     ({ section }: any) => {
       if (section.data.length === 0 && !initialLoading) {
-        let emptyMessage = "Nenhum post encontrado.";
+        let emptyMessage = t("error_no_posts_found");
+
         if (feedMode === "following") {
-          emptyMessage = "Você não segue ninguém ou não há postagens recentes.";
+          emptyMessage = t("empty_feed_following");
         } else if (feedMode === "foryou") {
-          emptyMessage = "Não há postagens novas no momento.";
+          emptyMessage = t("empty_feed_foryou");
         } else {
           emptyMessage = searchTerm
-            ? `Nenhum post encontrado para "${searchTerm}"`
-            : "Comece a digitar para buscar postagens!";
+            ? `${t("error_no_posts_for")} "${searchTerm}"`
+            : t("search_posts_start_typing");
         }
 
         return (
@@ -143,6 +146,7 @@ const SearchPosts = ({
       feedMode,
       styles.emptyContainer,
       styles.emptyText,
+      t,
     ],
   );
 

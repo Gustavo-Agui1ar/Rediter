@@ -12,6 +12,7 @@ export interface PostItem {
   Location?: string;
   location?: string;
   edited: boolean;
+  score?: number;
 }
 
 const PAGE_SIZE = 12;
@@ -35,7 +36,11 @@ export function useSearchPosts(
 
   const { request } = useApi();
   const fetchingRef = useRef(false);
-  const lastItemRef = useRef<{ id: string; createdAt: string } | null>(null);
+  const lastItemRef = useRef<{
+    id: string;
+    createdAt: string;
+    score?: number;
+  } | null>(null);
 
   const fetchPosts = useCallback(
     async (isRefresh = false, currentTerm: string) => {
@@ -58,26 +63,39 @@ export function useSearchPosts(
       }
 
       try {
-        let url = "";
-
+        let basePath = "/api/posts/search";
         if (feedMode === "following") {
-          url = `/api/posts/feed/following?pageSize=${PAGE_SIZE}`;
+          basePath = "/api/posts/feed/following";
         } else if (feedMode === "foryou") {
-          url = `/api/posts/feed/discover?pageSize=${PAGE_SIZE}`;
-        } else {
-          url = `/api/posts/search?query=${encodeURIComponent(currentTerm)}&pageSize=${PAGE_SIZE}`;
+          basePath = "/api/posts/feed/discover";
+        }
+
+        const params = new URLSearchParams();
+
+        params.append("pageSize", String(PAGE_SIZE));
+
+        if (!feedMode) {
+          params.append("query", currentTerm);
         }
 
         if (onlyWithMedia) {
-          url += `&onlyWithMedia=true`;
+          params.append("onlyWithMedia", "true");
         }
 
         if (!isRefresh && lastItemRef.current) {
-          const { id, createdAt } = lastItemRef.current;
-          url += `&lastCreatedAt=${encodeURIComponent(createdAt)}&lastId=${id}`;
+          const { id, createdAt, score } = lastItemRef.current;
+
+          params.append("lastCreatedAt", createdAt);
+          params.append("lastId", id);
+
+          if (feedMode === "foryou" && score !== undefined) {
+            params.append("lastScore", String(score));
+          }
         }
 
+        const url = `${basePath}?${params.toString()}`;
         const res = await request({ urlComplement: url, method: "GET" });
+
         if (!res || !res.ok) throw new Error("Erro na requisição");
 
         const data: PostItem[] = (await res.json()) || [];
@@ -86,6 +104,7 @@ export function useSearchPosts(
           lastItemRef.current = {
             id: String(getId(last)),
             createdAt: last.createdAt,
+            score: last.score,
           };
         }
 

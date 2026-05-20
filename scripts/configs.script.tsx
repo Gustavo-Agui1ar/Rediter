@@ -1,11 +1,14 @@
+import { useLanguage } from "@/context/LanguageContext";
 import { useLoading } from "@/context/loadingContext";
+import { useSignalR } from "@/context/NotificationsContext";
 import { pickImage } from "@/utils/filePicker.utils";
 import { LoginValidator } from "@/utils/login.utils";
 import { useApi } from "@/utils/request.utils";
 import * as Storage from "@/utils/storage.utils";
-import { deleteInfoUser } from "@/utils/storage.utils";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Alert } from "react-native";
+
 interface ImageState {
   local?: any;
   remote?: string;
@@ -27,13 +30,16 @@ const INITIAL_FORM: FormState = {
 const MAX_DESCRIPTION_LENGTH = 150;
 
 export function useConfigs() {
+  const { language, setLanguage } = useLanguage();
   const { loading, setLoading } = useLoading();
   const { request } = useApi();
+  const { disconnectSignalR } = useSignalR();
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [profileImage, setProfileImage] = useState<ImageState>({});
   const [coverImage, setCoverImage] = useState<ImageState>({});
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [lan, setLan] = useState<string>(language);
 
   const clearAlerts = useCallback(() => {
     setError(null);
@@ -50,15 +56,9 @@ export function useConfigs() {
         if (field === "description" && value.length > MAX_DESCRIPTION_LENGTH) {
           return prev;
         }
-
         if (prev[field] === value) return prev;
-
-        return {
-          ...prev,
-          [field]: value,
-        };
+        return { ...prev, [field]: value };
       });
-
       clearAlerts();
     },
     [clearAlerts],
@@ -71,20 +71,13 @@ export function useConfigs() {
       password: "",
       description: data.description || "",
     });
-
-    setProfileImage({
-      remote: data.imageUrl,
-    });
-
-    setCoverImage({
-      remote: data.coverUrl,
-    });
+    setProfileImage({ remote: data.imageUrl });
+    setCoverImage({ remote: data.coverUrl });
   }, []);
 
   const loadProfileData = useCallback(async () => {
     try {
       setLoading(true);
-
       const cached = await Storage.getProfileBasic();
       if (cached) {
         applyProfileData(cached);
@@ -97,7 +90,6 @@ export function useConfigs() {
       });
 
       const json = await response.json();
-
       const data = {
         userName: json.name,
         email: json.email,
@@ -107,7 +99,6 @@ export function useConfigs() {
       };
 
       applyProfileData(data);
-
       await Storage.saveProfileBasic(data);
     } catch (error) {
       setError("Erro ao carregar informações do perfil.");
@@ -127,14 +118,8 @@ export function useConfigs() {
     ) => {
       try {
         const img = await pickImage(crop);
-
         if (!img) return;
-
-        setImage({
-          local: img,
-          changed: true,
-        });
-
+        setImage({ local: img, changed: true });
         clearAlerts();
       } catch (error) {
         setError("Erro ao selecionar imagem.");
@@ -143,19 +128,18 @@ export function useConfigs() {
     [clearAlerts],
   );
 
-  const handlePickCover = useCallback(() => {
-    return pickAndSetImage(setCoverImage, false);
-  }, [pickAndSetImage]);
-
-  const handlePickProfileImage = useCallback(() => {
-    return pickAndSetImage(setProfileImage, true);
-  }, [pickAndSetImage]);
+  const handlePickCover = useCallback(
+    () => pickAndSetImage(setCoverImage, false),
+    [pickAndSetImage],
+  );
+  const handlePickProfileImage = useCallback(
+    () => pickAndSetImage(setProfileImage, true),
+    [pickAndSetImage],
+  );
 
   const createFileData = useCallback((imageAsset: any) => {
     if (!imageAsset?.uri) return null;
-
     const uriParts = imageAsset.uri.split("/");
-
     return {
       uri: imageAsset.uri,
       name:
@@ -167,30 +151,43 @@ export function useConfigs() {
   }, []);
 
   const clearSessionAndRedirect = useCallback(async () => {
-    await deleteInfoUser();
-
+    await Storage.deleteInfoUser();
     router.replace("/");
   }, []);
 
   const logOut = useCallback(async () => {
+    disconnectSignalR();
     await clearSessionAndRedirect();
   }, [clearSessionAndRedirect]);
 
-  const deleteAccount = useCallback(async () => {
-    try {
-      setLoading(true);
-
-      await request({
-        urlComplement: "/api/users/me",
-        method: "DELETE",
-      });
-
-      await clearSessionAndRedirect();
-    } catch (err: any) {
-      setError(err?.response?.data?.message || "Erro ao deletar conta.");
-    } finally {
-      setLoading(false);
-    }
+  const confirmAndDeleteAccount = useCallback(() => {
+    Alert.alert(
+      "Deletar Conta",
+      "Tem certeza que deseja deletar sua conta? Esta ação não pode ser desfeita.",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Deletar",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setLoading(true);
+              await request({
+                urlComplement: "/api/users/me",
+                method: "DELETE",
+              });
+              await clearSessionAndRedirect();
+            } catch (err: any) {
+              setError(
+                err?.response?.data?.message || "Erro ao deletar conta.",
+              );
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ],
+    );
   }, [request, clearSessionAndRedirect, setLoading]);
 
   const validateForm = useCallback(() => {
@@ -200,16 +197,12 @@ export function useConfigs() {
     const description = (form.description || "").replace(/\s+/g, " ").trim();
 
     if (!name) return "O campo Nome não pode estar vazio.";
-
     if (!email) return "O campo E-mail não pode estar vazio.";
-
     if (!LoginValidator.isEmailValid(email))
       return "O formato do e-mail é inválido.";
-
     if (description.length > MAX_DESCRIPTION_LENGTH) {
       return `A descrição deve ter no máximo ${MAX_DESCRIPTION_LENGTH} caracteres.`;
     }
-
     if (password && !LoginValidator.isPasswordValid(password))
       return "A nova senha é inválida.";
 
@@ -224,11 +217,11 @@ export function useConfigs() {
       .replace(/\s+/g, " ")
       .trim()
       .substring(0, MAX_DESCRIPTION_LENGTH);
+
     if (profileImage.changed && profileImage.local) {
       const fileData = createFileData(profileImage.local);
       if (fileData) formData.append("File", fileData);
     }
-
     if (coverImage.changed && coverImage.local) {
       const coverData = createFileData(coverImage.local);
       if (coverData) formData.append("Cover", coverData);
@@ -239,6 +232,7 @@ export function useConfigs() {
 
     if ((form.description || "").replace(/\s+/g, " ").trim().length > 0)
       formData.append("Description", description);
+
     if (form.password) formData.append("Password", form.password);
 
     return formData;
@@ -246,9 +240,7 @@ export function useConfigs() {
 
   const handleSave = useCallback(async () => {
     clearAlerts();
-
     const validationError = validateForm();
-
     if (validationError) {
       setError(validationError);
       return;
@@ -256,7 +248,6 @@ export function useConfigs() {
 
     try {
       setLoading(true);
-
       const formData = buildFormData();
 
       await request({
@@ -273,12 +264,9 @@ export function useConfigs() {
         description: (form.description || "").replace(/\s+/g, " ").trim(),
       });
 
+      setLanguage(lan as any);
       setSuccessMsg("Informações atualizadas com sucesso!");
-
-      setForm((prev) => ({
-        ...prev,
-        password: "",
-      }));
+      setForm((prev) => ({ ...prev, password: "" }));
     } catch (err: any) {
       setError(err?.message || "Erro ao atualizar perfil.");
     } finally {
@@ -293,6 +281,8 @@ export function useConfigs() {
     profileImage,
     coverImage,
     form,
+    lan,
+    setLanguage,
   ]);
 
   const state = useMemo(
@@ -303,9 +293,10 @@ export function useConfigs() {
       error,
       successMsg,
       loading,
+      lan,
       maxDescriptionLength: MAX_DESCRIPTION_LENGTH,
     }),
-    [form, profileImage, coverImage, error, successMsg, loading],
+    [form, profileImage, coverImage, error, successMsg, loading, lan],
   );
 
   const actions = useMemo(
@@ -314,23 +305,20 @@ export function useConfigs() {
       handlePickCover,
       handlePickProfileImage,
       handleSave,
-      deleteAccount,
+      deleteAccount: confirmAndDeleteAccount,
       logOut,
       goToBlockedUsers,
+      setLan,
     }),
     [
       onChangeForm,
       handlePickCover,
       handlePickProfileImage,
       handleSave,
-      deleteAccount,
+      confirmAndDeleteAccount,
       logOut,
       goToBlockedUsers,
     ],
   );
-
-  return {
-    state,
-    actions,
-  };
+  return { state, actions };
 }

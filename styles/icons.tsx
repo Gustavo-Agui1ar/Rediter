@@ -1,6 +1,7 @@
 import {
   ArrowLeft,
   Ban,
+  BellRing,
   CirclePlus,
   CircleX,
   EditIcon,
@@ -8,6 +9,7 @@ import {
   Heart,
   Home,
   Image,
+  Languages,
   MapPin,
   MessageCircle,
   MoonStar,
@@ -41,6 +43,8 @@ const AnimatedMoreVertical = anim(EllipsisVertical);
 const AnimatedMoon = anim(MoonStar);
 const AnimatedSearch = anim(Search);
 const AnimatedBlock = anim(Ban);
+const AnimatedLanguage = anim(Languages);
+const AnimatedNotifications = anim(BellRing);
 
 const HeartFilledBase = forwardRef<any, any>((props, ref) => (
   <Heart
@@ -74,6 +78,8 @@ export const ICON_NAMES = [
   "moon",
   "search",
   "block",
+  "language",
+  "notifications",
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];
@@ -98,4 +104,6 @@ export const iconMapping: Record<IconName, any> = {
   moon: AnimatedMoon,
   search: AnimatedSearch,
   block: AnimatedBlock,
+  language: AnimatedLanguage,
+  notifications: AnimatedNotifications,
 };

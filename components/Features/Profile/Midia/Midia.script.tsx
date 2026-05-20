@@ -105,18 +105,13 @@ export function useMediaGrid({ userProfileId, refresh_id }: UseMediaGridProps) {
   return {
     data,
     loading,
-
     modalVisible,
     selectedIndex,
-
     listRef,
     modalListRef,
-
     fetchMedia,
-
     openModal,
     closeModal,
-
     scrollToTop,
   };
 }

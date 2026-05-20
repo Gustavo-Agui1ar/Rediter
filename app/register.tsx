@@ -6,11 +6,13 @@ import {
   LinkText,
   TextBox,
 } from "@/components/components";
+import { useLanguage } from "@/context/LanguageContext";
 import { useRegister } from "@/scripts/Register.script";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { useRegisterStyle } from "@/styles/Register.style";
 import { LoginValidator } from "@/utils/login.utils";
 import { useRouter } from "expo-router";
+import React from "react";
 import { KeyboardAvoidingView, ScrollView, Text, View } from "react-native";
 
 export default function Register() {
@@ -18,10 +20,11 @@ export default function Register() {
   const registerStyles = useRegisterStyle();
   const router = useRouter();
   const { state, actions } = useRegister();
+  const { t } = useLanguage();
 
   return (
     <KeyboardAvoidingView style={[styles.container]} behavior="padding">
-      <Header title="Crie sua conta" />
+      <Header title={t("register_header_title")} />
 
       <ScrollView
         style={[styles.container]}
@@ -30,7 +33,7 @@ export default function Register() {
       >
         <View style={registerStyles.content_card}>
           <Text style={registerStyles.instructionText}>
-            Preencha os dados abaixo para começar sua jornada no Rediter.
+            {t("register_instruction_text")}
           </Text>
 
           <AlertBanner
@@ -41,7 +44,7 @@ export default function Register() {
 
           <View style={registerStyles.fieldContainer}>
             <TextBox
-              placeholder="Nome completo"
+              placeholder={t("register_placeholder_name")}
               value={state.form.name}
               onChangeText={(value: string) =>
                 actions.handleInputChange("name", value)
@@ -51,7 +54,7 @@ export default function Register() {
 
           <View style={registerStyles.fieldContainer}>
             <TextBox
-              placeholder="E-mail"
+              placeholder={t("register_placeholder_email")}
               value={state.form.email}
               onChangeText={(value: string) =>
                 actions.handleInputChange("email", value)
@@ -60,7 +63,7 @@ export default function Register() {
               autoCapitalize="none"
             />
             <HelperText
-              message="E-mail incorreto ou não preenchido"
+              message={t("validation_email_invalid")}
               alert_type="error"
               style={registerStyles.helperText}
               visible={
@@ -72,7 +75,7 @@ export default function Register() {
 
           <View style={registerStyles.fieldContainer}>
             <TextBox
-              placeholder="Senha"
+              placeholder={t("register_placeholder_password")}
               value={state.form.password}
               onChangeText={(value: string) =>
                 actions.handleInputChange("password", value)
@@ -83,7 +86,7 @@ export default function Register() {
 
           <View style={registerStyles.fieldContainer}>
             <TextBox
-              placeholder="Confirmar senha"
+              placeholder={t("register_placeholder_confirm_password")}
               value={state.form.confirmPassword}
               onChangeText={(value: string) =>
                 actions.handleInputChange("confirmPassword", value)
@@ -91,7 +94,7 @@ export default function Register() {
               secureTextEntry
             />
             <HelperText
-              message="As senhas não coincidem."
+              message={t("validation_passwords_dont_match")}
               alert_type="error"
               style={registerStyles.helperText}
               visible={
@@ -105,15 +108,20 @@ export default function Register() {
           </View>
 
           <Button
-            title="Criar conta"
+            title={t("register_btn_submit")}
             onPress={actions.handleRegister}
             type="fill"
             style={{ marginTop: 20 }}
           />
 
           <View style={registerStyles.loginRow}>
-            <Text style={styles.textCenter}>Já possui uma conta?</Text>
-            <LinkText text="Entrar" onPress={() => router.push("/")} />
+            <Text style={styles.textCenter}>
+              {t("register_already_have_account")}
+            </Text>
+            <LinkText
+              text={t("register_link_login")}
+              onPress={() => router.push("/")}
+            />
           </View>
         </View>
 

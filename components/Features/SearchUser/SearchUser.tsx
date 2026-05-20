@@ -1,4 +1,5 @@
 import UserItem from "@/components/Features/UserItem/UserItem";
+import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
 import React, { useCallback } from "react";
 import {
@@ -20,7 +21,6 @@ const UserSkeleton = () => {
     </View>
   );
 };
-
 interface SearchUsersProps {
   searchTerm: string;
   onRefresh?: () => Promise<void>;
@@ -38,6 +38,8 @@ export default function SearchUsers({
 }: SearchUsersProps) {
   const { colors } = useTheme();
   const styles = useStylesSearchUsers();
+  const { t } = useLanguage();
+
   const { users, initialLoading, loadingMore, loadMore } =
     useSearchUsers(searchTerm);
 
@@ -59,6 +61,24 @@ export default function SearchUsers({
     [searchTerm],
   );
 
+  const renderSectionFooter = useCallback(
+    ({ section }: any) => {
+      if (section.data.length === 0 && !initialLoading) {
+        const emptyMessage = searchTerm
+          ? `${t("error_no_users_for")} "${searchTerm}"`
+          : t("search_users_start_typing");
+
+        return (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>{emptyMessage}</Text>
+          </View>
+        );
+      }
+      return null;
+    },
+    [initialLoading, searchTerm, styles.emptyContainer, styles.emptyText, t],
+  );
+
   return (
     <SectionList
       sections={[{ data: displayData }]}
@@ -67,20 +87,7 @@ export default function SearchUsers({
       ListHeaderComponent={profileHeader}
       renderSectionHeader={() => tabBar || <></>}
       stickySectionHeadersEnabled={true}
-      renderSectionFooter={({ section }) => {
-        if (section.data.length === 0 && !initialLoading) {
-          return (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>
-                {searchTerm
-                  ? `Nenhum usuário encontrado para "${searchTerm}"`
-                  : "Comece a digitar para buscar pessoas"}
-              </Text>
-            </View>
-          );
-        }
-        return null;
-      }}
+      renderSectionFooter={renderSectionFooter}
       onEndReachedThreshold={0.3}
       onEndReached={() => {
         if (!initialLoading && !loadingMore) loadMore();

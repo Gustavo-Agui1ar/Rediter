@@ -30,7 +30,6 @@ export function useUserProfile(userId: string, initialData?: any) {
 
         if (response.ok) {
           const data = await response.json();
-
           profileCache[userId] = data;
           setProfile(data);
         }
@@ -42,9 +41,23 @@ export function useUserProfile(userId: string, initialData?: any) {
     });
   }, [userId, request, initialData]);
 
+  const updateLocalProfile = useCallback(
+    (newData: Partial<any>) => {
+      setProfile((prevProfile: any) => {
+        const updatedProfile = { ...prevProfile, ...newData };
+        profileCache[userId] = updatedProfile;
+        return updatedProfile;
+      });
+    },
+    [userId],
+  );
+
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
 
-  return { state: { profile, loading }, actions: { fetchProfile } };
+  return {
+    state: { profile, loading },
+    actions: { fetchProfile, updateLocalProfile },
+  };
 }

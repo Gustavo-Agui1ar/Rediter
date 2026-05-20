@@ -3,6 +3,7 @@ import Midiagrid, {
 } from "@/components/Features/Profile/Midia/Midia";
 import Posts, { PostsRef } from "@/components/Features/Profile/Posts/Posts";
 import TabBar from "@/components/Layout/TabBar/TabBar";
+import { useLanguage } from "@/context/LanguageContext"; // 1. IMPORTADO O CONTEXTO DE IDIOMA
 import { useTheme } from "@/context/ThemeContext";
 import React, { useMemo, useRef } from "react";
 import { ActivityIndicator, Animated, View } from "react-native";
@@ -23,6 +24,7 @@ export default function FeedProfile(props: FeedProfileProps) {
 
   const styles = useFeedStyles();
   const { colors } = useTheme();
+  const { t } = useLanguage();
 
   const postsRef = useRef<PostsRef>(null);
   const mediaRef = useRef<MediaGridRef>(null);
@@ -37,11 +39,11 @@ export default function FeedProfile(props: FeedProfileProps) {
 
   const tabs = useMemo(
     () => [
-      { id: "posts", label: "Posts" },
-      { id: "media", label: "Mídia" },
-      { id: "likes", label: "Curtidas" },
+      { id: "posts", label: t("tab_posts") },
+      { id: "media", label: t("tab_media") },
+      { id: "likes", label: t("tab_likes") },
     ],
-    [],
+    [t],
   );
 
   const handleTabChange = (tabId: string) => {

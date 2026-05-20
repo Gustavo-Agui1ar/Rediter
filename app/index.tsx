@@ -8,12 +8,14 @@ import {
   LoadingOverlay,
   TextBox,
 } from "@/components/components";
+import { useLanguage } from "@/context/LanguageContext"; // 1. IMPORTADO O CONTEXTO DE IDIOMA
 import { useLoading } from "@/context/loadingContext";
 import { useIndex } from "@/scripts/Index.script";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { useIndexStyle } from "@/styles/index.style";
 import { LoginValidator } from "@/utils/login.utils";
 import { useRouter } from "expo-router";
+import React from "react";
 import {
   Image,
   KeyboardAvoidingView,
@@ -28,12 +30,13 @@ export default function Index() {
   const router = useRouter();
   const { loading } = useLoading();
   const { state, actions } = useIndex();
+  const { t } = useLanguage();
 
   return (
     <KeyboardAvoidingView style={[styles.container]} behavior="padding">
       {loading && <LoadingOverlay />}
 
-      <Header title="Bem-vindo ao Rediter" />
+      <Header title={t("login_header_title")} />
 
       <ScrollView
         style={[styles.container]}
@@ -49,7 +52,7 @@ export default function Index() {
           <View style={indexStyles.content_fields}>
             <View style={indexStyles.fieldContainer}>
               <TextBox
-                placeholder="Email"
+                placeholder={t("login_placeholder_email")}
                 value={state.form.email}
                 onChangeText={(text: string) =>
                   actions.handleInputChange("email", text)
@@ -58,7 +61,7 @@ export default function Index() {
                 autoCapitalize="none"
               />
               <HelperText
-                message="E-mail incorreto ou não preenchido"
+                message={t("validation_email_invalid")}
                 visible={
                   state.submitted &&
                   !LoginValidator.isEmailValid(state.form.email)
@@ -70,7 +73,7 @@ export default function Index() {
 
             <View style={indexStyles.fieldContainer}>
               <TextBox
-                placeholder="Password"
+                placeholder={t("login_placeholder_password")}
                 value={state.form.password}
                 onChangeText={(text: string) =>
                   actions.handleInputChange("password", text)
@@ -78,7 +81,7 @@ export default function Index() {
                 secureTextEntry
               />
               <HelperText
-                message="Senha incorreta ou não preenchida"
+                message={t("validation_password_invalid")}
                 visible={
                   state.submitted &&
                   !LoginValidator.isPasswordValid(state.form.password)
@@ -90,21 +93,21 @@ export default function Index() {
           </View>
 
           <LinkText
-            text="Esqueceu sua senha?"
+            text={t("login_forgot_password")}
             style={indexStyles.forgotPasswordLink}
             onPress={() => router.push("/sendEmail")}
           />
 
           <Button
-            title="Conectar-se agora"
+            title={t("login_btn_submit")}
             onPress={actions.handleLogin}
             type="fill"
           />
 
-          <Divider text="ou" />
+          <Divider text={t("login_divider_or")} />
 
           <Button
-            title="Entrar com Google"
+            title={t("login_btn_google")}
             onPress={actions.handleGoogleLogin}
             type="border"
             icon={
@@ -116,9 +119,9 @@ export default function Index() {
           />
 
           <View style={[styles.centerRow, indexStyles.signUpRow]}>
-            <Text style={[styles.textCenter]}>Não possui uma conta? </Text>
+            <Text style={[styles.textCenter]}>{t("login_no_account")}</Text>
             <LinkText
-              text="Inscreva-se"
+              text={t("login_link_signup")}
               onPress={() => router.push("/Register")}
             />
           </View>

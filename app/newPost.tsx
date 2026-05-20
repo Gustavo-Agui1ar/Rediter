@@ -7,9 +7,11 @@ import {
   IconButton,
   TextBox,
 } from "@/components/components";
+import { useLanguage } from "@/context/LanguageContext";
 import { useNewPost } from "@/scripts/NewPost.script";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { useNewPostStyles } from "@/styles/newPost.style";
+import React from "react";
 import { KeyboardAvoidingView, ScrollView, Text, View } from "react-native";
 import { EmojiKeyboard } from "rn-emoji-keyboard";
 
@@ -17,10 +19,15 @@ export default function NewPost() {
   const globalStyles = useGlobalStyles();
   const localStyles = useNewPostStyles();
   const { state, actions } = useNewPost();
+  const { t } = useLanguage();
 
   return (
     <KeyboardAvoidingView style={globalStyles.container} behavior={"height"}>
-      <Header title={state.postId ? "Editar Post" : "Criar Post"} />
+      <Header
+        title={
+          state.postId ? t("new_post_header_edit") : t("new_post_header_create")
+        }
+      />
 
       <ScrollView
         style={globalStyles.container}
@@ -35,7 +42,7 @@ export default function NewPost() {
           />
 
           <TextBox
-            placeholder="O que você está pensando?"
+            placeholder={t("new_post_placeholder")}
             value={state.text}
             onChangeText={actions.onChangeText}
             onFocus={() => actions.setShowEmoji(false)}
@@ -49,7 +56,7 @@ export default function NewPost() {
               {state.locationName && (
                 <View style={localStyles.locationContainer}>
                   <Text style={localStyles.locationText}>
-                    📍 Em {state.locationName}
+                    {t("new_post_location_prefix")} {state.locationName}
                   </Text>
                   <IconButton
                     icon="close"
@@ -92,7 +99,11 @@ export default function NewPost() {
           )}
 
           <Button
-            title={state.postId ? "Salvar Edição" : "Publicar"}
+            title={
+              state.postId
+                ? t("new_post_btn_save_edit")
+                : t("new_post_btn_publish")
+            }
             onPress={actions.handlePublish}
           />
         </View>

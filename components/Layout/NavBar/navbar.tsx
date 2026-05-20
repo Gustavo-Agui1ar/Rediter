@@ -1,7 +1,7 @@
 import { useTheme } from "@/context/ThemeContext";
 import { iconMapping } from "@/styles/icons";
 import React, { memo, useEffect, useRef } from "react";
-import { Animated, TouchableOpacity, View } from "react-native";
+import { Animated, Text, TouchableOpacity, View } from "react-native";
 import { useNavStyles } from "./navbar.style";
 
 type IconName = keyof typeof iconMapping;
@@ -10,6 +10,7 @@ export interface NavItem<T = string> {
   id: T;
   label?: string;
   icon?: IconName;
+  badge?: number;
 }
 
 interface NavBarProps<T> {
@@ -22,7 +23,7 @@ interface AnimatedItemProps<T> {
   item: NavItem<T>;
   isActive: boolean;
   onPress: (id: T) => void;
-  colors: ThemeColors;
+  colors: any;
   stylesNav: any;
 }
 
@@ -68,7 +69,17 @@ const AnimatedItemComponent = <T,>({
         <Animated.View
           style={[stylesNav.iconContainer, { transform: [{ scale }] }]}
         >
-          <Icon size={22} color={iconColor} />
+          <View>
+            <Icon size={22} color={iconColor} />
+
+            {item.badge !== undefined && item.badge > 0 && (
+              <View style={stylesNav.badgeContainer}>
+                <Text style={stylesNav.badgeText}>
+                  {item.badge > 99 ? "99+" : item.badge}
+                </Text>
+              </View>
+            )}
+          </View>
         </Animated.View>
       )}
 
