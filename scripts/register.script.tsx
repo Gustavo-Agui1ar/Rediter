@@ -1,4 +1,4 @@
-import { useLoading } from "@/context/loadingContext";
+import { useLoading } from "@/context/LoadingContext";
 import { LoginValidator } from "@/utils/login.utils";
 import { useApi } from "@/utils/request.utils";
 import { router } from "expo-router";

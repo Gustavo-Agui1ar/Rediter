@@ -1,18 +1,18 @@
 import {
-  AlertBanner,
-  Button,
-  Header,
-  HelperText,
-  TextBox,
+    AlertBanner,
+    Button,
+    Header,
+    HelperText,
+    TextBox,
 } from "@/components/components";
 import { useLanguage } from "@/context/LanguageContext";
-import { useLoading } from "@/context/loadingContext";
+import { useLoading } from "@/context/LoadingContext";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { useSendEmailStyle } from "@/styles/sendEmail.style";
 import { LoginValidator } from "@/utils/login.utils";
 import { useApi } from "@/utils/request.utils";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import { useState } from "react";
 import { KeyboardAvoidingView, ScrollView, Text, View } from "react-native";
 
 export default function SendEmail() {

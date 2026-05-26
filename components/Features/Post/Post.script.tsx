@@ -1,8 +1,12 @@
-import { configs } from "@/utils/configs.utils";
+import { useRediterBaseConfigs } from "@/context/RediterConfigContext";
 import { useApi } from "@/utils/request.utils";
-import * as FileSystem from "expo-file-system";
-import * as MediaLibrary from "expo-media-library";
-import { router, useNavigation } from "expo-router";
+import { File, Paths } from "expo-file-system";
+import {
+  Asset,
+  getPermissionsAsync,
+  requestPermissionsAsync,
+} from "expo-media-library";
+import { router } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { Alert, DeviceEventEmitter } from "react-native";
 
@@ -32,9 +36,9 @@ export function usePost({
   const [isLiked, setIsLiked] = useState(liked);
   const [likesCount, setLikesCount] = useState(countLikes);
   const { request } = useApi();
-  const navigation = useNavigation();
   const toggleOptions = useCallback(() => setShowOptions((prev) => !prev), []);
   const closeOptions = useCallback(() => setShowOptions(false), []);
+  const { baseUrl } = useRediterBaseConfigs();
 
   const handleEditPost = useCallback(() => {
     closeOptions();
@@ -81,9 +85,9 @@ export function usePost({
       return;
     }
 
-    let permission = await MediaLibrary.getPermissionsAsync();
+    let permission = await getPermissionsAsync();
     if (!permission.granted) {
-      permission = await MediaLibrary.requestPermissionsAsync();
+      permission = await requestPermissionsAsync();
     }
 
     if (!permission.granted) {
@@ -108,29 +112,31 @@ export function usePost({
           const cleanImage = validUrl.startsWith("/")
             ? validUrl.slice(1)
             : validUrl;
-          validUrl = `${configs.ProductionURL}/api/pictures/${cleanImage}`;
+          validUrl = `${baseUrl}/api/pictures/${cleanImage}`;
         }
 
         const cleanUrl = validUrl.split("?")[0];
         const filename =
           cleanUrl.split("/").pop() || `post_media_${Date.now()}.jpg`;
-        const fileUri = `${FileSystem.documentDirectory}${filename}`;
 
-        const downloadedFile = await FileSystem.downloadAsync(
-          validUrl,
-          fileUri,
-        );
-
-        if (downloadedFile.status !== 200) {
-          throw new Error(`Erro HTTP ${downloadedFile.status}`);
+        if (!Paths || !Paths.document) {
+          throw new Error(
+            "Sistema de arquivos nativo não disponível nesta plataforma.",
+          );
         }
 
-        await MediaLibrary.saveToLibraryAsync(downloadedFile.uri);
-      }
+        const file = new File(Paths.document, filename);
+        await File.downloadFileAsync(validUrl, file);
 
-      Alert.alert("Sucesso", "Mídia(s) salva(s) na sua galeria!");
-    } catch (error) {
-      Alert.alert("Erro", "Não foi possível concluir o download da mídia.");
+        await Asset.create(file.uri);
+
+        Alert.alert("Sucesso", "Mídia(s) salva(s) na sua galeria!");
+      }
+    } catch (error: any) {
+      Alert.alert(
+        "Erro",
+        `Não foi possível concluir o download da mídia.\n\nDetalhes: ${error.message}`,
+      );
     } finally {
       setIsDownloading(false);
       closeOptions();
@@ -161,17 +167,23 @@ export function usePost({
   }, [isLiked, postId, request]);
 
   const handleGoToProfile = useCallback(() => {
-    (navigation as any).push("profile/[id]", {
-      id: userId,
-      isOwnProfile: isOwnProfile,
+    router.push({
+      pathname: "/profile/[id]",
+      params: {
+        id: userId,
+        isOwnProfile: String(isOwnProfile),
+      },
     });
-  }, [userId, isOwnProfile, navigation]);
+  }, [userId, isOwnProfile]);
 
   const handleClickPost = useCallback(() => {
-    (navigation as any).push("posts/[id]", {
-      id: postId,
+    router.push({
+      pathname: "/posts/[id]",
+      params: {
+        id: postId,
+      },
     });
-  }, [postId, navigation]);
+  }, [postId]);
 
   return useMemo(
     () => ({

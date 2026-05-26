@@ -42,7 +42,7 @@ export default function TextBox({
           ]}
           multiline={!isPassword}
           secureTextEntry={isPassword ? secure : false}
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={props.placeholderTextColor || colors.textMuted}
           onFocus={(e) => {
             setFocused(true);
             if (props.onFocus) props.onFocus(e);

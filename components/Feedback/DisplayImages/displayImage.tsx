@@ -1,14 +1,9 @@
 import IconButton from "@/components/UI/IconButton/IconButton";
+import { useImageUtils } from "@/utils/imageUri.utils";
 import { Image } from "expo-image";
-import React from "react";
-import {
-  FlatList,
-  Modal,
-  SafeAreaView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { FlatList, Modal, Text, TouchableOpacity, View } from "react-native";
+
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useDisplayImages } from "./DisplayImage.script";
 import { SCREEN_WIDTH, useDisplayImageStyles } from "./DisplayImage.styles";
 
@@ -22,6 +17,7 @@ export default function DisplayImages({
   onRemoveImage,
 }: DisplayImagesProps) {
   const styles = useDisplayImageStyles();
+  const { getSafeUri } = useImageUtils();
 
   const {
     safeFiles,
@@ -33,7 +29,6 @@ export default function DisplayImages({
     initialIndex,
     openCarousel,
     closeCarousel,
-    getImageUri,
   } = useDisplayImages(files);
 
   if (safeFiles.length === 0) return null;
@@ -53,11 +48,11 @@ export default function DisplayImages({
     >
       {displayFiles.map((file, index) => {
         const isLastVisible = index === MAX_VISIBLE - 1 && remaining > 0;
-        const uri = getImageUri(file);
+        const uri = getSafeUri(file);
 
         return (
           <TouchableOpacity
-            key={index}
+            key={uri}
             style={{
               width: gridLayout.width as any,
               height: gridLayout.height as any,
@@ -138,7 +133,7 @@ export default function DisplayImages({
             renderItem={({ item }) => (
               <View style={styles.carouselItem}>
                 <Image
-                  source={{ uri: getImageUri(item) }}
+                  source={{ uri: getSafeUri(item) }}
                   style={styles.largeImage}
                   contentFit="contain"
                   transition={200}

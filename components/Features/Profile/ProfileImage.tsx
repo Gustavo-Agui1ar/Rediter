@@ -1,6 +1,6 @@
-import { getBaseURL } from "@/utils/configs.utils";
+import { useRediterBaseConfigs } from "@/context/RediterConfigContext";
 import { Image, ImageStyle } from "expo-image";
-import React, { memo, useMemo } from "react";
+import { memo, useMemo } from "react";
 import { StyleProp } from "react-native";
 
 interface ProfileImageProps {
@@ -10,13 +10,14 @@ interface ProfileImageProps {
 }
 
 const DEFAULT_USER_IMAGE = require("@/assets/images/default_user.svg");
-const BASE_URL = getBaseURL();
 
 const ProfileImage = ({
   imageName,
   size = 100,
   wrapper,
 }: ProfileImageProps) => {
+  const { baseUrl } = useRediterBaseConfigs();
+
   const finalUri = useMemo(() => {
     try {
       if (!imageName || typeof imageName !== "string") {
@@ -27,7 +28,7 @@ const ProfileImage = ({
         return imageName;
       }
 
-      return `${BASE_URL}/api/pictures/${encodeURIComponent(imageName)}`;
+      return `${baseUrl}/api/pictures/${encodeURIComponent(imageName)}`;
     } catch (error) {
       console.error("Erro interno ao gerar a URI da ProfileImage:", error);
       return null;

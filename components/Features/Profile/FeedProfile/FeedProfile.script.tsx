@@ -1,4 +1,4 @@
-import { useLoading } from "@/context/loadingContext";
+import { useLoading } from "@/context/LoadingContext";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Animated,

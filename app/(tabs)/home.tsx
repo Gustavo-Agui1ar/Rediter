@@ -1,9 +1,9 @@
 import { Header, SearchPosts } from "@/components/components";
 import TabBar from "@/components/Layout/TabBar/TabBar";
 import { useLanguage } from "@/context/LanguageContext";
-import { useLoading } from "@/context/loadingContext";
+import { useLoading } from "@/context/LoadingContext";
 import { useTheme } from "@/context/ThemeContext";
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Text, View } from "react-native";
 
 export default function HomeFeedScreen() {

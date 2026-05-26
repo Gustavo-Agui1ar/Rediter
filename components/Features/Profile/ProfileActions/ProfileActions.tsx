@@ -2,6 +2,7 @@ import AlertBanner from "@/components/UI/AlertBanner/AlertBanner";
 import { default as Button } from "@/components/UI/Button/button";
 import IconButton from "@/components/UI/IconButton/IconButton";
 import { useLanguage } from "@/context/LanguageContext";
+import { router } from "expo-router";
 import { Text, View } from "react-native";
 import { useProfileActions } from "./ProfileActions.script";
 import { useProfileActionsStyles } from "./ProfileActions.style";
@@ -65,7 +66,11 @@ export default function ProfileActions({
               icon="message"
               type="border"
               size={36}
-              onPress={() => console.log("Abrir Chat")}
+              onPress={() =>
+                router.push(
+                  `/Message?targetUserId=${userId}&targetUserName=${userName}`,
+                )
+              }
             />
 
             <IconButton

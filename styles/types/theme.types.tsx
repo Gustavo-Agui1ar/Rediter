@@ -24,4 +24,13 @@ export interface ThemeColors {
   link: string;
   white: string;
   black: string;
+
+  chatBubbleMe: string;
+  chatBubbleThem: string;
+  chatTextMe: string;
+  chatTextThem: string;
+  chatTimeMe: string;
+  chatTimeThem: string;
+  chatStatusRead: string;
+  chatStatusUnread: string;
 }

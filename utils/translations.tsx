@@ -152,6 +152,8 @@ export const translations = {
     message_post_liked: "curtiu sua publicação",
     message_post_commented: "comentou sua publicação",
     message_started_following: "começou a seguir você",
+
+    type_a_message: "Digite uma mensagem...",
   },
 
   en: {
@@ -307,6 +309,8 @@ export const translations = {
     message_post_liked: "liked your post",
     message_post_commented: "commented on your post",
     message_started_following: "started following you",
+
+    type_a_message: "Type a message...",
   },
 };
 

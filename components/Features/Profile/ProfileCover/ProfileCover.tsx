@@ -1,6 +1,6 @@
-import { ImageUtils } from "@/utils/imageUri.utils";
+import { useImageUtils } from "@/utils/imageUri.utils";
 import { Image, ImageProps } from "expo-image";
-import React, { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { View } from "react-native";
 import { useStylesProfileCover } from "./ProfileCover.style";
 
@@ -12,9 +12,10 @@ const DEFAULT_COVER_IMAGE = require("@/assets/images/default_cover_user.svg");
 
 const ProfileCover = ({ imageName, style, ...props }: ProfileCoverProps) => {
   const styles = useStylesProfileCover();
+  const { getSafeUri } = useImageUtils();
 
   const finalUri = useMemo(() => {
-    return ImageUtils.getProfileImageUri(imageName);
+    return getSafeUri(imageName);
   }, [imageName]);
 
   const imageSource = useMemo(() => {

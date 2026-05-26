@@ -1,4 +1,5 @@
-import { useLoading } from "@/context/loadingContext";
+import { useLoading } from "@/context/LoadingContext";
+import { useRediterBaseConfigs } from "@/context/RediterConfigContext";
 import {
   deleteTokens,
   getStoreageItem,
@@ -7,7 +8,6 @@ import {
 import { router } from "expo-router";
 import { useCallback, useState } from "react";
 import { InteractionManager } from "react-native";
-import { configs, getBaseURL } from "./configs.utils";
 
 const STORAGE_KEYS = {
   ACCESS_TOKEN: "user_token",
@@ -89,7 +89,7 @@ async function getAccessTokenOptimized(): Promise<string | null> {
 // ============================================================================
 // REFRESH TOKEN (Apenas responsável por chamar a API)
 // ============================================================================
-async function refreshAccessToken(): Promise<string | null> {
+async function refreshAccessToken(baseUrl: string): Promise<string | null> {
   try {
     const refreshToken = await getStoreageItem(STORAGE_KEYS.REFRESH_TOKEN);
 
@@ -97,10 +97,11 @@ async function refreshAccessToken(): Promise<string | null> {
       return null;
     }
 
-    const refreshUrl = `${getBaseURL()}/api/auth/refresh-token`;
+    const refreshUrl = `${baseUrl}/api/auth/refresh-token`;
     const response = await fetch(refreshUrl, {
       method: "POST",
       headers: {
+        "ngrok-skip-browser-warning": "true",
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -229,6 +230,7 @@ async function handleApiError(response: Response): Promise<never> {
 export function useApi() {
   const { loading, setLoading } = useLoading();
   const [error, setError] = useState<string | null>(null);
+  const { baseUrl, timeout } = useRediterBaseConfigs();
 
   const request = useCallback(
     async (options: RequestOptions): Promise<Response> => {
@@ -240,7 +242,7 @@ export function useApi() {
         hasLoading = true,
       } = options;
 
-      const url = `${getBaseURL()}${urlComplement}`;
+      const url = `${baseUrl}${urlComplement}`;
 
       console.log(`🚀 [API INÍCIO] ${method} ${urlComplement}`);
 
@@ -257,11 +259,7 @@ export function useApi() {
         }
 
         const requestInit = await buildRequestOptions(options);
-        const response = await fetchWithTimeout(
-          url,
-          requestInit,
-          configs.timeout,
-        );
+        const response = await fetchWithTimeout(url, requestInit, timeout);
 
         // ==========================================================
         // TOKEN EXPIROU (401)
@@ -293,7 +291,7 @@ export function useApi() {
 
           isRefreshing = true;
 
-          const newToken = await refreshAccessToken();
+          const newToken = await refreshAccessToken(baseUrl);
 
           if (newToken) {
             processQueue(null, newToken); // Avisa todo mundo da fila que deu bom!

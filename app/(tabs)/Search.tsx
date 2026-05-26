@@ -1,16 +1,15 @@
 import {
-  Header,
-  SearchPosts,
-  SearchUser,
-  TextBox,
+    Header,
+    SearchPosts,
+    SearchUser,
+    TextBox,
 } from "@/components/components";
 import TabBar from "@/components/Layout/TabBar/TabBar";
 import { useLanguage } from "@/context/LanguageContext";
-import { useLoading } from "@/context/loadingContext";
+import { useLoading } from "@/context/LoadingContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useSearch } from "@/scripts/Search.script";
 import { useStyles } from "@/styles/search.styles";
-import React from "react";
 import { View } from "react-native";
 
 export default function Search() {

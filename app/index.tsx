@@ -1,27 +1,26 @@
 import {
-  AlertBanner,
-  Button,
-  Divider,
-  Header,
-  HelperText,
-  LinkText,
-  LoadingOverlay,
-  TextBox,
+    AlertBanner,
+    Button,
+    Divider,
+    Header,
+    HelperText,
+    LinkText,
+    LoadingOverlay,
+    TextBox,
 } from "@/components/components";
 import { useLanguage } from "@/context/LanguageContext"; // 1. IMPORTADO O CONTEXTO DE IDIOMA
-import { useLoading } from "@/context/loadingContext";
+import { useLoading } from "@/context/LoadingContext";
 import { useIndex } from "@/scripts/Index.script";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { useIndexStyle } from "@/styles/index.style";
 import { LoginValidator } from "@/utils/login.utils";
 import { useRouter } from "expo-router";
-import React from "react";
 import {
-  Image,
-  KeyboardAvoidingView,
-  ScrollView,
-  Text,
-  View,
+    Image,
+    KeyboardAvoidingView,
+    ScrollView,
+    Text,
+    View,
 } from "react-native";
 
 export default function Index() {

@@ -5,7 +5,7 @@ import { useSignalR } from "@/context/NotificationsContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useStylesMain } from "@/styles/main.style";
 import { Tabs, router } from "expo-router";
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { View } from "react-native";
 
 type Tab = "home" | "message" | "Perfil" | "Search" | "Notifications";
@@ -14,7 +14,13 @@ export default function TabLayout() {
   const stylesMain = useStylesMain();
   const { colors } = useTheme();
   const { t } = useLanguage();
-  const { unreadCount, setUnreadCount } = useSignalR();
+
+  const { unreadCount, clearUnreadCount, registerAndSendPushToken } =
+    useSignalR();
+
+  useEffect(() => {
+    registerAndSendPushToken();
+  }, [registerAndSendPushToken]);
 
   const navItems: NavItem<Tab>[] = useMemo(
     () => [
@@ -32,6 +38,44 @@ export default function TabLayout() {
     [t, unreadCount],
   );
 
+  const handleNewPost = useCallback(() => {
+    router.push("/NewPost");
+  }, []);
+
+  const renderHeader = useCallback(() => <Header />, []);
+
+  const renderTabBar = useCallback(
+    ({ state, navigation }: any) => {
+      const currentRoute = state.routeNames[state.index] as Tab;
+
+      return (
+        <View style={stylesMain.footerContainer}>
+          <NavBar<Tab>
+            items={navItems}
+            activeId={currentRoute}
+            onPress={(tabId) => {
+              if (tabId === "Notifications") {
+                clearUnreadCount();
+              }
+              navigation.navigate(tabId);
+            }}
+          />
+
+          <View style={stylesMain.floatingButton}>
+            <IconButton
+              size={56}
+              circle={false}
+              icon="post"
+              type="fill"
+              onPress={handleNewPost}
+            />
+          </View>
+        </View>
+      );
+    },
+    [stylesMain, navItems, clearUnreadCount, handleNewPost],
+  );
+
   return (
     <Tabs
       screenOptions={{
@@ -40,40 +84,13 @@ export default function TabLayout() {
           backgroundColor: colors.background,
         },
       }}
-      tabBar={({ state, navigation }) => {
-        const currentRoute = state.routeNames[state.index] as Tab;
-
-        return (
-          <View style={stylesMain.footerContainer}>
-            <NavBar<Tab>
-              items={navItems}
-              activeId={currentRoute}
-              onPress={(tabId) => {
-                if (tabId === "Notifications") {
-                  setUnreadCount(0);
-                }
-                navigation.navigate(tabId);
-              }}
-            />
-
-            <View style={stylesMain.floatingButton}>
-              <IconButton
-                size={56}
-                circle={false}
-                icon="post"
-                type="fill"
-                onPress={() => router.push("/NewPost")}
-              />
-            </View>
-          </View>
-        );
-      }}
+      tabBar={renderTabBar}
     >
       <Tabs.Screen
         name="home"
         options={{
           headerShown: false,
-          header: () => <Header />,
+          header: renderHeader,
         }}
       />
 
@@ -83,7 +100,7 @@ export default function TabLayout() {
         name="message"
         options={{
           headerShown: true,
-          header: () => <Header />,
+          header: renderHeader,
         }}
       />
 
@@ -91,7 +108,7 @@ export default function TabLayout() {
         name="Notifications"
         options={{
           headerShown: false,
-          header: () => <Header />,
+          header: renderHeader,
         }}
       />
 

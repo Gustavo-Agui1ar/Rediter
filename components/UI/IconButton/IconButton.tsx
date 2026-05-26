@@ -1,4 +1,4 @@
-import { useLoading } from "@/context/loadingContext";
+import { useLoading } from "@/context/LoadingContext";
 import { useTheme } from "@/context/ThemeContext";
 // 1. Importamos o mapeamento estático e a tipagem diretamente
 import { iconMapping, IconName } from "@/styles/icons";
@@ -24,6 +24,7 @@ interface IconButtonProps extends TouchableOpacityProps {
   fullSize?: boolean;
   circle?: boolean;
   iconColor?: string;
+  hasLoading?: boolean;
 }
 
 export default function IconButton({
@@ -35,6 +36,7 @@ export default function IconButton({
   fullSize = false,
   circle = true,
   iconColor,
+  hasLoading = true,
   ...rest
 }: IconButtonProps) {
   const { loading } = useLoading();
@@ -50,7 +52,7 @@ export default function IconButton({
   const Icon = iconMapping[icon];
 
   const dynamicStyle = useMemo(() => {
-    if (fullSize) return StyleSheet.absoluteFillObject;
+    if (fullSize) return StyleSheet.absoluteFill;
 
     return {
       width: size,
@@ -60,7 +62,7 @@ export default function IconButton({
   }, [fullSize, size, circle]);
 
   function renderContent(): ReactNode {
-    if (loading) {
+    if (loading && hasLoading) {
       return <ActivityIndicator size="small" color={color} />;
     }
 

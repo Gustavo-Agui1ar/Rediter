@@ -1,4 +1,4 @@
-import { useLoading } from "@/context/loadingContext";
+import { useLoading } from "@/context/LoadingContext";
 import { ReactNode } from "react";
 import {
   ActivityIndicator,

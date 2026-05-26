@@ -3,11 +3,10 @@
     "name": "Rediter",
     "slug": "Rediter",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/logo/black_r.png",
     "scheme": "rediter",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.Rediter.ios",
@@ -15,6 +14,7 @@
     },
     "android": {
       "package": "com.Rediter.android",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo/black_r.png",
         "backgroundColor": "#000000"
@@ -44,11 +44,9 @@
         "expo-build-properties",
         {
           "android": {
-            "compileSdkVersion": 35,
-            "targetSdkVersion": 34,
-            "minSdkVersion": 24,
-            "buildToolsVersion": "34.0.0",
-            "usesCleartextTraffic": true
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "buildToolsVersion": "35.0.0"
           }
         }
       ],
@@ -60,8 +58,16 @@
           "photosPermission": "O aplicativo precisa de permissão para acessar suas fotos.",
           "savePhotosPermission": "O aplicativo precisa de permissão para salvar fotos na galeria."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification/notification_white_r.png",
+          "color": "#6B66FF"
+        }
       ]
     ],
+
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": false

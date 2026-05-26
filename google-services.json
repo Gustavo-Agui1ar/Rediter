@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "81303206294",
+    "project_id": "rediter-firebase",
+    "storage_bucket": "rediter-firebase.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:81303206294:android:18c42db0f74263ad2d05b7",
+        "android_client_info": {
+          "package_name": "com.Rediter.android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMLh85T5dGBnRyyOGz66tZ8KcPqZC3-oY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

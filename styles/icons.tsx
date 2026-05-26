@@ -1,7 +1,10 @@
 import {
   ArrowLeft,
+  ArrowRight,
   Ban,
   BellRing,
+  Check,
+  CheckCheck,
   CirclePlus,
   CircleX,
   EditIcon,
@@ -45,6 +48,20 @@ const AnimatedSearch = anim(Search);
 const AnimatedBlock = anim(Ban);
 const AnimatedLanguage = anim(Languages);
 const AnimatedNotifications = anim(BellRing);
+const AnimatedArrowBack = anim(ArrowLeft);
+const AnimatedSend = anim(ArrowRight);
+const AnimatedCheck = anim(Check);
+const AnimatedDoubleCheck = anim(CheckCheck);
+
+const AnimatedMessageFilled = forwardRef<any, any>((props, ref) => (
+  <MessageCircle
+    {...props}
+    ref={ref}
+    fill={props.color}
+    color={props.color}
+    strokeWidth={1.8}
+  />
+));
 
 const HeartFilledBase = forwardRef<any, any>((props, ref) => (
   <Heart
@@ -61,6 +78,7 @@ const AnimatedHeartFilled = anim(HeartFilledBase);
 export const ICON_NAMES = [
   "more",
   "message",
+  "messageFilled",
   "configuration",
   "back-row",
   "edit",
@@ -80,6 +98,10 @@ export const ICON_NAMES = [
   "block",
   "language",
   "notifications",
+  "arrow-back",
+  "send",
+  "check",
+  "double-check",
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];
@@ -87,6 +109,7 @@ export type IconName = (typeof ICON_NAMES)[number];
 export const iconMapping: Record<IconName, any> = {
   more: AnimatedMore,
   message: AnimatedMessage,
+  messageFilled: AnimatedMessageFilled,
   configuration: AnimatedSettings,
   "back-row": AnimatedArrowLeft,
   edit: AnimatedEdit,
@@ -106,4 +129,8 @@ export const iconMapping: Record<IconName, any> = {
   block: AnimatedBlock,
   language: AnimatedLanguage,
   notifications: AnimatedNotifications,
+  "arrow-back": AnimatedArrowBack,
+  send: AnimatedSend,
+  check: AnimatedCheck,
+  "double-check": AnimatedDoubleCheck,
 };

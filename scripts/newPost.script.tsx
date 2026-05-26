@@ -1,4 +1,4 @@
-import { useLoading } from "@/context/loadingContext";
+import { useLoading } from "@/context/LoadingContext";
 import { pickImage } from "@/utils/filePicker.utils";
 import { handleGetLocation } from "@/utils/location.utils";
 import { useApi } from "@/utils/request.utils";
@@ -185,7 +185,7 @@ export function useNewPost() {
     return true;
   }, [text, files.length, clearMessages]);
 
-  const createFormData = useCallback(() => {
+  const createFormData = useCallback(async () => {
     const formData = new FormData();
 
     formData.append("Text", text);
@@ -194,28 +194,42 @@ export function useNewPost() {
       formData.append("LocationName", locationName);
     }
 
-    files.forEach((fileAsset) => {
+    for (const fileAsset of files) {
       if (typeof fileAsset === "string") {
         formData.append("RetainedPictures", fileAsset);
-        return;
+        continue;
       }
 
       if (fileAsset?.uri) {
         const uriParts = fileAsset.uri.split("/");
+        const fileName =
+          fileAsset.fileName ||
+          uriParts[uriParts.length - 1] ||
+          `image-${Date.now()}.jpg`;
 
-        formData.append("Pictures", {
-          uri: fileAsset.uri,
-          name:
-            fileAsset.fileName ||
-            uriParts[uriParts.length - 1] ||
-            `image-${Date.now()}.jpg`,
-          type: fileAsset.mimeType || "image/jpeg",
-        } as any);
+        const blob = await getBlobFromUri(fileAsset.uri);
+
+        formData.append("Pictures", blob, fileName);
       }
-    });
+    }
 
     return formData;
   }, [text, locationName, files]);
+
+  const getBlobFromUri = async (uri: string): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.onload = function () {
+        resolve(xhr.response);
+      };
+      xhr.onerror = function (e) {
+        reject(new TypeError("Falha ao processar a imagem local"));
+      };
+      xhr.responseType = "blob";
+      xhr.open("GET", uri, true);
+      xhr.send(null);
+    });
+  };
 
   const handlePublish = useCallback(async () => {
     if (!validatePost()) return;
@@ -225,7 +239,7 @@ export function useNewPost() {
 
       clearMessages();
 
-      const formData = createFormData();
+      const formData = await createFormData();
 
       await request({
         urlComplement: postId ? `/api/posts/${postId}` : "/api/posts",

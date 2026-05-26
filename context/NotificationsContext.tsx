@@ -1,6 +1,9 @@
-import { configs } from "@/utils/configs.utils";
+import { useRediterBaseConfigs } from "@/context/RediterConfigContext";
+import { useApi } from "@/utils/request.utils";
 import * as Storage from "@/utils/storage.utils";
 import * as signalR from "@microsoft/signalr";
+import * as Device from "expo-device";
+import * as Notifications from "expo-notifications";
 import React, {
   createContext,
   useCallback,
@@ -9,26 +12,36 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { AppState, AppStateStatus } from "react-native";
+import { AppState, AppStateStatus, Platform } from "react-native";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
 
 interface SignalRContextType {
   connection: signalR.HubConnection | null;
   unreadCount: number;
-  setUnreadCount: React.Dispatch<React.SetStateAction<number>>;
-  notifications: any[];
-  setNotifications: React.Dispatch<React.SetStateAction<any[]>>;
+  latestIncomingNotification: any | null;
+  clearUnreadCount: () => void;
   connectSignalR: () => Promise<void>;
   disconnectSignalR: () => Promise<void>;
+  registerAndSendPushToken: () => Promise<void>;
 }
 
 const SignalRContext = createContext<SignalRContextType>({
   connection: null,
   unreadCount: 0,
-  setUnreadCount: () => {},
-  notifications: [],
-  setNotifications: () => {},
+  latestIncomingNotification: null,
+  clearUnreadCount: () => {},
   connectSignalR: async () => {},
   disconnectSignalR: async () => {},
+  registerAndSendPushToken: async () => {},
 });
 
 export const useSignalR = () => useContext(SignalRContext);
@@ -42,13 +55,85 @@ export const SignalRProvider = ({
     null,
   );
   const [unreadCount, setUnreadCount] = useState(0);
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [latestIncomingNotification, setLatestIncomingNotification] = useState<
+    any | null
+  >(null);
+
+  const { baseUrl } = useRediterBaseConfigs();
   const appState = useRef(AppState.currentState);
   const connectionRef = useRef<signalR.HubConnection | null>(null);
+  const { request } = useApi();
 
   useEffect(() => {
     connectionRef.current = connection;
   }, [connection]);
+
+  const registerAndSendPushToken = useCallback(async () => {
+    try {
+      if (!Device.isDevice) {
+        console.log("⚠️ Push Notifications não funcionam no emulador.");
+        return;
+      }
+
+      if (Platform.OS === "android") {
+        await Notifications.setNotificationChannelAsync("default", {
+          name: "default",
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: "#FF231F7C",
+        });
+      }
+
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+
+      if (existingStatus !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+
+      if (finalStatus !== "granted") {
+        console.log("❌ Permissão para Push Notifications negada.");
+        return;
+      }
+
+      const tokenData = await Notifications.getDevicePushTokenAsync();
+      const pushToken = tokenData.data;
+
+      console.log("✅ Device Token Nativo gerado:", pushToken);
+
+      await request({
+        urlComplement: "/api/users/devices",
+        method: "POST",
+        body: {
+          deviceToken: pushToken,
+        },
+      });
+    } catch (error) {
+      console.error("❌ Erro ao registrar Push Token:", error);
+    }
+  }, [request]);
+
+  const fetchInitialUnreadCount = useCallback(async () => {
+    try {
+      const response = await request({
+        urlComplement: "/api/notifications/unread-count",
+        method: "GET",
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const count = typeof data === "number" ? data : data.count || 0;
+        setUnreadCount(count);
+      }
+    } catch (error) {
+      console.error(
+        "❌ Erro ao buscar contador inicial de notificações:",
+        error,
+      );
+    }
+  }, [request]);
 
   const connectSignalR = useCallback(async () => {
     try {
@@ -62,9 +147,9 @@ export const SignalRProvider = ({
       if (connectionRef.current) {
         await connectionRef.current.stop();
       }
-
+      console.log("BASE URL:", baseUrl);
       const newConnection = new signalR.HubConnectionBuilder()
-        .withUrl(configs.SIGNALR_URL[0], {
+        .withUrl(`${baseUrl}/Hubs/NotificationHub`, {
           accessTokenFactory: async () => {
             const token = await Storage.getStoreageItem("user_token");
             return token || "";
@@ -84,26 +169,39 @@ export const SignalRProvider = ({
       await connectionRef.current.stop();
       setConnection(null);
       setUnreadCount(0);
-      setNotifications([]);
+      setLatestIncomingNotification(null);
     }
   }, []);
 
+  const clearUnreadCount = useCallback(() => {
+    setUnreadCount(0);
+    setLatestIncomingNotification(null);
+  }, []);
+
   useEffect(() => {
+    if (!baseUrl) return;
+
+    console.log("BASE URL:", baseUrl);
+
     connectSignalR();
-  }, [connectSignalR]);
+  }, [baseUrl, connectSignalR]);
 
   useEffect(() => {
     if (connection) {
       connection
         .start()
-        .then(() => console.log("✅ Conectado ao SignalR no App!"))
+        .then(() => {
+          console.log("✅ Conectado ao SignalR no App!");
+          fetchInitialUnreadCount();
+          registerAndSendPushToken();
+        })
         .catch((e) => console.log("❌ Erro na conexão SignalR: ", e));
 
       return () => {
         connection.stop();
       };
     }
-  }, [connection]);
+  }, [connection, fetchInitialUnreadCount, registerAndSendPushToken]);
 
   useEffect(() => {
     if (!connection) return;
@@ -113,10 +211,8 @@ export const SignalRProvider = ({
         "🔔 Notificação capturada globalmente no Contexto:",
         notification.id,
       );
-
       setUnreadCount((prev) => prev + 1);
-
-      setNotifications((prev) => [notification, ...prev]);
+      setLatestIncomingNotification(notification);
     };
 
     connection.off("ReceiveNotification", handleGlobalNotification);
@@ -140,6 +236,7 @@ export const SignalRProvider = ({
           try {
             await connection.start();
             console.log("Reconectado ao SignalR com sucesso!");
+            fetchInitialUnreadCount();
           } catch (e) {
             console.error("Erro ao reconectar após voltar pro app: ", e);
           }
@@ -167,18 +264,18 @@ export const SignalRProvider = ({
     return () => {
       subscription.remove();
     };
-  }, [connection]);
+  }, [connection, fetchInitialUnreadCount]);
 
   return (
     <SignalRContext.Provider
       value={{
         connection,
         unreadCount,
-        setUnreadCount,
-        notifications,
-        setNotifications,
+        latestIncomingNotification,
+        clearUnreadCount,
         connectSignalR,
         disconnectSignalR,
+        registerAndSendPushToken,
       }}
     >
       {children}

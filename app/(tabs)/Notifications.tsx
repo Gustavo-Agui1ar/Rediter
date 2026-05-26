@@ -1,22 +1,32 @@
 import { Header, IconButton } from "@/components/components";
 import { useLanguage } from "@/context/LanguageContext";
-import { useSignalR } from "@/context/NotificationsContext";
+import {
+  NotificacaoProps,
+  useNotifications,
+} from "@/scripts/Notification.script";
 import { useStylesPerfil } from "@/styles/Notifications.style";
 import React, { memo, useCallback } from "react";
-import { FlatList, Text, View } from "react-native";
-
-interface NotificacaoProps {
-  id: string;
-  recipientUserId: string;
-  senderUserId: string;
-  postId: string;
-  type: string;
-  isRead: boolean;
-  createdAt: string;
-}
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 const NotificationItem = memo(
-  ({ item, styles, t }: { item: NotificacaoProps; styles: any; t: any }) => {
+  ({
+    item,
+    styles,
+    t,
+    onMarkAsRead,
+  }: {
+    item: NotificacaoProps;
+    styles: any;
+    t: any;
+    onMarkAsRead: (id: string, postId: string) => void;
+  }) => {
     const hora = new Date(item.createdAt).toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
@@ -25,20 +35,28 @@ const NotificationItem = memo(
     const isPostLiked = item.type === "PostLiked";
 
     return (
-      <View
+      <TouchableOpacity
+        activeOpacity={0.7}
         style={[styles.card, item.isRead ? styles.cardRead : styles.cardUnread]}
+        onPress={() => {
+          if (!item.isRead) {
+            onMarkAsRead(item.id, item.postId);
+          }
+          // Lógica de navegação futura aqui
+        }}
       >
         <View style={styles.iconContainer}>
           <IconButton
-            icon={isPostLiked ? "likeFilled" : "notifications"}
+            icon={isPostLiked ? "likeFilled" : "messageFilled"}
             type="none"
             fullSize
+            hasLoading={false}
           />
         </View>
 
         <View style={styles.messageContainer}>
           <Text style={styles.messageText} numberOfLines={1}>
-            {item.senderUserId}
+            {item.senderUsername}
           </Text>
           <Text style={styles.messageSecondary} numberOfLines={2}>
             {isPostLiked
@@ -51,32 +69,55 @@ const NotificationItem = memo(
           <Text style={styles.timeText}>{hora}</Text>
           {!item.isRead && <View style={styles.unreadDot} />}
         </View>
-      </View>
+      </TouchableOpacity>
     );
   },
+  (prevProps, nextProps) => prevProps.item.isRead === nextProps.item.isRead,
 );
 
 export default function HomeScreen() {
-  const { notifications } = useSignalR();
+  const {
+    notificationsList,
+    isLoading,
+    isRefreshing,
+    isLoadingMore,
+    onRefresh,
+    handleLoadMore,
+    handleMarkAsRead,
+  } = useNotifications();
+
   const styles = useStylesPerfil();
   const { t } = useLanguage();
 
   const renderItem = useCallback(
     ({ item }: { item: NotificacaoProps }) => (
-      <NotificationItem item={item} styles={styles} t={t} />
+      <NotificationItem
+        item={item}
+        styles={styles}
+        t={t}
+        onMarkAsRead={handleMarkAsRead}
+      />
     ),
-    [styles, t],
+    [styles, t, handleMarkAsRead],
   );
 
   const renderEmptyComponent = useCallback(
     () => (
       <View style={styles.emptyContainer}>
-        <Text style={{ fontSize: 40, marginBottom: 10 }}>📭</Text>
         <Text style={styles.emptyText}>{t("no_notifications")}</Text>
       </View>
     ),
     [styles, t],
   );
+
+  const renderFooter = useCallback(() => {
+    if (!isLoadingMore) return null;
+    return (
+      <View style={{ paddingVertical: 20 }}>
+        <ActivityIndicator size="small" color="#0000ff" />
+      </View>
+    );
+  }, [isLoadingMore]);
 
   const keyExtractor = useCallback((item: NotificacaoProps) => item.id, []);
 
@@ -87,18 +128,32 @@ export default function HomeScreen() {
       </Header>
 
       <View style={styles.notificationsContainer}>
-        <FlatList
-          data={notifications}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={renderEmptyComponent}
-          initialNumToRender={10}
-          maxToRenderPerBatch={10}
-          windowSize={5}
-          removeClippedSubviews={true}
-        />
+        {isLoading ? (
+          <View
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          >
+            <ActivityIndicator size="large" color="#0000ff" />
+          </View>
+        ) : (
+          <FlatList
+            data={notificationsList}
+            keyExtractor={keyExtractor}
+            renderItem={renderItem}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={renderEmptyComponent}
+            initialNumToRender={10}
+            maxToRenderPerBatch={10}
+            windowSize={5}
+            removeClippedSubviews={true}
+            refreshControl={
+              <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+            }
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={renderFooter}
+          />
+        )}
       </View>
     </View>
   );

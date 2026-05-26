@@ -1,16 +1,8 @@
-import { ImageUtils } from "@/utils/imageUri.utils";
 import { useCallback, useMemo, useState } from "react";
 
 export function useDisplayImages(files: any[]) {
   const [modalVisible, setModalVisible] = useState(false);
   const [initialIndex, setInitialIndex] = useState(0);
-
-  const getImageUri = useCallback((file: any) => {
-    if (!file) return "";
-    const imageName =
-      typeof file === "string" ? file : file.uri || file.fileName || file.name;
-    return ImageUtils.getProfileImageUri(imageName) || "";
-  }, []);
 
   const safeFiles = files || [];
   const MAX_VISIBLE = 4;
@@ -43,6 +35,5 @@ export function useDisplayImages(files: any[]) {
     initialIndex,
     openCarousel,
     closeCarousel,
-    getImageUri,
   };
 }

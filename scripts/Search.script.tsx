@@ -10,7 +10,7 @@ export function useSearch() {
     () => [
       { id: "posts", label: t("tab_search_recent") },
       { id: "people", label: t("tab_search_people") },
-      { id: "media", label: t("tab_search_media") },
+      { id: "media", label: t("tab_media") },
     ],
     [t],
   );

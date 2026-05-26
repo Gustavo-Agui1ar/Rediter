@@ -1,8 +1,7 @@
 import IconButton from "@/components/UI/IconButton/IconButton";
-import { getBaseURL } from "@/utils/configs.utils";
 import { Image } from "expo-image";
 
-import React, {
+import {
   forwardRef,
   memo,
   useCallback,
@@ -19,12 +18,13 @@ import {
   Modal,
   Platform,
   RefreshControl,
-  SafeAreaView,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 
+import { useImageUtils } from "@/utils/imageUri.utils";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useMediaGrid } from "./Midia.script";
 import { useMidiaStyles } from "./Midia.styles";
 
@@ -46,16 +46,9 @@ interface MediaGridProps {
   headerHeight?: number;
 }
 
-const getImageUri = (item: string | { uri: string }) => {
-  if (typeof item === "object") {
-    return item.uri;
-  }
-
-  return `${getBaseURL()}/api/pictures/${encodeURIComponent(item)}`;
-};
-
 const SkeletonItem = memo(({ styles }: { styles: any }) => {
   const opacity = useRef(new Animated.Value(0.5)).current;
+  const { getSafeUri } = useImageUtils();
 
   useEffect(() => {
     const animation = Animated.loop(
@@ -103,6 +96,7 @@ const MediaGrid = forwardRef<MediaGridRef, MediaGridProps>(function MediaGrid(
   ref,
 ) {
   const styles = useMidiaStyles();
+  const { getSafeUri } = useImageUtils();
 
   const {
     data,
@@ -148,7 +142,7 @@ const MediaGrid = forwardRef<MediaGridRef, MediaGridProps>(function MediaGrid(
         >
           <Image
             source={{
-              uri: getImageUri(item),
+              uri: getSafeUri(item),
             }}
             style={styles.image}
             contentFit="cover"
@@ -185,7 +179,7 @@ const MediaGrid = forwardRef<MediaGridRef, MediaGridProps>(function MediaGrid(
       >
         <Image
           source={{
-            uri: getImageUri(item),
+            uri: getSafeUri(item),
           }}
           style={styles.modalCarouselImage}
           contentFit="contain"

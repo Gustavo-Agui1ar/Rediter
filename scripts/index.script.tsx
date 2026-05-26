@@ -2,27 +2,28 @@ import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { useRootNavigationState, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 
-import { useLoading } from "@/context/loadingContext";
+import { useLoading } from "@/context/LoadingContext";
 import { useSignalR } from "@/context/NotificationsContext";
-import { configs } from "@/utils/configs.utils";
+import { useRediterBaseConfigs } from "@/context/RediterConfigContext";
 import { LoginValidator } from "@/utils/login.utils";
 import { useApi } from "@/utils/request.utils";
 import * as StorageUtils from "@/utils/storage.utils";
-
-GoogleSignin.configure({
-  webClientId: configs.GoogleClientID,
-  offlineAccess: true,
-});
 
 export function useIndex() {
   const router = useRouter();
   const { setLoading } = useLoading();
   const rootNavigationState = useRootNavigationState();
   const { request } = useApi();
+  const { baseUrl, googleClientId } = useRediterBaseConfigs();
   const [form, setForm] = useState({ email: "", password: "" });
   const [serverError, setServerError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const { connectSignalR } = useSignalR();
+
+  GoogleSignin.configure({
+    webClientId: googleClientId,
+    offlineAccess: true,
+  });
 
   useEffect(() => {
     if (!rootNavigationState?.key) return;
