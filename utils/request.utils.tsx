@@ -39,7 +39,6 @@ export class ApiError extends Error {
 // ============================================================================
 // CACHE GLOBAL E FILA DE CONCORRÊNCIA
 // ============================================================================
-
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (token: string) => void;
@@ -65,7 +64,6 @@ const processQueue = (error: Error | null, token: string | null = null) => {
 // ============================================================================
 // TOKEN
 // ============================================================================
-
 async function getAccessTokenOptimized(): Promise<string | null> {
   if (isRefreshing) {
     try {
@@ -87,7 +85,7 @@ async function getAccessTokenOptimized(): Promise<string | null> {
 }
 
 // ============================================================================
-// REFRESH TOKEN (Apenas responsável por chamar a API)
+// REFRESH TOKEN
 // ============================================================================
 async function refreshAccessToken(baseUrl: string): Promise<string | null> {
   try {
@@ -139,7 +137,7 @@ async function refreshAccessToken(baseUrl: string): Promise<string | null> {
 }
 
 // ============================================================================
-// REQUEST OPTIONS & TIMEOUT (Sem alterações)
+// REQUEST OPTIONS & TIMEOUT
 // ============================================================================
 async function buildRequestOptions(
   options: RequestOptions,
@@ -148,12 +146,10 @@ async function buildRequestOptions(
   const isFormData = body instanceof FormData;
   const requestHeaders = new Headers(headers);
 
-  // AUTH
   if (requireAuth) {
     const accessToken = await getAccessTokenOptimized();
     if (accessToken) {
       requestHeaders.set("Authorization", `Bearer ${accessToken}`);
-    } else {
     }
   }
 
@@ -163,7 +159,6 @@ async function buildRequestOptions(
     headers: requestHeaders,
   };
 
-  // BODY
   if (body && method !== "GET") {
     if (isFormData) {
       requestInit.body = body;
@@ -230,7 +225,7 @@ async function handleApiError(response: Response): Promise<never> {
 export function useApi() {
   const { loading, setLoading } = useLoading();
   const [error, setError] = useState<string | null>(null);
-  const { baseUrl, timeout } = useRediterBaseConfigs();
+  const { baseUrl, timeout, isServerOnline } = useRediterBaseConfigs();
 
   const request = useCallback(
     async (options: RequestOptions): Promise<Response> => {
@@ -241,6 +236,20 @@ export function useApi() {
         _isRetry = false,
         hasLoading = true,
       } = options;
+
+      // ==========================================================
+      // SHORT-CIRCUIT: Bloqueia a requisição se o servidor estiver offline
+      // ==========================================================
+      if (!isServerOnline && !_isRetry) {
+        console.log(
+          `⛔ [API BLOQUEADA] Servidor offline. Tentativa cancelada: ${method} ${urlComplement}`,
+        );
+        const offlineMsg =
+          "Servidor indisponível no momento. Verifique sua conexão ou tente novamente mais tarde.";
+        setError(offlineMsg);
+
+        throw new ApiError(offlineMsg, 503);
+      }
 
       const url = `${baseUrl}${urlComplement}`;
 
@@ -294,8 +303,8 @@ export function useApi() {
           const newToken = await refreshAccessToken(baseUrl);
 
           if (newToken) {
-            processQueue(null, newToken); // Avisa todo mundo da fila que deu bom!
-            isRefreshing = false; // Destrava a cancela global
+            processQueue(null, newToken);
+            isRefreshing = false;
 
             return await request({
               ...options,
@@ -308,7 +317,7 @@ export function useApi() {
           }
 
           console.log("❌ Refresh falhou na raiz. Derrubando sessão...");
-          processQueue(new Error("Refresh failed")); // Avisa todo mundo da fila que deu ruim
+          processQueue(new Error("Refresh failed"));
           isRefreshing = false;
 
           clearTokenCache();
@@ -325,7 +334,17 @@ export function useApi() {
 
         return response;
       } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : String(err);
+        let errorMsg = err instanceof Error ? err.message : String(err);
+
+        if (
+          err instanceof Error &&
+          (err.name === "AbortError" ||
+            err.message.includes("Network request failed"))
+        ) {
+          errorMsg =
+            "A conexão com o servidor expirou ou falhou. O servidor pode estar reiniciando.";
+        }
+
         setError(errorMsg);
         throw err;
       } finally {
@@ -338,7 +357,7 @@ export function useApi() {
         );
       }
     },
-    [setLoading],
+    [baseUrl, timeout, isServerOnline, setLoading],
   );
 
   return {

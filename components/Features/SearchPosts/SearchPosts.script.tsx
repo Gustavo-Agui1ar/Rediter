@@ -33,6 +33,7 @@ export function useSearchPosts(
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [initialLoading, setInitialLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const { request } = useApi();
   const fetchingRef = useRef(false);
@@ -48,11 +49,13 @@ export function useSearchPosts(
         setPosts([]);
         setHasMore(false);
         setInitialLoading(false);
+        setError(null);
         return;
       }
 
       if (fetchingRef.current) return;
       fetchingRef.current = true;
+      setError(null);
 
       if (isRefresh) {
         lastItemRef.current = null;
@@ -111,8 +114,12 @@ export function useSearchPosts(
         setPosts((prev) => (isRefresh ? data : mergePosts(prev, data)));
         setHasMore(data.length >= PAGE_SIZE);
       } catch (e: any) {
+        const errorMessage = e?.message || "Ocorreu um erro inesperado.";
+
+        setError(errorMessage);
+
         if (__DEV__) {
-          console.error("[useSearchPosts ERROR]", e?.message);
+          console.log("⚠️ [useSearchPosts] Aviso:", errorMessage);
         }
       } finally {
         fetchingRef.current = false;
@@ -129,6 +136,7 @@ export function useSearchPosts(
       setInitialLoading(false);
       setHasMore(false);
       lastItemRef.current = null;
+      setError(null);
       return;
     }
 
@@ -152,5 +160,6 @@ export function useSearchPosts(
     initialLoading,
     loadingMore,
     loadMore,
+    error,
   };
 }

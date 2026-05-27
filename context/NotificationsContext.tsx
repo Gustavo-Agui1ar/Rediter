@@ -59,7 +59,7 @@ export const SignalRProvider = ({
     any | null
   >(null);
 
-  const { baseUrl } = useRediterBaseConfigs();
+  const { baseUrl, isServerOnline } = useRediterBaseConfigs();
   const appState = useRef(AppState.currentState);
   const connectionRef = useRef<signalR.HubConnection | null>(null);
   const { request } = useApi();
@@ -147,7 +147,9 @@ export const SignalRProvider = ({
       if (connectionRef.current) {
         await connectionRef.current.stop();
       }
+
       console.log("BASE URL:", baseUrl);
+
       const newConnection = new signalR.HubConnectionBuilder()
         .withUrl(`${baseUrl}/Hubs/NotificationHub`, {
           accessTokenFactory: async () => {
@@ -162,7 +164,7 @@ export const SignalRProvider = ({
     } catch (error) {
       console.error("🔴 SignalR: Erro ao inicializar conexão:", error);
     }
-  }, []);
+  }, [baseUrl]);
 
   const disconnectSignalR = useCallback(async () => {
     if (connectionRef.current) {
@@ -170,6 +172,7 @@ export const SignalRProvider = ({
       setConnection(null);
       setUnreadCount(0);
       setLatestIncomingNotification(null);
+      console.log("🛑 SignalR: Desconectado com segurança.");
     }
   }, []);
 
@@ -181,13 +184,15 @@ export const SignalRProvider = ({
   useEffect(() => {
     if (!baseUrl) return;
 
-    console.log("BASE URL:", baseUrl);
-
-    connectSignalR();
-  }, [baseUrl, connectSignalR]);
+    if (isServerOnline) {
+      connectSignalR();
+    } else {
+      disconnectSignalR();
+    }
+  }, [baseUrl, isServerOnline, connectSignalR, disconnectSignalR]);
 
   useEffect(() => {
-    if (connection) {
+    if (connection && isServerOnline) {
       connection
         .start()
         .then(() => {
@@ -195,13 +200,18 @@ export const SignalRProvider = ({
           fetchInitialUnreadCount();
           registerAndSendPushToken();
         })
-        .catch((e) => console.log("❌ Erro na conexão SignalR: ", e));
+        .catch((e) => console.log("❌ Erro ao iniciar SignalR: ", e));
 
       return () => {
         connection.stop();
       };
     }
-  }, [connection, fetchInitialUnreadCount, registerAndSendPushToken]);
+  }, [
+    connection,
+    isServerOnline,
+    fetchInitialUnreadCount,
+    registerAndSendPushToken,
+  ]);
 
   useEffect(() => {
     if (!connection) return;
@@ -232,7 +242,11 @@ export const SignalRProvider = ({
         nextAppState === "active"
       ) {
         console.log("App em primeiro plano. Verificando conexão do SignalR...");
-        if (connection.state === signalR.HubConnectionState.Disconnected) {
+
+        if (
+          connection.state === signalR.HubConnectionState.Disconnected &&
+          isServerOnline
+        ) {
           try {
             await connection.start();
             console.log("Reconectado ao SignalR com sucesso!");
@@ -264,7 +278,7 @@ export const SignalRProvider = ({
     return () => {
       subscription.remove();
     };
-  }, [connection, fetchInitialUnreadCount]);
+  }, [connection, isServerOnline, fetchInitialUnreadCount]);
 
   return (
     <SignalRContext.Provider
