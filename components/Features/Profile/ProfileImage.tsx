@@ -1,8 +1,8 @@
 import { useRediterBaseConfigs } from "@/context/RediterConfigContext";
+import { useImageUtils } from "@/utils/imageUri.utils";
 import { Image, ImageStyle } from "expo-image";
 import { memo, useMemo } from "react";
 import { StyleProp } from "react-native";
-
 interface ProfileImageProps {
   imageName?: string;
   size?: number;
@@ -17,27 +17,11 @@ const ProfileImage = ({
   wrapper,
 }: ProfileImageProps) => {
   const { baseUrl } = useRediterBaseConfigs();
-
-  const finalUri = useMemo(() => {
-    try {
-      if (!imageName || typeof imageName !== "string") {
-        return null;
-      }
-
-      if (imageName.startsWith("http") || imageName.startsWith("file://")) {
-        return imageName;
-      }
-
-      return `${baseUrl}/api/pictures/${encodeURIComponent(imageName)}`;
-    } catch (error) {
-      console.error("Erro interno ao gerar a URI da ProfileImage:", error);
-      return null;
-    }
-  }, [imageName]);
+  const { getSafeUri } = useImageUtils();
 
   const imageSource = useMemo(() => {
-    return finalUri ? { uri: finalUri } : DEFAULT_USER_IMAGE;
-  }, [finalUri]);
+    return getSafeUri(imageName) || DEFAULT_USER_IMAGE;
+  }, [imageName, baseUrl]);
 
   const imageStyle = useMemo<StyleProp<ImageStyle>>(() => {
     const baseStyle = {

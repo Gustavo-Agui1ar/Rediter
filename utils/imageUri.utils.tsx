@@ -5,7 +5,7 @@ export const useImageUtils = () => {
   const { baseUrl } = useRediterBaseConfigs();
 
   const getProfileImageUri = useCallback(
-    (imageName: unknown): string | null => {
+    (imageName: unknown, thumbnail: boolean = true): string | null => {
       try {
         if (!imageName || typeof imageName !== "string") {
           return null;
@@ -19,7 +19,7 @@ export const useImageUtils = () => {
           return imageName;
         }
 
-        return `${baseUrl}/api/pictures/${encodeURIComponent(imageName)}`;
+        return `${baseUrl}/api/pictures/${encodeURIComponent(imageName)}?isThumb=${thumbnail}`;
       } catch (error) {
         console.error("[useImageUtils] Erro ao gerar URI de perfil:", error);
         return null;
@@ -29,7 +29,7 @@ export const useImageUtils = () => {
   );
 
   const getSafeUri = useCallback(
-    (imagePath: unknown): string | undefined => {
+    (imagePath: unknown, thumbnail: boolean = true): string | undefined => {
       try {
         if (!imagePath || typeof imagePath !== "string") {
           return undefined;
@@ -47,7 +47,7 @@ export const useImageUtils = () => {
           ? imagePath.slice(1)
           : imagePath;
 
-        const finalUrl = `${baseUrl}/api/pictures/${encodeURIComponent(cleanPath)}`;
+        const finalUrl = `${baseUrl}/api/pictures/${encodeURIComponent(cleanPath)}?isThumb=${thumbnail}`;
         return finalUrl;
       } catch (error) {
         console.error("[useImageUtils] Erro ao gerar URI segura:", error);

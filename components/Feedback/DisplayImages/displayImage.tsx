@@ -133,7 +133,7 @@ export default function DisplayImages({
             renderItem={({ item }) => (
               <View style={styles.carouselItem}>
                 <Image
-                  source={{ uri: getSafeUri(item) }}
+                  source={{ uri: getSafeUri(item, false) }}
                   style={styles.largeImage}
                   contentFit="contain"
                   transition={200}

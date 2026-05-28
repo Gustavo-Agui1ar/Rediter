@@ -147,7 +147,7 @@ const MediaGrid = forwardRef<MediaGridRef, MediaGridProps>(function MediaGrid(
             style={styles.image}
             contentFit="cover"
             transition={200}
-            cachePolicy="memory-disk"
+            cachePolicy="memory"
           />
         </TouchableOpacity>
       );
@@ -183,7 +183,7 @@ const MediaGrid = forwardRef<MediaGridRef, MediaGridProps>(function MediaGrid(
           }}
           style={styles.modalCarouselImage}
           contentFit="contain"
-          cachePolicy="memory-disk"
+          cachePolicy="memory"
         />
       </View>
     ),
