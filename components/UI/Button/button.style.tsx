@@ -100,7 +100,7 @@ export const useStylesButton = makeStyles((colors: ThemeColors) => ({
   textMedium: { fontSize: 14 },
   textLarge: { fontSize: 16 },
 
-  textOnFill: { color: colors.textPrimary },
+  textOnFill: { color: colors.white },
   textBorder: { color: colors.primaryDark },
   textRemove: { color: colors.error },
 

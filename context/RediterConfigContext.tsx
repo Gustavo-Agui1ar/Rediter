@@ -8,7 +8,7 @@ import React, {
 } from "react";
 
 const RAW_GIST_URL =
-  "https://gist.githubusercontent.com/Gustavo-Agui1ar/f5b861e40a39f0a0c64284d737730de6/raw/512ada3028428dbd03295c9af2a458079294d335/rediter_config.json";
+  "https://gist.githubusercontent.com/Gustavo-Agui1ar/f5b861e40a39f0a0c64284d737730de6/raw/rediter_config.json";
 const GOOGLE_CLIENT_ID =
   "573963521901-0tovmn0v1au6ob5dm2uq7q19gm21o144.apps.googleusercontent.com";
 
@@ -157,10 +157,6 @@ export const RediterConfigProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const signalRUrl = baseUrl ? `${baseUrl}/Hubs/NotificationHub` : "";
-
-  if (isLoading) {
-    return null;
-  }
 
   return (
     <RediterConfigContext.Provider

@@ -82,6 +82,18 @@ export const useChatStyles = makeStyles((colors: ThemeColors) => ({
     marginVertical: 10,
   },
 
+  typingIndicatorWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+    gap: 8,
+  },
+  typingText: {
+    fontSize: 12,
+    fontStyle: "italic",
+  },
+
   // =========================
   // Mensagens (Balões)
   // =========================

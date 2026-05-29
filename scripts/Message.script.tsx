@@ -1,3 +1,4 @@
+import { useSignalR } from "@/context/NotificationsContext";
 import { useApi } from "@/utils/request.utils";
 import {
   startTransition,
@@ -38,17 +39,55 @@ export function useChat({
   const [messages, setMessages] = useState<MessageDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isOtherTyping, setIsOtherTyping] = useState(false);
   const isFetchingRef = useRef(false);
   const hasMoreRef = useRef(true);
   const oldestMessageRef = useRef<{ id: string; createdAt: string } | null>(
     null,
   );
 
+  const isTypingRef = useRef(false);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { request } = useApi();
+  const { connection } = useSignalR();
 
   useEffect(() => {
     setActiveChatId(sanitizeId(chatId));
   }, [chatId]);
+
+  useEffect(() => {
+    if (!connection || !activeChatId) return;
+
+    connection.invoke("JoinChatGroup", activeChatId).catch(console.error);
+
+    const onReceiveTyping = (incomingChatId: string, isTyping: boolean) => {
+      if (incomingChatId.toLowerCase() !== activeChatId.toLowerCase()) return;
+      startTransition(() => setIsOtherTyping(isTyping));
+    };
+
+    const onReceiveMessage = (
+      incomingChatId: string,
+      novaMensagem: MessageDTO,
+    ) => {
+      if (incomingChatId.toLowerCase() !== activeChatId.toLowerCase()) return;
+      startTransition(() => {
+        setMessages((prev) => {
+          if (prev.some((m) => m.messageId === novaMensagem.messageId))
+            return prev;
+          return [novaMensagem, ...prev];
+        });
+        setIsOtherTyping(false);
+      });
+    };
+
+    connection.on("ReceiveTyping", onReceiveTyping);
+    connection.on("ReceiveMessage", onReceiveMessage);
+
+    return () => {
+      connection.off("ReceiveTyping", onReceiveTyping);
+      connection.off("ReceiveMessage", onReceiveMessage);
+    };
+  }, [connection, activeChatId]);
 
   const loadMessages = useCallback(
     async (isLoadMore = false) => {
@@ -124,9 +163,26 @@ export function useChat({
       });
       return;
     }
-
     loadMessages();
   }, [activeChatId, loadMessages]);
+
+  const notifyTyping = useCallback(() => {
+    if (!connection || !activeChatId) return;
+
+    if (!isTypingRef.current) {
+      isTypingRef.current = true;
+      connection.invoke("SendTyping", activeChatId, true).catch(console.error);
+    }
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      isTypingRef.current = false;
+      connection.invoke("SendTyping", activeChatId, false).catch(console.error);
+    }, 2000);
+  }, [activeChatId, connection]);
 
   const sendMessage = useCallback(
     async (text: string) => {
@@ -137,6 +193,14 @@ export function useChat({
           "É necessário um chatId ou um receiverId para enviar a mensagem.",
         );
         return;
+      }
+
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      if (isTypingRef.current && connection && activeChatId) {
+        isTypingRef.current = false;
+        connection
+          .invoke("SendTyping", activeChatId, false)
+          .catch(console.error);
       }
 
       const tempId = `temp-${Date.now()}`;
@@ -200,7 +264,7 @@ export function useChat({
         alert("Falha ao enviar mensagem. Tente novamente.");
       }
     },
-    [activeChatId, isDirect, receiverId, request],
+    [activeChatId, isDirect, receiverId, request, connection],
   );
 
   return {
@@ -209,7 +273,9 @@ export function useChat({
     isLoading,
     isLoadingMore,
     hasMore: hasMoreRef.current,
+    isOtherTyping,
     loadMessages,
     sendMessage,
+    notifyTyping,
   };
 }

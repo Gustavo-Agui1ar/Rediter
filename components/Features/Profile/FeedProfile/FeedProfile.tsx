@@ -33,7 +33,6 @@ export default function FeedProfile(props: FeedProfileProps) {
     activeTab: "posts",
   });
 
-  // O Header principal (Foto, Bio, etc)
   const renderHeader = () => (
     <View
       style={[
@@ -56,16 +55,14 @@ export default function FeedProfile(props: FeedProfileProps) {
     <View style={styles.container}>
       <Tabs.Container
         renderHeader={renderHeader}
-        // 2. Disparamos a sua ação de mudança de aba nativamente por aqui
         onTabChange={({ tabName }) => {
           actions.handleTabChange(tabName as string);
         }}
-        // 3. Renderizamos o MaterialTabBar customizado com as cores do seu tema
         renderTabBar={(props) => (
           <MaterialTabBar
             {...props}
             activeColor={colors.primary}
-            inactiveColor="#888888" // Você pode trocar por uma cor secundária do seu useTheme()
+            inactiveColor="#888888"
             indicatorStyle={{ backgroundColor: colors.primary, height: 2 }}
             style={{ backgroundColor: colors.background || "#121212" }}
             labelStyle={{ fontWeight: "bold", fontSize: 14 }}

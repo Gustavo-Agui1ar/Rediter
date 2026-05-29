@@ -9,7 +9,7 @@ import { useGlobalStyles } from "@/styles/global.styles";
 import { useStylesPerfil } from "@/styles/perfil.style";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { Animated, Pressable, View } from "react-native";
 
 const ProfileSkeleton = ({ stylesPerfil, handleGoBack }: any) => {
@@ -188,6 +188,7 @@ export default function UserProfileScreen() {
             followingCount={state.profile.following}
             userId={state.profile.userID}
             onUpdateProfile={actions.updateLocalProfile}
+            chatId={state.profile.chatId}
           />
         </View>
       </View>

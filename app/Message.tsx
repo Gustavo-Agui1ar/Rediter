@@ -1,4 +1,4 @@
-import { Header, TextBox } from "@/components/components";
+import { Header, TextBox, TypingIndicator } from "@/components/components";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
 import { MessageDTO, useChat } from "@/scripts/Message.script";
@@ -14,7 +14,8 @@ import {
   View,
 } from "react-native";
 import Animated, {
-  FadeInDown,
+  FadeIn,
+  FadeOut,
   LinearTransition,
 } from "react-native-reanimated";
 
@@ -31,8 +32,8 @@ const MessageBubble = memo(
 
     return (
       <Animated.View
-        entering={FadeInDown.springify().damping(14)}
-        layout={LinearTransition.springify().damping(14)}
+        entering={FadeIn.duration(250)}
+        layout={LinearTransition.duration(250)}
         style={[
           styles.bubbleWrapper,
           isMe ? styles.wrapperMe : styles.wrapperThem,
@@ -69,12 +70,29 @@ export default function ChatScreen() {
   const { t } = useLanguage();
   const [inputText, setInputText] = useState("");
 
-  const { messages, isLoading, isLoadingMore, loadMessages, sendMessage } =
-    useChat({
-      chatId: chatId || null,
-      receiverId: targetUserId || null,
-      isDirect: !!targetUserId,
-    });
+  const {
+    messages,
+    isLoading,
+    isLoadingMore,
+    isOtherTyping,
+    loadMessages,
+    sendMessage,
+    notifyTyping,
+  } = useChat({
+    chatId: chatId || null,
+    receiverId: targetUserId || null,
+    isDirect: !!targetUserId,
+  });
+
+  const handleTextChange = useCallback(
+    (text: string) => {
+      setInputText(text);
+      if (text.length > 0) {
+        notifyTyping();
+      }
+    },
+    [notifyTyping],
+  );
 
   const handleSend = useCallback(() => {
     if (!inputText.trim()) return;
@@ -140,6 +158,21 @@ export default function ChatScreen() {
         )}
       </View>
 
+      {isOtherTyping && (
+        <Animated.View
+          entering={FadeIn.duration(200)}
+          exiting={FadeOut.duration(200)}
+          style={styles.typingIndicatorWrapper}
+        >
+          {targetUserName && (
+            <Text style={[styles.typingText, { color: colors.textSecondary }]}>
+              {targetUserName}
+            </Text>
+          )}
+          <TypingIndicator color={colors.textSecondary} />
+        </Animated.View>
+      )}
+
       <View
         style={[
           styles.inputContainer,
@@ -149,7 +182,7 @@ export default function ChatScreen() {
         <TextBox
           placeholder={t("type_a_message")}
           value={inputText}
-          onChangeText={setInputText}
+          onChangeText={handleTextChange}
           multiline
           maxLength={500}
           autoCapitalize="sentences"
