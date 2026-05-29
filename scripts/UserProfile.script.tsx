@@ -1,6 +1,5 @@
 import { useApi } from "@/utils/request.utils";
-import { useCallback, useEffect, useState } from "react";
-import { InteractionManager } from "react-native";
+import { startTransition, useCallback, useEffect, useState } from "react";
 
 const profileCache: Record<string, any> = {};
 
@@ -17,36 +16,39 @@ export function useUserProfile(userId: string, initialData?: any) {
   const fetchProfile = useCallback(async () => {
     if (!userId) return;
 
-    InteractionManager.runAfterInteractions(async () => {
-      try {
-        if (!profileCache[userId] && !initialData) {
-          setLoading(true);
-        }
+    if (!profileCache[userId] && !initialData) {
+      startTransition(() => setLoading(true));
+    }
 
-        const response = await request({
-          urlComplement: `/api/users/${userId}`,
-          method: "GET",
-        });
+    try {
+      const data = await request({
+        urlComplement: `/api/users/${userId}`,
+        method: "GET",
+        hasLoading: false,
+      });
 
-        if (response.ok) {
-          const data = await response.json();
-          profileCache[userId] = data;
-          setProfile(data);
-        }
-      } catch (error) {
-        console.error("Erro ao carregar o perfil do usuário:", error);
-      } finally {
+      profileCache[userId] = data;
+
+      startTransition(() => {
+        setProfile(data);
+      });
+    } catch (error) {
+      console.error("Erro ao carregar o perfil do usuário:", error);
+    } finally {
+      startTransition(() => {
         setLoading(false);
-      }
-    });
+      });
+    }
   }, [userId, request, initialData]);
 
   const updateLocalProfile = useCallback(
     (newData: Partial<any>) => {
-      setProfile((prevProfile: any) => {
-        const updatedProfile = { ...prevProfile, ...newData };
-        profileCache[userId] = updatedProfile;
-        return updatedProfile;
+      startTransition(() => {
+        setProfile((prevProfile: any) => {
+          const updatedProfile = { ...prevProfile, ...newData };
+          profileCache[userId] = updatedProfile;
+          return updatedProfile;
+        });
       });
     },
     [userId],

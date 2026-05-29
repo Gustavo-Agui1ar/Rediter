@@ -1,7 +1,13 @@
 import { useApi } from "@/utils/request.utils";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { DeviceEventEmitter, Platform } from "react-native";
-
 export interface PostItem {
   id?: string;
   postId?: string;
@@ -21,9 +27,7 @@ export const getId = (p: PostItem) => p.postId || p.id;
 
 const mergePosts = (oldPosts: PostItem[], newPosts: PostItem[]) => {
   const ids = new Set(oldPosts.map(getId));
-
   const filtered = newPosts.filter((p) => !ids.has(getId(p)));
-
   return [...oldPosts, ...filtered];
 };
 
@@ -36,29 +40,20 @@ export function usePosts(
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [initialLoading, setInitialLoading] = useState(true);
-
   const { request } = useApi();
-
   const fetchingRef = useRef(false);
-
-  const lastItemRef = useRef<{
-    id: string;
-    createdAt: string;
-  } | null>(null);
+  const lastItemRef = useRef<{ id: string; createdAt: string } | null>(null);
 
   const fetchPosts = useCallback(
     async (isRefresh = false) => {
-      if (fetchingRef.current) {
-        return;
-      }
-
+      if (fetchingRef.current) return;
       fetchingRef.current = true;
 
       if (isRefresh) {
         lastItemRef.current = null;
-        setHasMore(true);
+        startTransition(() => setHasMore(true));
       } else {
-        setLoadingMore(true);
+        startTransition(() => setLoadingMore(true));
       }
 
       try {
@@ -68,13 +63,11 @@ export function usePosts(
 
         if (!isRefresh && lastItemRef.current) {
           const { id, createdAt } = lastItemRef.current;
-
           searchParams.append("lastCreatedAt", createdAt);
           searchParams.append("lastId", id);
         }
 
         let baseUrl = "";
-
         if (onlyLiked) {
           baseUrl = "/api/posts/liked";
         } else {
@@ -83,33 +76,36 @@ export function usePosts(
 
         const url = `${baseUrl}?${searchParams.toString()}`;
 
-        const res = await request({
+        const data: PostItem[] = await request({
           urlComplement: url,
           method: "GET",
+          hasLoading: false,
         });
 
-        if (!res || !res.ok) throw new Error("Erro na requisição");
+        const newPosts = Array.isArray(data) ? data : [];
 
-        const data: PostItem[] = (await res.json()) || [];
-
-        if (data.length > 0) {
-          const last = data[data.length - 1];
-
+        if (newPosts.length > 0) {
+          const last = newPosts[newPosts.length - 1];
           lastItemRef.current = {
             id: String(getId(last)),
             createdAt: last.createdAt,
           };
         }
 
-        setPosts((prev) => (isRefresh ? data : mergePosts(prev, data)));
-
-        setHasMore(data.length >= PAGE_SIZE);
+        startTransition(() => {
+          setPosts((prev) =>
+            isRefresh ? newPosts : mergePosts(prev, newPosts),
+          );
+          setHasMore(newPosts.length >= PAGE_SIZE);
+        });
       } catch (e: any) {
         console.error("[fetchPosts ERROR]", e?.message);
       } finally {
         fetchingRef.current = false;
-        setInitialLoading(false);
-        setLoadingMore(false);
+        startTransition(() => {
+          setInitialLoading(false);
+          setLoadingMore(false);
+        });
       }
     },
     [request, userId, onlyLiked],
@@ -129,7 +125,6 @@ export function usePosts(
     if (!hasMore || loadingMore || fetchingRef.current || initialLoading) {
       return;
     }
-
     fetchPosts(false);
   }, [hasMore, loadingMore, initialLoading, fetchPosts]);
 
@@ -184,7 +179,6 @@ export function usePostsUI({
   const keyExtractor = useCallback((item: any, index: number) => {
     if (item._isSkeleton) return item.id;
     const id = getId(item);
-
     return id ? id.toString() : `post-idx-${index}`;
   }, []);
 
@@ -209,9 +203,7 @@ export function usePostsUI({
       ? listRef.current.getNode()
       : listRef.current;
 
-    if (!listNode) {
-      return;
-    }
+    if (!listNode) return;
 
     listNode.scrollToOffset({
       offset: Platform.OS === "ios" ? -headerHeight : 0,

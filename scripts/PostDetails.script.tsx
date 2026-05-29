@@ -2,7 +2,14 @@ import { pickImage } from "@/utils/filePicker.utils";
 import { handleGetLocation } from "@/utils/location.utils";
 import { useApi } from "@/utils/request.utils";
 import { router, useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Alert, DeviceEventEmitter, Keyboard } from "react-native";
 export interface SinglePostData {
   id: string;
@@ -27,6 +34,8 @@ export function usePostDetails() {
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [userId, setUserId] = useState<string>("");
+  const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [comments, setComments] = useState<SinglePostData[]>([]);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [hasMoreComments, setHasMoreComments] = useState(true);
@@ -39,61 +48,61 @@ export function usePostDetails() {
   const [replyLocation, setReplyLocation] = useState<string | null>(null);
   const [showEmoji, setShowEmoji] = useState(false);
   const [isSendingReply, setIsSendingReply] = useState(false);
-  const [userId, setUserId] = useState<string>("");
-  const [isOwnProfile, setIsOwnProfile] = useState(false);
 
   const fetchComments = useCallback(
     async (isLoadMore: boolean = false) => {
       if (!id || isFetchingCommentsRef.current) return;
       if (isLoadMore && !hasMoreCommentsRef.current) return;
 
+      isFetchingCommentsRef.current = true;
+      startTransition(() => setIsLoadingComments(true));
+
+      if (!isLoadMore) {
+        hasMoreCommentsRef.current = true;
+        startTransition(() => setHasMoreComments(true));
+        lastCursorRef.current = null;
+      }
+
       try {
-        isFetchingCommentsRef.current = true;
-        setIsLoadingComments(true);
-
-        if (!isLoadMore) {
-          hasMoreCommentsRef.current = true;
-          setHasMoreComments(true);
-          lastCursorRef.current = null;
-        }
-
         const pageSize = 10;
-        let queryString = `?pageSize=${pageSize}`;
+        const params = new URLSearchParams({ pageSize: String(pageSize) });
 
         if (isLoadMore && lastCursorRef.current) {
-          queryString += `&lastCreatedAt=${encodeURIComponent(lastCursorRef.current.createdAt)}`;
-          queryString += `&lastId=${encodeURIComponent(lastCursorRef.current.id)}`;
+          params.append("lastCreatedAt", lastCursorRef.current.createdAt);
+          params.append("lastId", lastCursorRef.current.id);
         }
 
-        const response = await request({
-          urlComplement: `/api/posts/${id}/comments${queryString}`,
+        const data: SinglePostData[] = await request({
+          urlComplement: `/api/posts/${id}/comments?${params.toString()}`,
           method: "GET",
           hasLoading: false,
         });
 
-        if (response?.ok) {
-          const data: SinglePostData[] = await response.json();
+        const newComments = Array.isArray(data) ? data : [];
 
-          if (data.length < pageSize) {
-            hasMoreCommentsRef.current = false;
-            setHasMoreComments(false);
-          }
-
-          if (data.length > 0) {
-            const lastItem = data[data.length - 1];
-            lastCursorRef.current = {
-              createdAt: lastItem.createdAt,
-              id: lastItem.id,
-            };
-          }
-
-          setComments((prev) => (isLoadMore ? [...prev, ...data] : data));
+        if (newComments.length < pageSize) {
+          hasMoreCommentsRef.current = false;
+          startTransition(() => setHasMoreComments(false));
         }
+
+        if (newComments.length > 0) {
+          const lastItem = newComments[newComments.length - 1];
+          lastCursorRef.current = {
+            createdAt: lastItem.createdAt,
+            id: lastItem.id,
+          };
+        }
+
+        startTransition(() => {
+          setComments((prev) =>
+            isLoadMore ? [...prev, ...newComments] : newComments,
+          );
+        });
       } catch (error) {
         console.error("Erro ao carregar comentários:", error);
       } finally {
         isFetchingCommentsRef.current = false;
-        setIsLoadingComments(false);
+        startTransition(() => setIsLoadingComments(false));
       }
     },
     [id, request],
@@ -103,7 +112,7 @@ export function usePostDetails() {
     router.push({
       pathname: `/profile/${userId}` as any,
       params: {
-        isOwnProfile: isOwnProfile,
+        isOwnProfile: String(isOwnProfile),
         initialName: postData?.userName,
         initialAvatar: postData?.profileImageName,
       } as any,
@@ -115,33 +124,34 @@ export function usePostDetails() {
 
     async function fetchSinglePost() {
       if (!id) {
-        if (isMounted) setIsLoading(false);
+        if (isMounted) startTransition(() => setIsLoading(false));
         return;
       }
 
       try {
-        setIsLoading(true);
-        const response = await request({
+        startTransition(() => setIsLoading(true));
+
+        const data = await request({
           urlComplement: `/api/posts/${id}`,
           method: "GET",
+          hasLoading: false,
         });
 
-        if (isMounted && response?.ok) {
-          const data = await response.json();
-          setPostData(data);
-          setIsOwnProfile(data.ownPost || false);
-          setUserId(data.postUserID);
-          setIsLiked(data.likedByCurrentUser);
-          setLikesCount(data.likesCount);
-          setIsFollowing(data.isFollowing || false);
-        } else if (isMounted) {
-          setPostData(null);
+        if (isMounted) {
+          startTransition(() => {
+            setPostData(data);
+            setIsOwnProfile(data.ownPost || false);
+            setUserId(data.postUserID);
+            setIsLiked(data.likedByCurrentUser);
+            setLikesCount(data.likesCount);
+            setIsFollowing(data.isFollowing || false);
+          });
         }
       } catch (error) {
         console.error("Erro ao carregar o post:", error);
-        if (isMounted) setPostData(null);
+        if (isMounted) startTransition(() => setPostData(null));
       } finally {
-        if (isMounted) setIsLoading(false);
+        if (isMounted) startTransition(() => setIsLoading(false));
       }
     }
 
@@ -163,49 +173,54 @@ export function usePostDetails() {
     return () => subscription.remove();
   }, [fetchComments]);
 
-  const handleLikePost = useCallback(() => {
+  const handleLikePost = useCallback(async () => {
     if (!id) return;
     const wasLiked = isLiked;
 
-    setIsLiked((prev) => !prev);
-    setLikesCount((prev) => (wasLiked ? prev - 1 : prev + 1));
+    startTransition(() => {
+      setIsLiked(!wasLiked);
+      setLikesCount((prev) => (wasLiked ? prev - 1 : prev + 1));
+    });
 
-    request({
-      urlComplement: `/api/posts/${id}/like`,
-      method: wasLiked ? "DELETE" : "POST",
-      hasLoading: false,
-    })
-      .then((response) => {
-        if (response && !response.ok) throw new Error("Erro na API");
-      })
-      .catch(() => {
+    try {
+      await request({
+        urlComplement: `/api/posts/${id}/like`,
+        method: wasLiked ? "DELETE" : "POST",
+        hasLoading: false,
+      });
+    } catch (error) {
+      startTransition(() => {
         setIsLiked(wasLiked);
         setLikesCount((prev) => (wasLiked ? prev + 1 : prev - 1));
-        Alert.alert("Erro", "Não foi possível processar sua curtida.");
       });
+      Alert.alert("Erro", "Não foi possível processar sua curtida.");
+    }
   }, [id, isLiked, request]);
 
-  const syncFollowState = useCallback(
-    () => setIsFollowing((prev) => !prev),
-    [],
-  );
+  const syncFollowState = useCallback(() => {
+    startTransition(() => setIsFollowing((prev) => !prev));
+  }, []);
 
   const onAddImage = useCallback(async () => {
     try {
       const result = await pickImage();
-      if (result) setReplyFiles((prev) => [...prev, result]);
+      if (result) {
+        startTransition(() => setReplyFiles((prev) => [...prev, result]));
+      }
     } catch {
       Alert.alert("Erro", "Erro ao acessar a galeria de imagens.");
     }
   }, []);
 
   const onRemoveImage = useCallback((indexToRemove: number) => {
-    setReplyFiles((prev) => prev.filter((_, i) => i !== indexToRemove));
+    startTransition(() => {
+      setReplyFiles((prev) => prev.filter((_, i) => i !== indexToRemove));
+    });
   }, []);
 
   const onToggleEmoji = useCallback(() => {
     Keyboard.dismiss();
-    setShowEmoji((prev) => !prev);
+    startTransition(() => setShowEmoji((prev) => !prev));
   }, []);
 
   const onEmojiSelected = useCallback((emojiObject: { emoji: string }) => {
@@ -250,23 +265,23 @@ export function usePostDetails() {
     }
 
     try {
-      setIsSendingReply(true);
-      const response = await request({
+      startTransition(() => setIsSendingReply(true));
+
+      await request({
         urlComplement: `/api/posts/${id}/comments`,
         method: "POST",
-        body: createReplyFormData(),
+        data: createReplyFormData(),
+        hasLoading: false,
       });
 
-      if (response?.ok) {
+      startTransition(() => {
         setCommentText("");
         setReplyFiles([]);
         setReplyLocation(null);
         setIsInputFocused(false);
-        Keyboard.dismiss();
-        DeviceEventEmitter.emit("refresh_comments");
-      } else {
-        throw new Error("Falha na requisição");
-      }
+      });
+      Keyboard.dismiss();
+      DeviceEventEmitter.emit("refresh_comments");
     } catch (error) {
       console.error("Erro ao enviar resposta:", error);
       Alert.alert(
@@ -274,7 +289,7 @@ export function usePostDetails() {
         "Não foi possível enviar a resposta. Tente novamente.",
       );
     } finally {
-      setIsSendingReply(false);
+      startTransition(() => setIsSendingReply(false));
     }
   }, [commentText, replyFiles, id, request, createReplyFormData]);
 

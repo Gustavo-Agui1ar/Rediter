@@ -1,7 +1,12 @@
 import { useSignalR } from "@/context/NotificationsContext";
 import { useApi } from "@/utils/request.utils";
-import { useCallback, useEffect, useRef, useState } from "react";
-
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 export interface NotificacaoProps {
   id: string;
   recipientUserId: string;
@@ -21,23 +26,25 @@ export function useNotifications() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
-  const [lastCreatedAt, setLastCreatedAt] = useState<string | null>(null);
-  const [lastId, setLastId] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const lastItemRef = useRef<{ createdAt: string; id: string } | null>(null);
   const { latestIncomingNotification, clearUnreadCount } = useSignalR();
   const { request } = useApi();
 
   const loadNotifications = useCallback(
     async (fromRefresh = false, fromScroll = false) => {
       if (fromRefresh) {
-        setIsRefreshing(true);
-        setHasMore(true);
+        startTransition(() => {
+          setIsRefreshing(true);
+          setHasMore(true);
+        });
+        lastItemRef.current = null;
       } else if (fromScroll) {
         if (!hasMore || isLoadingMore) return;
-        setIsLoadingMore(true);
+        startTransition(() => setIsLoadingMore(true));
       } else {
-        setIsLoading(true);
+        startTransition(() => setIsLoading(true));
       }
 
       if (abortControllerRef.current) {
@@ -46,67 +53,76 @@ export function useNotifications() {
       abortControllerRef.current = new AbortController();
 
       try {
-        let url = `/api/notifications?pageSize=${PAGE_SIZE}`;
-        if (!fromRefresh && lastCreatedAt && lastId) {
-          url += `&lastCreatedAt=${lastCreatedAt}&lastId=${lastId}`;
+        const params = new URLSearchParams();
+        params.append("pageSize", String(PAGE_SIZE));
+
+        if (!fromRefresh && lastItemRef.current) {
+          params.append("lastCreatedAt", lastItemRef.current.createdAt);
+          params.append("lastId", lastItemRef.current.id);
         }
 
-        const response = await request({
+        const url = `/api/notifications?${params.toString()}`;
+
+        const data: NotificacaoProps[] = await request({
           urlComplement: url,
           method: "GET",
           signal: abortControllerRef.current.signal,
+          hasLoading: false,
         });
 
-        if (!response.ok) throw new Error("Erro ao buscar dados");
+        const newNotifications = Array.isArray(data) ? data : [];
 
-        const data: NotificacaoProps[] = await response.json();
+        startTransition(() => {
+          if (fromRefresh || (!fromRefresh && !fromScroll)) {
+            setNotificationsList(newNotifications);
+            clearUnreadCount();
+          } else if (fromScroll) {
+            setNotificationsList((prev) => {
+              const idsExistentes = new Set(prev.map((item) => item.id));
+              const novosItens = newNotifications.filter(
+                (item) => !idsExistentes.has(item.id),
+              );
 
-        if (fromRefresh || (!fromRefresh && !fromScroll)) {
-          setNotificationsList(data);
-          clearUnreadCount();
-
-          if (data.length > 0) {
-            setLastCreatedAt(data[data.length - 1].createdAt);
-            setLastId(data[data.length - 1].id);
+              return [...prev, ...novosItens];
+            });
           }
-        } else if (fromScroll) {
-          setNotificationsList((prev) => {
-            const idsExistentes = new Set(prev.map((item) => item.id));
-            const novosItens = data.filter(
-              (item) => !idsExistentes.has(item.id),
-            );
 
-            return [...prev, ...novosItens];
-          });
-          if (data.length > 0) {
-            setLastCreatedAt(data[data.length - 1].createdAt);
-            setLastId(data[data.length - 1].id);
+          if (newNotifications.length > 0) {
+            const lastItem = newNotifications[newNotifications.length - 1];
+            lastItemRef.current = {
+              createdAt: lastItem.createdAt,
+              id: lastItem.id,
+            };
           }
-        }
 
-        if (data.length < PAGE_SIZE) {
-          setHasMore(false);
-        }
+          if (newNotifications.length < PAGE_SIZE) {
+            setHasMore(false);
+          }
+        });
       } catch (error: any) {
-        if (error.name !== "AbortError") {
+        if (error.name !== "AbortError" && error.code !== "ERR_CANCELED") {
           console.error("Erro ao carregar notificações da API:", error);
         }
       } finally {
-        setIsLoading(false);
-        setIsRefreshing(false);
-        setIsLoadingMore(false);
+        startTransition(() => {
+          setIsLoading(false);
+          setIsRefreshing(false);
+          setIsLoadingMore(false);
+        });
       }
     },
-    [lastCreatedAt, lastId, hasMore, isLoadingMore, request, clearUnreadCount],
+    [hasMore, isLoadingMore, request, clearUnreadCount],
   );
 
   const handleMarkAsRead = useCallback(
     (id: string, postId: string) => {
-      setNotificationsList((prev) =>
-        prev.map((notif) =>
-          notif.id === id ? { ...notif, isRead: true } : notif,
-        ),
-      );
+      startTransition(() => {
+        setNotificationsList((prev) =>
+          prev.map((notif) =>
+            notif.id === id ? { ...notif, isRead: true } : notif,
+          ),
+        );
+      });
 
       request({
         urlComplement: `/api/notifications/${id}/read`,
@@ -115,11 +131,13 @@ export function useNotifications() {
       }).catch((error) => {
         console.error("Erro ao marcar como lida no servidor:", error);
 
-        setNotificationsList((prev) =>
-          prev.map((notif) =>
-            notif.id === id ? { ...notif, isRead: false } : notif,
-          ),
-        );
+        startTransition(() => {
+          setNotificationsList((prev) =>
+            prev.map((notif) =>
+              notif.id === id ? { ...notif, isRead: false } : notif,
+            ),
+          );
+        });
       });
     },
     [request],
@@ -140,20 +158,22 @@ export function useNotifications() {
         abortControllerRef.current.abort();
       }
     };
-  }, []);
+  }, [loadNotifications]);
 
   useEffect(() => {
     if (latestIncomingNotification) {
-      setNotificationsList((prev) => {
-        const jaExiste = prev.some(
-          (notif) => notif.id === latestIncomingNotification.id,
-        );
+      startTransition(() => {
+        setNotificationsList((prev) => {
+          const jaExiste = prev.some(
+            (notif) => notif.id === latestIncomingNotification.id,
+          );
 
-        if (jaExiste) {
-          return prev;
-        }
+          if (jaExiste) {
+            return prev;
+          }
 
-        return [latestIncomingNotification, ...prev];
+          return [latestIncomingNotification, ...prev];
+        });
       });
     }
   }, [latestIncomingNotification]);

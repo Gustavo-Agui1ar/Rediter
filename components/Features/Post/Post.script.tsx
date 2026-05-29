@@ -36,9 +36,9 @@ export function usePost({
   const [isLiked, setIsLiked] = useState(liked);
   const [likesCount, setLikesCount] = useState(countLikes);
   const { request } = useApi();
+  const { baseUrl } = useRediterBaseConfigs();
   const toggleOptions = useCallback(() => setShowOptions((prev) => !prev), []);
   const closeOptions = useCallback(() => setShowOptions(false), []);
-  const { baseUrl } = useRediterBaseConfigs();
 
   const handleEditPost = useCallback(() => {
     closeOptions();
@@ -65,12 +65,17 @@ export function usePost({
           text: "Excluir",
           style: "destructive",
           onPress: async () => {
-            const response = await request({
-              urlComplement: `/api/posts/${postId}`,
-              method: "DELETE",
-            });
-            if (response?.ok) {
+            try {
+              await request({
+                urlComplement: `/api/posts/${postId}`,
+                method: "DELETE",
+                hasLoading: true,
+              });
+
               DeviceEventEmitter.emit("refresh_posts");
+            } catch (error) {
+              console.error("Erro ao excluir post:", error);
+              Alert.alert("Erro", "Não foi possível excluir o post.");
             }
           },
         },
@@ -102,6 +107,7 @@ export function usePost({
     setIsDownloading(true);
 
     try {
+      let downloadCount = 0;
       for (const imageUrl of postImageUrl) {
         let validUrl = imageUrl;
 
@@ -120,18 +126,20 @@ export function usePost({
           cleanUrl.split("/").pop() || `post_media_${Date.now()}.jpg`;
 
         if (!Paths || !Paths.document) {
-          throw new Error(
-            "Sistema de arquivos nativo não disponível nesta plataforma.",
-          );
+          throw new Error("Sistema de arquivos nativo não disponível.");
         }
 
         const file = new File(Paths.document, filename);
         await File.downloadFileAsync(validUrl, file);
 
         await Asset.create(file.uri);
-
-        Alert.alert("Sucesso", "Mídia(s) salva(s) na sua galeria!");
+        downloadCount++;
       }
+
+      Alert.alert(
+        "Sucesso",
+        `${downloadCount} Mídia(s) salva(s) na sua galeria!`,
+      );
     } catch (error: any) {
       Alert.alert(
         "Erro",
@@ -141,29 +149,25 @@ export function usePost({
       setIsDownloading(false);
       closeOptions();
     }
-  }, [postImageUrl, closeOptions]);
+  }, [postImageUrl, baseUrl, closeOptions]);
 
-  const handleLikePost = useCallback(() => {
+  const handleLikePost = useCallback(async () => {
     const wasLiked = isLiked;
 
     setIsLiked((prev) => !prev);
     setLikesCount((prev) => (wasLiked ? prev - 1 : prev + 1));
 
-    request({
-      urlComplement: `/api/posts/${postId}/like`,
-      method: wasLiked ? "DELETE" : "POST",
-      hasLoading: false,
-    })
-      .then((response) => {
-        if (response && !response.ok) {
-          throw new Error("Erro na API");
-        }
-      })
-      .catch((error) => {
-        console.error("Erro ao curtir:", error);
-        setIsLiked(wasLiked);
-        setLikesCount((prev) => (wasLiked ? prev + 1 : prev - 1));
+    try {
+      await request({
+        urlComplement: `/api/posts/${postId}/like`,
+        method: wasLiked ? "DELETE" : "POST",
+        hasLoading: false,
       });
+    } catch (error) {
+      console.error("Erro ao curtir:", error);
+      setIsLiked(wasLiked);
+      setLikesCount((prev) => (wasLiked ? prev + 1 : prev - 1));
+    }
   }, [isLiked, postId, request]);
 
   const handleGoToProfile = useCallback(() => {
@@ -214,7 +218,6 @@ export function usePost({
       handleLikePost,
       handleGoToProfile,
       handleClickPost,
-      setShowOptions,
     ],
   );
 }

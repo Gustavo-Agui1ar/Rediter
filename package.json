@@ -16,6 +16,7 @@
     "@microsoft/signalr": "^10.0.0",
     "@react-native-google-signin/google-signin": "^13.0.0",
     "@react-native-picker/picker": "2.11.4",
+    "axios": "^1.16.1",
     "babel-preset-expo": "~56.0.0",
     "expo": "^56.0.4",
     "expo-build-properties": "~56.0.14",

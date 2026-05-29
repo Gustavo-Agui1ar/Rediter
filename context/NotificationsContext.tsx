@@ -6,13 +6,19 @@ import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import React, {
   createContext,
+  startTransition,
   useCallback,
   useContext,
   useEffect,
   useRef,
   useState,
 } from "react";
-import { AppState, AppStateStatus, Platform } from "react-native";
+import {
+  AppState,
+  AppStateStatus,
+  DeviceEventEmitter,
+  Platform,
+} from "react-native";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -58,7 +64,6 @@ export const SignalRProvider = ({
   const [latestIncomingNotification, setLatestIncomingNotification] = useState<
     any | null
   >(null);
-
   const { baseUrl, isServerOnline } = useRediterBaseConfigs();
   const appState = useRef(AppState.currentState);
   const connectionRef = useRef<signalR.HubConnection | null>(null);
@@ -106,9 +111,8 @@ export const SignalRProvider = ({
       await request({
         urlComplement: "/api/users/devices",
         method: "POST",
-        body: {
-          deviceToken: pushToken,
-        },
+        data: { deviceToken: pushToken },
+        hasLoading: false,
       });
     } catch (error) {
       console.error("❌ Erro ao registrar Push Token:", error);
@@ -117,16 +121,15 @@ export const SignalRProvider = ({
 
   const fetchInitialUnreadCount = useCallback(async () => {
     try {
-      const response = await request({
+      const data = await request({
         urlComplement: "/api/notifications/unread-count",
         method: "GET",
+        hasLoading: false,
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        const count = typeof data === "number" ? data : data.count || 0;
-        setUnreadCount(count);
-      }
+      const count = typeof data === "number" ? data : data.count || 0;
+
+      startTransition(() => setUnreadCount(count));
     } catch (error) {
       console.error(
         "❌ Erro ao buscar contador inicial de notificações:",
@@ -148,8 +151,6 @@ export const SignalRProvider = ({
         await connectionRef.current.stop();
       }
 
-      console.log("BASE URL:", baseUrl);
-
       const newConnection = new signalR.HubConnectionBuilder()
         .withUrl(`${baseUrl}/Hubs/NotificationHub`, {
           accessTokenFactory: async () => {
@@ -170,15 +171,48 @@ export const SignalRProvider = ({
     if (connectionRef.current) {
       await connectionRef.current.stop();
       setConnection(null);
-      setUnreadCount(0);
-      setLatestIncomingNotification(null);
+      startTransition(() => {
+        setUnreadCount(0);
+        setLatestIncomingNotification(null);
+      });
       console.log("🛑 SignalR: Desconectado com segurança.");
     }
   }, []);
 
+  useEffect(() => {
+    const subscription = DeviceEventEmitter.addListener(
+      "onTokenRefresh",
+      async () => {
+        console.log("🔄 Axios atualizou o token! Reconectando SignalR...");
+
+        if (connectionRef.current) {
+          if (
+            connectionRef.current.state ===
+            signalR.HubConnectionState.Disconnected
+          ) {
+            try {
+              await connectionRef.current.start();
+              console.log("✅ SignalR reconectado com o novo token!");
+              fetchInitialUnreadCount();
+            } catch (e) {
+              console.error(
+                "❌ Falha ao reconectar SignalR após refresh do token:",
+                e,
+              );
+            }
+          }
+        }
+      },
+    );
+
+    return () => subscription.remove();
+  }, [fetchInitialUnreadCount]);
+
   const clearUnreadCount = useCallback(() => {
-    setUnreadCount(0);
-    setLatestIncomingNotification(null);
+    startTransition(() => {
+      setUnreadCount(0);
+      setLatestIncomingNotification(null);
+    });
   }, []);
 
   useEffect(() => {
@@ -221,8 +255,11 @@ export const SignalRProvider = ({
         "🔔 Notificação capturada globalmente no Contexto:",
         notification.id,
       );
-      setUnreadCount((prev) => prev + 1);
-      setLatestIncomingNotification(notification);
+
+      startTransition(() => {
+        setUnreadCount((prev) => prev + 1);
+        setLatestIncomingNotification(notification);
+      });
     };
 
     connection.off("ReceiveNotification", handleGlobalNotification);

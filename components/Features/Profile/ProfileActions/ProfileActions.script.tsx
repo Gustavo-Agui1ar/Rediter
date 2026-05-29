@@ -1,8 +1,7 @@
 import { useApi } from "@/utils/request.utils";
 import { router } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Alert, DeviceEventEmitter } from "react-native";
-
 interface UseProfileActionsProps {
   userId?: string;
   initialIsFollowing: boolean;
@@ -29,33 +28,49 @@ export function useProfileActions({
   >("info");
 
   const { request } = useApi();
+  const bannerTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const showAlert = (message: string, type: "error" | "success") => {
-    setBannerMessage(message);
-    setBannerType(type);
-    setBannerVisible(true);
-    setTimeout(() => setBannerVisible(false), 3000);
-  };
+  const showAlert = useCallback(
+    (message: string, type: "error" | "success") => {
+      setBannerMessage(message);
+      setBannerType(type);
+      setBannerVisible(true);
 
-  const handleFollowToggle = useCallback(() => {
+      if (bannerTimeoutRef.current) {
+        clearTimeout(bannerTimeoutRef.current);
+      }
+
+      bannerTimeoutRef.current = setTimeout(
+        () => setBannerVisible(false),
+        3000,
+      );
+    },
+    [],
+  );
+
+  const handleFollowToggle = useCallback(async () => {
     if (!userId) return;
 
-    setIsFollowing((prev) => !prev);
-    if (onUpdateProfile) onUpdateProfile({ isFollowing: !isFollowing });
+    const wasFollowing = isFollowing;
 
-    request({
-      urlComplement: `/api/users/${userId}/${isFollowing ? "unfollow" : "follow"}`,
-      method: isFollowing ? "DELETE" : "POST",
-      hasLoading: false,
-    }).catch((ex) => {
-      setIsFollowing((prev) => !prev);
-      if (onUpdateProfile) onUpdateProfile({ isFollowing: isFollowing });
-      console.error(ex);
+    setIsFollowing(!wasFollowing);
+    if (onUpdateProfile) onUpdateProfile({ isFollowing: !wasFollowing });
+
+    try {
+      await request({
+        urlComplement: `/api/users/${userId}/${wasFollowing ? "unfollow" : "follow"}`,
+        method: wasFollowing ? "DELETE" : "POST",
+        hasLoading: false,
+      });
+    } catch (ex) {
+      setIsFollowing(wasFollowing);
+      if (onUpdateProfile) onUpdateProfile({ isFollowing: wasFollowing });
+      console.error("Erro ao atualizar seguidor:", ex);
       showAlert("Erro ao atualizar seguidor", "error");
-    });
-  }, [userId, isFollowing, onUpdateProfile, request]);
+    }
+  }, [userId, isFollowing, onUpdateProfile, request, showAlert]);
 
-  const handleBlock = useCallback(async () => {
+  const handleBlock = useCallback(() => {
     if (!userId) return;
 
     Alert.alert(
@@ -68,17 +83,14 @@ export function useProfileActions({
           style: "destructive",
           onPress: async () => {
             try {
-              const response = await request({
+              await request({
                 urlComplement: `/api/users/${userId}/${isBlocked ? "unblock" : "block"}`,
                 method: isBlocked ? "DELETE" : "POST",
+                hasLoading: true,
               });
 
-              if (!response?.ok) throw new Error();
-
               showAlert(
-                "Usuário " +
-                  (isBlocked ? "desbloqueado" : "bloqueado") +
-                  " com sucesso",
+                `Usuário ${isBlocked ? "desbloqueado" : "bloqueado"} com sucesso`,
                 "success",
               );
 
@@ -89,16 +101,17 @@ export function useProfileActions({
                 });
               }
 
-              setIsBlocked((prev) => !prev);
+              const newBlockedState = !isBlocked;
+              setIsBlocked(newBlockedState);
 
-              if (onUpdateProfile) onUpdateProfile({ isBlocked: !isBlocked });
+              if (onUpdateProfile) {
+                onUpdateProfile({ isBlocked: newBlockedState });
+              }
 
               setTimeout(() => router.back(), 1500);
             } catch (error) {
               showAlert(
-                "Não foi possível " +
-                  (isBlocked ? "desbloquear" : "bloquear") +
-                  " o usuário.",
+                `Não foi possível ${isBlocked ? "desbloquear" : "bloquear"} o usuário.`,
                 "error",
               );
             }
@@ -106,7 +119,7 @@ export function useProfileActions({
         },
       ],
     );
-  }, [userId, isBlocked, request, onUpdateProfile]);
+  }, [userId, isBlocked, request, onUpdateProfile, showAlert]);
 
   return {
     isFollowing,

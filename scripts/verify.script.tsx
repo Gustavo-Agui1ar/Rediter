@@ -1,7 +1,7 @@
 import { useApi } from "@/utils/request.utils";
 import { saveTokens } from "@/utils/storage.utils";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { startTransition, useState } from "react";
 export interface VerifyResponse {
   success: boolean;
   error?: string;
@@ -24,32 +24,34 @@ export function useVerifyCode() {
     }
 
     try {
-      const serverResponse = await request({
+      const data = await request({
         urlComplement: `/api/auth/verification-code/confirm`,
         method: "POST",
         requireAuth: false,
-        body: { code: codeToVerify, email },
+        data: { code: codeToVerify, email },
       });
-
-      if (!serverResponse.ok) {
-        return { success: false, error: "Código inválido ou expirado." };
-      }
-
-      const data = await serverResponse.json();
 
       return {
         success: true,
         access: data.accessToken,
         refresh: data.refreshToken,
       };
-    } catch (error) {
-      console.error("Error during code verification:", error);
+    } catch (error: any) {
+      console.error("Erro durante a verificação do código:", error);
+
+      let errorMessage = "Erro de rede. Tente novamente.";
+
+      if (error?.response?.status === 400 || error?.response?.status === 401) {
+        errorMessage = "Código inválido ou expirado.";
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
       return {
         success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Erro de rede. Tente novamente.",
+        error: errorMessage,
       };
     }
   };
@@ -57,12 +59,19 @@ export function useVerifyCode() {
   const handleResendCode = async () => {
     if (!userEmail) return;
 
-    await request({
-      method: "POST",
-      urlComplement: "/api/auth/verification-code",
-      body: userEmail,
-      requireAuth: false,
-    });
+    try {
+      await request({
+        method: "POST",
+        urlComplement: "/api/auth/verification-code",
+        data: { email: userEmail },
+        requireAuth: false,
+        hasLoading: false,
+      });
+
+      alert("Código reenviado com sucesso!");
+    } catch (error) {
+      alert("Não foi possível reenviar o código. Tente novamente mais tarde.");
+    }
   };
 
   const handleVerify = async () => {
@@ -79,14 +88,16 @@ export function useVerifyCode() {
       await saveTokens(response.access, response.refresh);
     }
 
-    if (mode === "register") {
-      router.replace("/home");
-    } else if (mode === "reset") {
-      router.push({
-        pathname: "/forgotPassword",
-        params: { userEmail },
-      });
-    }
+    startTransition(() => {
+      if (mode === "register") {
+        router.replace("/home");
+      } else if (mode === "reset") {
+        router.push({
+          pathname: "/forgotPassword",
+          params: { userEmail },
+        });
+      }
+    });
   };
 
   return {

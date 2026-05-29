@@ -1,41 +1,29 @@
-import { Header, IconButton, TextBox } from "@/components/components";
+import { Header, TextBox } from "@/components/components"; // Remova IconButton se não for usar os checks agora
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
-import { MensagemProps, useChat } from "@/scripts/Message.script";
+import { MessageDTO, useChat } from "@/scripts/Message.script"; // Importando o DTO correto
 import { useChatStyles } from "@/styles/Message.style";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { memo, useCallback, useState } from "react";
+import { memo, useCallback, useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    KeyboardAvoidingView,
-    Platform,
-    Text,
-    View,
+  ActivityIndicator,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-// Tipagem correta para os estilos inferidos do hook
 type ChatStyles = ReturnType<typeof useChatStyles>;
 
-// ============================================================================
-// COMPONENTE: BALÃO DE MENSAGEM
-// ============================================================================
 const MessageBubble = memo(
-  ({
-    item,
-    isMe,
-    styles,
-  }: {
-    item: MensagemProps;
-    isMe: boolean;
-    styles: ChatStyles;
-  }) => {
+  ({ item, styles }: { item: MessageDTO; styles: ChatStyles }) => {
     const hora = new Date(item.createdAt).toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
     });
-    const { colors } = useTheme();
+
+    const isMe = item.isMine;
 
     return (
       <View
@@ -54,52 +42,38 @@ const MessageBubble = memo(
           <View style={styles.timeContainer}>
             <Text style={isMe ? styles.timeMe : styles.timeThem}>{hora}</Text>
 
-            {isMe && (
-              <Text
-                style={[
-                  styles.checkMarks,
-                  item.isRead ? styles.checkMarksRead : styles.checkMarksSent,
-                ]}
-              >
-                {/* Dica: Substitua por ícones como Ionicons (name="checkmark-done-outline") */}
-                <IconButton
-                  icon={item.isRead ? "double-check" : "check"}
-                  type="none"
-                  iconColor={
-                    item.isRead ? colors.primary : colors.textSecondary
-                  }
-                  size={32}
-                />
-              </Text>
-            )}
+            {/* TODO: A implementar futuramente (Read Receipts).
+               Como o MessageDTO atual não possui isRead, essa parte pode ser 
+               removida temporariamente ou deixada apenas o check simples (sem o double-check).
+            */}
           </View>
         </View>
       </View>
     );
   },
-  (prev, next) =>
-    prev.item.id === next.item.id && prev.item.isRead === next.item.isRead,
+  (prev, next) => prev.item.messageId === next.item.messageId,
 );
 
-// ============================================================================
-// TELA PRINCIPAL
-// ============================================================================
 export default function ChatScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets(); // Lida com o entalhe/home bar do iOS
 
-  const { targetUserId, targetUserName, currentUserId } = useLocalSearchParams<{
-    targetUserId: string;
-    targetUserName: string;
-    currentUserId: string;
+  const { chatId, targetUserId, targetUserName } = useLocalSearchParams<{
+    chatId?: string;
+    targetUserId?: string;
+    targetUserName?: string;
   }>();
 
   const styles = useChatStyles();
-  const [inputText, setInputText] = useState("");
+  const { colors } = useTheme();
   const { t } = useLanguage();
+  const [inputText, setInputText] = useState("");
 
   const { messages, isLoading, isLoadingMore, loadMessages, sendMessage } =
-    useChat(targetUserId, currentUserId);
+    useChat({
+      chatId: chatId || null,
+      receiverId: targetUserId || null,
+      isDirect: !!targetUserId,
+    });
 
   const handleSend = () => {
     if (!inputText.trim()) return;
@@ -108,18 +82,13 @@ export default function ChatScreen() {
   };
 
   const renderItem = useCallback(
-    ({ item }: { item: MensagemProps }) => (
-      <MessageBubble
-        item={item}
-        isMe={item.senderId === currentUserId}
-        styles={styles}
-      />
+    ({ item }: { item: MessageDTO }) => (
+      <MessageBubble item={item} styles={styles} />
     ),
-    [currentUserId, styles],
+    [styles],
   );
 
-  const { colors } = useTheme();
-  const keyExtractor = useCallback((item: MensagemProps) => item.id, []);
+  const keyExtractor = useCallback((item: MessageDTO) => item.messageId, []);
 
   return (
     <KeyboardAvoidingView
@@ -127,10 +96,17 @@ export default function ChatScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
     >
-      <Header divider={true} onBack={() => router.back()} />
+      {/* Opcional: Você pode passar o targetUserName como título do cabeçalho
+         quando estiver em um chat 1:1. 
+      */}
+      <Header
+        divider={true}
+        onBack={() => router.back()}
+        title={targetUserName}
+      />
 
       <View style={styles.chatArea}>
-        {isLoading ? (
+        {isLoading && messages.length === 0 ? ( // Mostra o loader de tela cheia apenas na carga inicial
           <ActivityIndicator
             size="large"
             color={colors.primary}
@@ -144,7 +120,7 @@ export default function ChatScreen() {
             inverted
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.listContent}
-            keyboardDismissMode="on-drag" // Fecha o teclado ao rolar
+            keyboardDismissMode="on-drag"
             keyboardShouldPersistTaps="handled"
             onEndReached={() => loadMessages(true)}
             onEndReachedThreshold={0.5}

@@ -1,29 +1,30 @@
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { useRootNavigationState, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-
-import { useLoading } from "@/context/LoadingContext";
 import { useSignalR } from "@/context/NotificationsContext";
 import { useRediterBaseConfigs } from "@/context/RediterConfigContext";
 import { LoginValidator } from "@/utils/login.utils";
 import { useApi } from "@/utils/request.utils";
 import * as StorageUtils from "@/utils/storage.utils";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { useRootNavigationState, useRouter } from "expo-router";
+import { startTransition, useEffect, useState } from "react";
 
 export function useIndex() {
   const router = useRouter();
-  const { setLoading } = useLoading();
   const rootNavigationState = useRootNavigationState();
   const { request } = useApi();
-  const { baseUrl, googleClientId } = useRediterBaseConfigs();
+  const { googleClientId } = useRediterBaseConfigs();
+  const { connectSignalR } = useSignalR();
   const [form, setForm] = useState({ email: "", password: "" });
   const [serverError, setServerError] = useState("");
   const [submitted, setSubmitted] = useState(false);
-  const { connectSignalR } = useSignalR();
 
-  GoogleSignin.configure({
-    webClientId: googleClientId,
-    offlineAccess: true,
-  });
+  useEffect(() => {
+    if (googleClientId) {
+      GoogleSignin.configure({
+        webClientId: googleClientId,
+        offlineAccess: true,
+      });
+    }
+  }, [googleClientId]);
 
   useEffect(() => {
     if (!rootNavigationState?.key) return;
@@ -47,14 +48,18 @@ export function useIndex() {
   }, [rootNavigationState?.key, router]);
 
   const handleInputChange = (field: "email" | "password", value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-    if (submitted) setSubmitted(false);
-    if (serverError) setServerError("");
+    startTransition(() => {
+      setForm((prev) => ({ ...prev, [field]: value }));
+      if (submitted) setSubmitted(false);
+      if (serverError) setServerError("");
+    });
   };
 
   const handleLogin = async () => {
-    setSubmitted(true);
-    setServerError("");
+    startTransition(() => {
+      setSubmitted(true);
+      setServerError("");
+    });
 
     if (
       !LoginValidator.isEmailValid(form.email) ||
@@ -63,12 +68,11 @@ export function useIndex() {
       return;
     }
 
-    setLoading(true);
     try {
-      const response = await request({
+      const responseData = await request({
         urlComplement: "/api/auth/login",
         method: "POST",
-        body: {
+        data: {
           name: "User Redider",
           email: form.email,
           password: form.password,
@@ -76,10 +80,11 @@ export function useIndex() {
         requireAuth: false,
       });
 
-      const { refresh, access } = await LoginValidator.ParseTokens(response);
+      const access = responseData.accessToken || responseData.access;
+      const refresh = responseData.refreshToken || responseData.refresh;
 
       if (!access || !refresh) {
-        setServerError("Resposta inválida do servidor.");
+        startTransition(() => setServerError("Resposta inválida do servidor."));
         return;
       }
 
@@ -87,39 +92,42 @@ export function useIndex() {
       await connectSignalR();
       router.replace("/home");
     } catch (error: any) {
-      setServerError(error?.message || "Falha na conexão com o servidor.");
-    } finally {
-      setLoading(false);
+      startTransition(() => {
+        setServerError(error?.message || "Falha na conexão com o servidor.");
+      });
     }
   };
 
   const handleGoogleLogin = async () => {
-    setLoading(true);
-    setServerError("");
+    startTransition(() => setServerError(""));
 
     try {
       await GoogleSignin.hasPlayServices({
         showPlayServicesUpdateDialog: true,
       });
+
       const userInfo = await GoogleSignin.signIn();
       const idToken = userInfo.data?.idToken;
 
       if (!idToken) {
-        setServerError("Falha ao obter o token de autenticação do Google.");
+        startTransition(() =>
+          setServerError("Falha ao obter o token de autenticação do Google."),
+        );
         return;
       }
 
-      const response = await request({
+      const responseData = await request({
         urlComplement: "/api/auth/login/google",
         method: "POST",
-        body: { idToken: idToken },
+        data: { idToken: idToken },
         requireAuth: false,
       });
 
-      const { refresh, access } = await LoginValidator.ParseTokens(response);
+      const access = responseData.accessToken || responseData.access;
+      const refresh = responseData.refreshToken || responseData.refresh;
 
       if (!access || !refresh) {
-        setServerError("Resposta inválida do servidor.");
+        startTransition(() => setServerError("Resposta inválida do servidor."));
         return;
       }
 
@@ -129,29 +137,29 @@ export function useIndex() {
     } catch (error: any) {
       console.error("Erro durante o Google Sign-In:", error);
 
+      let errorMessage = "Erro desconhecido durante login com Google.";
+
       if (error.code) {
         switch (error.code) {
           case "SIGN_IN_CANCELLED":
-            setServerError("O login com Google foi cancelado.");
-            return;
+            errorMessage = "O login com Google foi cancelado.";
+            break;
           case "IN_PROGRESS":
-            setServerError("O login já está em andamento.");
-            return;
+            errorMessage = "O login já está em andamento.";
+            break;
           case "PLAY_SERVICES_NOT_AVAILABLE":
-            setServerError(
-              "Serviços do Google Play indisponíveis neste dispositivo.",
-            );
-            return;
+            errorMessage =
+              "Serviços do Google Play indisponíveis neste dispositivo.";
+            break;
           default:
-            setServerError("Falha ao comunicar com os servidores do Google.");
-            return;
+            errorMessage = "Falha ao comunicar com os servidores do Google.";
+            break;
         }
+      } else if (error.message) {
+        errorMessage = error.message;
       }
-      setServerError(
-        error?.message || "Erro desconhecido durante login com Google.",
-      );
-    } finally {
-      setLoading(false);
+
+      startTransition(() => setServerError(errorMessage));
     }
   };
 

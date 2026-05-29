@@ -1,8 +1,7 @@
-import { useLoading } from "@/context/LoadingContext";
 import { LoginValidator } from "@/utils/login.utils";
 import { useApi } from "@/utils/request.utils";
 import { router } from "expo-router";
-import { useState } from "react";
+import { startTransition, useState } from "react";
 
 export function useRegister() {
   const [form, setForm] = useState({
@@ -13,30 +12,39 @@ export function useRegister() {
   });
 
   const [errorText, setErrorText] = useState("");
-  const { setLoading } = useLoading();
   const { request } = useApi();
+
   const handleInputChange = (field: keyof typeof form, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-    if (errorText) setErrorText("");
+    startTransition(() => {
+      setForm((prev) => ({ ...prev, [field]: value }));
+      if (errorText) setErrorText("");
+    });
   };
 
   const handleRegister = async () => {
     const trimmedEmail = form.email.trim().toLowerCase();
-    setErrorText("");
+
+    startTransition(() => setErrorText(""));
 
     if (!form.name.trim()) {
-      return setErrorText("Por favor, insira o seu nome.");
+      startTransition(() => setErrorText("Por favor, insira o seu nome."));
+      return;
     }
 
     if (!LoginValidator.isEmailValid(trimmedEmail)) {
-      return setErrorText("Por favor, insira um e-mail válido.");
+      startTransition(() =>
+        setErrorText("Por favor, insira um e-mail válido."),
+      );
+      return;
     }
 
     if (!LoginValidator.doPasswordsMatch(form.password, form.confirmPassword)) {
-      return setErrorText("Por favor, insira senhas coincidentes.");
+      startTransition(() =>
+        setErrorText("Por favor, insira senhas coincidentes."),
+      );
+      return;
     }
 
-    setLoading(true);
     try {
       const user = {
         name: form.name,
@@ -44,31 +52,31 @@ export function useRegister() {
         password: form.password,
       };
 
-      const serverResponse = await request({
+      await request({
         urlComplement: "/api/users",
         method: "POST",
-        body: user,
+        data: user,
         requireAuth: false,
       });
 
-      if (serverResponse.ok) {
-        router.push({
-          pathname: "/Verify",
-          params: { userEmail: trimmedEmail, mode: "register" },
-        });
-      } else {
-        setErrorText(
-          "Falha ao registrar usuário. Verifique se o e-mail já existe.",
-        );
-      }
+      router.push({
+        pathname: "/Verify",
+        params: { userEmail: trimmedEmail, mode: "register" },
+      });
     } catch (error: any) {
-      if (error.name === "AbortError") {
-        setErrorText("O servidor demorou muito para responder (Timeout).");
-      } else {
-        setErrorText("Erro de conexão com o servidor.");
+      let errorMessage =
+        "Falha ao registrar usuário. Verifique se o e-mail já existe.";
+
+      if (
+        error?.code === "ECONNABORTED" ||
+        error?.message?.toLowerCase().includes("timeout")
+      ) {
+        errorMessage = "O servidor demorou muito para responder (Timeout).";
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
       }
-    } finally {
-      setLoading(false);
+
+      startTransition(() => setErrorText(errorMessage));
     }
   };
 

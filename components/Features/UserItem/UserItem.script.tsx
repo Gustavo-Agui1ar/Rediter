@@ -1,6 +1,6 @@
 import { ButtonType } from "@/components/UI/Button/button";
 import { useApi } from "@/utils/request.utils";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 export function useFollow(
   userId: number,
@@ -8,72 +8,42 @@ export function useFollow(
   onSuccessRemove?: (userId: string) => void,
 ) {
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
-  const syncedStateRef = useRef(initialIsFollowing);
-  const latestValueRef = useRef(initialIsFollowing);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const { request } = useApi();
 
-  const handleFollowToggle = () => {
-    setIsFollowing((prev) => !prev);
-  };
+  const handleFollowToggle = async () => {
+    if (!userId) return;
 
-  const handleUnlockUser = () => {
-    request({
-      urlComplement: `/api/users/${userId}/unlock`,
-      method: "DELETE",
-    })
-      .then(() => {
-        onSuccessRemove?.(userId.toString());
-      })
-      .catch((error) => {
-        console.error("Erro ao desbloquear usuário:", error);
-      });
-  };
+    const wasFollowing = isFollowing;
+    const targetState = !wasFollowing;
 
-  const executeSync = useCallback(
-    (targetState: boolean) => {
-      if (!userId) return;
+    setIsFollowing(targetState);
 
-      request({
+    try {
+      await request({
         urlComplement: `/api/users/${userId}/${targetState ? "follow" : "unfollow"}`,
         method: targetState ? "POST" : "DELETE",
-      })
-        .then((response) => {
-          if (!response.ok) throw new Error("Falha silenciosa");
+        hasLoading: false,
+      });
+    } catch (error) {
+      setIsFollowing(wasFollowing);
+      console.error("Erro ao sincronizar follow:", error);
+    }
+  };
 
-          syncedStateRef.current = targetState;
-        })
-        .catch(() => {
-          setIsFollowing(syncedStateRef.current);
-        });
-    },
-    [userId, request],
-  );
+  const handleUnlockUser = async () => {
+    if (!userId) return;
 
-  useEffect(() => {
-    latestValueRef.current = isFollowing;
-  }, [isFollowing]);
-
-  useEffect(() => {
-    if (isFollowing === syncedStateRef.current) return;
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
-    timeoutRef.current = setTimeout(() => {
-      executeSync(isFollowing);
-    }, 2000);
-
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, [isFollowing, executeSync]);
-
-  useEffect(() => {
-    return () => {
-      if (latestValueRef.current !== syncedStateRef.current) {
-        executeSync(latestValueRef.current);
-      }
-    };
-  }, [executeSync]);
+    try {
+      await request({
+        urlComplement: `/api/users/${userId}/unlock`,
+        method: "DELETE",
+        hasLoading: true,
+      });
+      onSuccessRemove?.(userId.toString());
+    } catch (error) {
+      console.error("Erro ao desbloquear usuário:", error);
+    }
+  };
 
   return {
     isFollowing,

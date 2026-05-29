@@ -1,62 +1,128 @@
 import { useApi } from "@/utils/request.utils";
-import { useCallback, useEffect, useState } from "react";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
+export interface SearchUserItem {
+  id: string;
+  createdAt: string;
+  [key: string]: any;
+}
+
+const PAGE_SIZE = 12;
 
 export function useSearchUsers(searchTerm: string) {
-  const [users, setUsers] = useState<any[]>([]);
-  const [hasMore, setHasMore] = useState(true);
+  const [users, setUsers] = useState<SearchUserItem[]>([]);
+  const [hasMore, setHasMore] = useState(false);
   const [initialLoading, setInitialLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const { request } = useApi();
+  const fetchingRef = useRef(false);
+  const lastItemRef = useRef<{ id: string; createdAt: string } | null>(null);
 
   const fetchUsers = useCallback(
-    async (isMore = false) => {
-      if (!searchTerm?.trim()) {
-        setUsers([]);
+    async (isMore = false, currentTerm: string) => {
+      if (!currentTerm?.trim()) {
+        startTransition(() => {
+          setUsers([]);
+          setHasMore(false);
+          setInitialLoading(false);
+        });
         return;
       }
 
+      if (fetchingRef.current) return;
+
       if (isMore) {
         if (loadingMore || !hasMore) return;
-        setLoadingMore(true);
+        startTransition(() => setLoadingMore(true));
       } else {
-        setInitialLoading(true);
+        lastItemRef.current = null;
+        startTransition(() => {
+          setInitialLoading(true);
+          setHasMore(true);
+        });
       }
 
+      fetchingRef.current = true;
+
       try {
-        let url = `/api/users/search?query=${encodeURIComponent(searchTerm)}&pageSize=12`;
+        const params = new URLSearchParams();
+        params.append("query", currentTerm);
+        params.append("pageSize", String(PAGE_SIZE));
 
-        if (isMore && users.length > 0) {
-          const lastUser = users[users.length - 1];
-          url += `&lastCreatedAt=${encodeURIComponent(lastUser.createdAt)}&lastId=${lastUser.id}`;
+        if (isMore && lastItemRef.current) {
+          params.append("lastCreatedAt", lastItemRef.current.createdAt);
+          params.append("lastId", lastItemRef.current.id);
         }
 
-        const response = await request({ urlComplement: url, method: "GET" });
+        const url = `/api/users/search?${params.toString()}`;
 
-        if (response.ok) {
-          const data = await response.json();
-          setUsers((prev) => (isMore ? [...prev, ...data] : data));
-          setHasMore(data.length === 12);
+        const data: SearchUserItem[] = await request({
+          urlComplement: url,
+          method: "GET",
+          hasLoading: false,
+        });
+
+        const newUsers = Array.isArray(data) ? data : [];
+
+        if (newUsers.length > 0) {
+          const last = newUsers[newUsers.length - 1];
+          lastItemRef.current = {
+            id: last.id,
+            createdAt: last.createdAt,
+          };
         }
+
+        startTransition(() => {
+          setUsers((prev) => {
+            if (!isMore) return newUsers;
+
+            const existingIds = new Set(prev.map((u) => u.id));
+            const filtered = newUsers.filter((u) => !existingIds.has(u.id));
+
+            return [...prev, ...filtered];
+          });
+          setHasMore(newUsers.length >= PAGE_SIZE);
+        });
       } catch (error) {
         console.error("Erro na busca de usuários:", error);
       } finally {
-        setInitialLoading(false);
-        setLoadingMore(false);
+        fetchingRef.current = false;
+        startTransition(() => {
+          setInitialLoading(false);
+          setLoadingMore(false);
+        });
       }
     },
-    [searchTerm, users, hasMore, loadingMore, request],
+    [hasMore, loadingMore, request],
   );
 
   useEffect(() => {
-    setUsers([]);
-    setHasMore(true);
-    fetchUsers(false);
-  }, [searchTerm]);
+    if (!searchTerm || !searchTerm.trim()) {
+      startTransition(() => {
+        setUsers([]);
+        setHasMore(false);
+      });
+      lastItemRef.current = null;
+      return;
+    }
+
+    const delayDebounceFn = setTimeout(() => {
+      fetchUsers(false, searchTerm);
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, fetchUsers]);
 
   return {
     users,
     initialLoading,
     loadingMore,
-    loadMore: () => fetchUsers(true),
+    loadMore: () => fetchUsers(true, searchTerm),
   };
 }

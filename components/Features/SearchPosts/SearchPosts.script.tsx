@@ -1,6 +1,11 @@
 import { useApi } from "@/utils/request.utils";
-import { useCallback, useEffect, useRef, useState } from "react";
-
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 export interface PostItem {
   id?: string;
   postId?: string;
@@ -34,7 +39,6 @@ export function useSearchPosts(
   const [hasMore, setHasMore] = useState(false);
   const [initialLoading, setInitialLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const { request } = useApi();
   const fetchingRef = useRef(false);
   const lastItemRef = useRef<{
@@ -46,23 +50,28 @@ export function useSearchPosts(
   const fetchPosts = useCallback(
     async (isRefresh = false, currentTerm: string) => {
       if (!feedMode && (!currentTerm || currentTerm.trim() === "")) {
-        setPosts([]);
-        setHasMore(false);
-        setInitialLoading(false);
-        setError(null);
+        startTransition(() => {
+          setPosts([]);
+          setHasMore(false);
+          setInitialLoading(false);
+          setError(null);
+        });
         return;
       }
 
       if (fetchingRef.current) return;
       fetchingRef.current = true;
-      setError(null);
+
+      startTransition(() => setError(null));
 
       if (isRefresh) {
         lastItemRef.current = null;
-        setHasMore(true);
-        setInitialLoading(true);
+        startTransition(() => {
+          setHasMore(true);
+          setInitialLoading(true);
+        });
       } else {
-        setLoadingMore(true);
+        startTransition(() => setLoadingMore(true));
       }
 
       try {
@@ -74,7 +83,6 @@ export function useSearchPosts(
         }
 
         const params = new URLSearchParams();
-
         params.append("pageSize", String(PAGE_SIZE));
 
         if (!feedMode) {
@@ -87,7 +95,6 @@ export function useSearchPosts(
 
         if (!isRefresh && lastItemRef.current) {
           const { id, createdAt, score } = lastItemRef.current;
-
           params.append("lastCreatedAt", createdAt);
           params.append("lastId", id);
 
@@ -97,13 +104,17 @@ export function useSearchPosts(
         }
 
         const url = `${basePath}?${params.toString()}`;
-        const res = await request({ urlComplement: url, method: "GET" });
 
-        if (!res || !res.ok) throw new Error("Erro na requisição");
+        const data: PostItem[] = await request({
+          urlComplement: url,
+          method: "GET",
+          hasLoading: false,
+        });
 
-        const data: PostItem[] = (await res.json()) || [];
-        if (data.length > 0) {
-          const last = data[data.length - 1];
+        const newPosts = Array.isArray(data) ? data : [];
+
+        if (newPosts.length > 0) {
+          const last = newPosts[newPosts.length - 1];
           lastItemRef.current = {
             id: String(getId(last)),
             createdAt: last.createdAt,
@@ -111,20 +122,26 @@ export function useSearchPosts(
           };
         }
 
-        setPosts((prev) => (isRefresh ? data : mergePosts(prev, data)));
-        setHasMore(data.length >= PAGE_SIZE);
+        startTransition(() => {
+          setPosts((prev) =>
+            isRefresh ? newPosts : mergePosts(prev, newPosts),
+          );
+          setHasMore(newPosts.length >= PAGE_SIZE);
+        });
       } catch (e: any) {
         const errorMessage = e?.message || "Ocorreu um erro inesperado.";
 
-        setError(errorMessage);
+        startTransition(() => setError(errorMessage));
 
         if (__DEV__) {
           console.log("⚠️ [useSearchPosts] Aviso:", errorMessage);
         }
       } finally {
         fetchingRef.current = false;
-        setInitialLoading(false);
-        setLoadingMore(false);
+        startTransition(() => {
+          setInitialLoading(false);
+          setLoadingMore(false);
+        });
       }
     },
     [request, onlyWithMedia, feedMode],
@@ -132,11 +149,13 @@ export function useSearchPosts(
 
   useEffect(() => {
     if (!feedMode && (!searchTerm || searchTerm.trim() === "")) {
-      setPosts([]);
-      setInitialLoading(false);
-      setHasMore(false);
+      startTransition(() => {
+        setPosts([]);
+        setInitialLoading(false);
+        setHasMore(false);
+        setError(null);
+      });
       lastItemRef.current = null;
-      setError(null);
       return;
     }
 

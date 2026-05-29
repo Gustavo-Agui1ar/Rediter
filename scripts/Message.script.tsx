@@ -1,127 +1,185 @@
-import { useCallback, useEffect, useState } from "react";
-
-export interface MensagemProps {
-  id: string;
-  senderId: string;
-  recipientId: string;
+import { useApi } from "@/utils/request.utils";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+export interface MessageDTO {
+  messageId: string;
+  isMine: boolean;
   content: string;
   createdAt: string;
-  isRead: boolean;
+}
+interface UseChatOptions {
+  chatId?: string | null;
+  receiverId?: string | null;
+  isDirect?: boolean;
 }
 
-export function useChat(targetUserId: string, currentUserId: string) {
-  const [messages, setMessages] = useState<MensagemProps[]>([]);
+const PAGE_SIZE = 50;
+
+export function useChat({
+  chatId = null,
+  receiverId = null,
+  isDirect = false,
+}: UseChatOptions) {
+  const [activeChatId, setActiveChatId] = useState<string | null>(chatId);
+  const [messages, setMessages] = useState<MessageDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-
-  // ==========================================
-  // CARREGAR MENSAGENS (MOCK)
-  // ==========================================
-  const loadMessages = useCallback(
-    async (isLoadMore = false) => {
-      if (isLoadMore) {
-        if (!hasMore || isLoadingMore) return;
-        setIsLoadingMore(true);
-      } else {
-        setIsLoading(true);
-      }
-
-      // Simula o tempo de rede (delay de 800ms)
-      await new Promise((resolve) => setTimeout(resolve, 800));
-
-      if (!isLoadMore) {
-        // Primeira carga: gera 10 mensagens iniciais falsas
-        const initialMessages: MensagemProps[] = Array.from({ length: 10 }).map(
-          (_, i) => ({
-            id: `mock-init-${i}`,
-            senderId: i % 2 === 0 ? currentUserId : targetUserId, // Alterna entre você e a outra pessoa
-            recipientId: i % 2 === 0 ? targetUserId : currentUserId,
-            content: `Mensagem de teste ${i + 1} para ver o layout do chat funcionando.`,
-            createdAt: new Date(Date.now() - i * 60000).toISOString(), // Subtrai minutos para criar histórico
-            isRead: true,
-          }),
-        );
-
-        setMessages(initialMessages);
-      } else {
-        // Paginação: gera mais 5 mensagens antigas quando rolar pra cima
-        const olderMessages: MensagemProps[] = Array.from({ length: 5 }).map(
-          (_, i) => ({
-            id: `mock-old-${Date.now()}-${i}`,
-            senderId: targetUserId,
-            recipientId: currentUserId,
-            content: `Mensagem antiga carregada na paginação ${i + 1}...`,
-            createdAt: new Date(
-              Date.now() - (messages.length + i) * 600000,
-            ).toISOString(),
-            isRead: true,
-          }),
-        );
-
-        setMessages((prev) => [...prev, ...olderMessages]);
-
-        // Simula que o histórico acabou após a primeira paginação
-        setHasMore(false);
-      }
-
-      setIsLoading(false);
-      setIsLoadingMore(false);
-    },
-    [hasMore, isLoadingMore, currentUserId, targetUserId, messages.length],
+  const { request } = useApi();
+  const fetchingRef = useRef(false);
+  const oldestMessageRef = useRef<{ id: string; createdAt: string } | null>(
+    null,
   );
 
-  // Carrega ao abrir a tela
   useEffect(() => {
-    loadMessages();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [targetUserId]);
+    if (chatId) setActiveChatId(chatId);
+  }, [chatId]);
 
-  // ==========================================
-  // ENVIAR MENSAGEM (MOCK)
-  // ==========================================
+  const loadMessages = useCallback(
+    async (isLoadMore = false) => {
+      if (!activeChatId) {
+        startTransition(() => setIsLoading(false));
+        return;
+      }
+
+      if (fetchingRef.current) return;
+      if (isLoadMore && (!hasMore || isLoadingMore)) return;
+
+      fetchingRef.current = true;
+
+      startTransition(() => {
+        if (isLoadMore) {
+          setIsLoadingMore(true);
+        } else {
+          setIsLoading(true);
+          oldestMessageRef.current = null;
+        }
+      });
+
+      try {
+        const params = new URLSearchParams({
+          pageSize: String(PAGE_SIZE),
+        });
+
+        if (isLoadMore && oldestMessageRef.current) {
+          params.append("lastCreatedAt", oldestMessageRef.current.createdAt);
+          params.append("lastId", oldestMessageRef.current.id);
+        }
+
+        const data: MessageDTO[] = await request({
+          urlComplement: `/api/chats/${activeChatId}/messages?${params.toString()}`,
+          method: "GET",
+          hasLoading: false,
+        });
+
+        const newMessages = Array.isArray(data) ? data : [];
+
+        if (newMessages.length > 0) {
+          const oldest = newMessages[newMessages.length - 1];
+          oldestMessageRef.current = {
+            id: oldest.messageId,
+            createdAt: oldest.createdAt,
+          };
+        }
+
+        startTransition(() => {
+          setMessages((prev) =>
+            isLoadMore ? [...prev, ...newMessages] : newMessages,
+          );
+          setHasMore(newMessages.length === PAGE_SIZE);
+        });
+      } catch (error) {
+        console.error("Falha ao carregar o chat:", error);
+      } finally {
+        fetchingRef.current = false;
+        startTransition(() => {
+          setIsLoading(false);
+          setIsLoadingMore(false);
+        });
+      }
+    },
+    [activeChatId, hasMore, isLoadingMore, request],
+  );
+
+  useEffect(() => {
+    startTransition(() => {
+      setMessages([]);
+      setHasMore(true);
+    });
+    oldestMessageRef.current = null;
+
+    if (activeChatId) {
+      loadMessages();
+    }
+  }, [activeChatId, loadMessages]);
+
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
 
-    // 1. Cria a mensagem temporária na hora (Optimistic UI)
+    if (!activeChatId && !(isDirect && receiverId)) {
+      console.error(
+        "É necessário um chatId ou um receiverId para enviar a mensagem.",
+      );
+      return;
+    }
+
     const tempId = `temp-${Date.now()}`;
-    const novaMensagem: MensagemProps = {
-      id: tempId,
-      senderId: currentUserId,
-      recipientId: targetUserId,
+    const novaMensagem: MessageDTO = {
+      messageId: tempId,
+      isMine: true,
       content: text,
       createdAt: new Date().toISOString(),
-      isRead: false,
     };
 
-    setMessages((prev) => [novaMensagem, ...prev]);
+    startTransition(() => {
+      setMessages((prev) => [novaMensagem, ...prev]);
+    });
 
-    // 2. Simula o tempo de ir até o C# e voltar (600ms de delay)
-    await new Promise((resolve) => setTimeout(resolve, 600));
+    try {
+      let responseData: any = null;
 
-    // 3. Substitui o ID temporário por um ID "oficial do banco"
-    const savedMessage = { ...novaMensagem, id: `guid-falso-${Date.now()}` };
-    setMessages((prev) =>
-      prev.map((m) => (m.id === tempId ? savedMessage : m)),
-    );
+      if (activeChatId) {
+        responseData = await request({
+          urlComplement: `/api/chats/${activeChatId}/messages`,
+          method: "POST",
+          data: { content: text },
+          hasLoading: false,
+        });
+      } else if (isDirect && receiverId) {
+        responseData = await request({
+          urlComplement: `/api/chats/direct/${receiverId}`,
+          method: "POST",
+          data: { content: text },
+          hasLoading: false,
+        });
 
-    // 4. BÔNUS: Simula o SignalR (A outra pessoa respondendo 2 segundos depois)
-    setTimeout(() => {
-      const respostaAutomatica: MensagemProps = {
-        id: `mock-reply-${Date.now()}`,
-        senderId: targetUserId,
-        recipientId: currentUserId,
-        content:
-          "Ei! Esta é uma resposta automática do Mock pra você testar o balão recebido. 🤖",
-        createdAt: new Date().toISOString(),
-        isRead: true,
-      };
+        if (responseData && responseData.chatId) {
+          startTransition(() => setActiveChatId(responseData.chatId));
+        }
+      }
 
-      setMessages((prev) => [respostaAutomatica, ...prev]);
-    }, 2000);
+      /* * PRO-TIP (Opcional): Se a sua API C# estiver retornando o DTO da mensagem real
+       * no POST, é aqui que você substitui o tempId pelo ID definitivo no estado:
+       * * if (responseData && responseData.messageId) {
+       * setMessages(prev => prev.map(m => m.messageId === tempId ? responseData : m));
+       * }
+       */
+    } catch (error) {
+      console.error("Erro no envio:", error);
+      startTransition(() => {
+        setMessages((prev) => prev.filter((m) => m.messageId !== tempId));
+      });
+      alert("Falha ao enviar mensagem. Tente novamente.");
+    }
   };
 
   return {
+    activeChatId,
     messages,
     isLoading,
     isLoadingMore,

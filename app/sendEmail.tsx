@@ -1,26 +1,31 @@
 import {
-    AlertBanner,
-    Button,
-    Header,
-    HelperText,
-    TextBox,
+  AlertBanner,
+  Button,
+  Header,
+  HelperText,
+  TextBox,
 } from "@/components/components";
 import { useLanguage } from "@/context/LanguageContext";
-import { useLoading } from "@/context/LoadingContext";
+// 1. Removido o import do useLoading (O useApi já faz isso!)
 import { useGlobalStyles } from "@/styles/global.styles";
 import { useSendEmailStyle } from "@/styles/sendEmail.style";
 import { LoginValidator } from "@/utils/login.utils";
 import { useApi } from "@/utils/request.utils";
 import { router } from "expo-router";
 import { useState } from "react";
-import { KeyboardAvoidingView, ScrollView, Text, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 
 export default function SendEmail() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
-  const { setLoading } = useLoading();
   const { request } = useApi();
   const styles = useGlobalStyles();
   const sendStyles = useSendEmailStyle();
@@ -34,12 +39,11 @@ export default function SendEmail() {
       return;
     }
 
-    setLoading(true);
     try {
       await request({
         method: "POST",
         urlComplement: "/api/auth/generate-code",
-        body: email,
+        data: { email },
         requireAuth: false,
       });
 
@@ -49,13 +53,14 @@ export default function SendEmail() {
       });
     } catch (err) {
       setServerError(t("error_send_code_failed"));
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView style={[styles.container]} behavior="padding">
+    <KeyboardAvoidingView
+      style={[styles.container]}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <Header title={t("send_email_title")} />
 
       <ScrollView

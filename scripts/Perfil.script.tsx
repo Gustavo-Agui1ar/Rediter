@@ -5,10 +5,8 @@ import {
   saveProfileBasic,
 } from "@/utils/storage.utils";
 import { useFocusEffect } from "expo-router";
-import { useCallback, useRef, useState } from "react";
-import { InteractionManager } from "react-native";
+import { startTransition, useCallback, useRef, useState } from "react";
 
-// 1. Tipagem Forte para garantir a estrutura dos dados
 export interface UserProfile {
   imageUrl: string;
   coverUrl: string;
@@ -55,13 +53,15 @@ export function usePerfil() {
   const fetchingRef = useRef(false);
 
   const applyProfile = useCallback((data: Partial<UserProfile>) => {
-    setForm((prevForm) => {
-      const newForm = { ...INITIAL_PROFILE, ...prevForm, ...data };
+    startTransition(() => {
+      setForm((prevForm) => {
+        const newForm = { ...INITIAL_PROFILE, ...prevForm, ...data };
 
-      if (isShallowEqual(prevForm, newForm)) {
-        return prevForm;
-      }
-      return newForm;
+        if (isShallowEqual(prevForm, newForm)) {
+          return prevForm;
+        }
+        return newForm;
+      });
     });
   }, []);
 
@@ -70,33 +70,30 @@ export function usePerfil() {
     fetchingRef.current = true;
 
     try {
-      const response = await request({
+      const json = await request({
         urlComplement: `/api/users/me`,
         method: "GET",
+        hasLoading: false,
       });
 
-      if (response.ok) {
-        const json = await response.json();
+      const data: UserProfile = {
+        imageUrl: json.imageName || "",
+        coverUrl: json.imageCover || "",
+        userName: json.name || "",
+        email: json.email || "",
+        description: json.description || "",
+        isFollowing: json.isFollowing || false,
+        isBlocked: json.isBlocked || false,
+        userId: json.userId || json.id || "",
+        following: json.following || 0,
+        followers: json.followers || 0,
+      };
 
-        const data: UserProfile = {
-          imageUrl: json.imageName || "",
-          coverUrl: json.imageCover || "",
-          userName: json.name || "",
-          email: json.email || "",
-          description: json.description || "",
-          isFollowing: json.isFollowing || false,
-          isBlocked: json.isBlocked || false,
-          userId: json.userId || json.id || "",
-          following: json.following || 0,
-          followers: json.followers || 0,
-        };
+      applyProfile(data);
 
-        applyProfile(data);
-
-        saveProfileBasic(data).catch((err) =>
-          console.error("Erro ao salvar cache do perfil:", err),
-        );
-      }
+      saveProfileBasic(data).catch((err) =>
+        console.error("Erro ao salvar cache do perfil:", err),
+      );
     } catch (error) {
       console.error("Erro ao buscar perfil:", error);
     } finally {
@@ -110,23 +107,19 @@ export function usePerfil() {
 
       if (cached) {
         applyProfile(cached);
-        setLoading(false);
+        startTransition(() => setLoading(false));
 
         if (!isCacheValid(cached)) {
-          InteractionManager.runAfterInteractions(() => {
-            fetchProfile();
-          });
+          fetchProfile();
         }
         return;
       }
 
-      InteractionManager.runAfterInteractions(async () => {
-        await fetchProfile();
-        setLoading(false);
-      });
+      await fetchProfile();
+      startTransition(() => setLoading(false));
     } catch (error) {
       console.error("Erro ao hidratar perfil do cache:", error);
-      fetchProfile().finally(() => setLoading(false));
+      fetchProfile().finally(() => startTransition(() => setLoading(false)));
     }
   }, [applyProfile, fetchProfile]);
 

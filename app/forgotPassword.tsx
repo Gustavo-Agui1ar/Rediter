@@ -5,14 +5,20 @@ import {
   HelperText,
   TextBox,
 } from "@/components/components";
-import { useLanguage } from "@/context/LanguageContext"; // 1. IMPORTADO O CONTEXTO DE IDIOMA
+import { useLanguage } from "@/context/LanguageContext";
 import { useStylesForgotPassword } from "@/styles/forgotPassword.style";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { useApi } from "@/utils/request.utils";
 import { deleteTokens } from "@/utils/storage.utils";
 import { router } from "expo-router";
-import { useState } from "react";
-import { KeyboardAvoidingView, ScrollView, Text, View } from "react-native";
+import { startTransition, useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 
 export default function ForgotPassword() {
   const [form, setForm] = useState({
@@ -21,23 +27,23 @@ export default function ForgotPassword() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const { request } = useApi();
   const styles = useGlobalStyles();
   const forgotStyles = useStylesForgotPassword();
-  const { t } = useLanguage(); // 2. ACESSANDO A FUNÇÃO DE TRADUÇÃO
+  const { t } = useLanguage();
 
   const handleResetPassword = async () => {
-    setSubmitted(true);
-    setError(null);
+    startTransition(() => {
+      setSubmitted(true);
+      setError(null);
+    });
 
     if (!form.password) {
       return;
     }
 
     if (form.password !== form.confirmPassword) {
-      // 3. TRADUÇÃO DE ERROS EM TEMPO DE EXECUÇÃO
-      setError(t("validation_passwords_dont_match"));
+      startTransition(() => setError(t("validation_passwords_dont_match")));
       return;
     }
 
@@ -48,18 +54,24 @@ export default function ForgotPassword() {
       await request({
         urlComplement: "/api/users/me",
         method: "PATCH",
-        body: formData,
+        data: formData,
       });
 
-      deleteTokens();
-      router.replace("/");
+      await deleteTokens();
+
+      startTransition(() => {
+        router.replace("/");
+      });
     } catch (err) {
-      setError(t("error_reset_password_failed"));
+      startTransition(() => setError(t("error_reset_password_failed")));
     }
   };
 
   return (
-    <KeyboardAvoidingView style={[styles.container]} behavior="padding">
+    <KeyboardAvoidingView
+      style={[styles.container]}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <Header title={t("forgot_password_title")} />
 
       <ScrollView

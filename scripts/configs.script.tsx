@@ -6,7 +6,13 @@ import { LoginValidator } from "@/utils/login.utils";
 import { useApi } from "@/utils/request.utils";
 import * as Storage from "@/utils/storage.utils";
 import { router } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { Alert } from "react-native";
 
 interface ImageState {
@@ -42,8 +48,10 @@ export function useConfigs() {
   const [lan, setLan] = useState<string>(language);
 
   const clearAlerts = useCallback(() => {
-    setError(null);
-    setSuccessMsg(null);
+    startTransition(() => {
+      setError(null);
+      setSuccessMsg(null);
+    });
   }, []);
 
   const goToBlockedUsers = useCallback(() => {
@@ -52,12 +60,17 @@ export function useConfigs() {
 
   const onChangeForm = useCallback(
     (field: keyof FormState, value: string) => {
-      setForm((prev) => {
-        if (field === "description" && value.length > MAX_DESCRIPTION_LENGTH) {
-          return prev;
-        }
-        if (prev[field] === value) return prev;
-        return { ...prev, [field]: value };
+      startTransition(() => {
+        setForm((prev) => {
+          if (
+            field === "description" &&
+            value.length > MAX_DESCRIPTION_LENGTH
+          ) {
+            return prev;
+          }
+          if (prev[field] === value) return prev;
+          return { ...prev, [field]: value };
+        });
       });
       clearAlerts();
     },
@@ -65,47 +78,47 @@ export function useConfigs() {
   );
 
   const applyProfileData = useCallback((data: any) => {
-    setForm({
-      name: data.userName || "",
-      email: data.email || "",
-      password: "",
-      description: data.description || "",
+    startTransition(() => {
+      setForm({
+        name: data.userName || "",
+        email: data.email || "",
+        password: "",
+        description: data.description || "",
+      });
+      setProfileImage({ remote: data.imageUrl });
+      setCoverImage({ remote: data.coverUrl });
     });
-    setProfileImage({ remote: data.imageUrl });
-    setCoverImage({ remote: data.coverUrl });
   }, []);
 
   const loadProfileData = useCallback(async () => {
     try {
-      setLoading(true);
       const cached = await Storage.getProfileBasic();
       if (cached) {
         applyProfileData(cached);
         return;
       }
 
-      const response = await request({
+      const data = await request({
         urlComplement: "/api/users/me",
         method: "GET",
       });
 
-      const json = await response.json();
-      const data = {
-        userName: json.name,
-        email: json.email,
-        imageUrl: json.imageName,
-        coverUrl: json.imageCover,
-        description: json.description,
+      const profileData = {
+        userName: data.name,
+        email: data.email,
+        imageUrl: data.imageName,
+        coverUrl: data.imageCover,
+        description: data.description,
       };
 
-      applyProfileData(data);
-      await Storage.saveProfileBasic(data);
+      applyProfileData(profileData);
+      await Storage.saveProfileBasic(profileData);
     } catch (error) {
-      setError("Erro ao carregar informações do perfil.");
-    } finally {
-      setLoading(false);
+      startTransition(() =>
+        setError("Erro ao carregar informações do perfil."),
+      );
     }
-  }, [applyProfileData, request, setLoading]);
+  }, [applyProfileData, request]);
 
   useEffect(() => {
     loadProfileData();
@@ -119,10 +132,13 @@ export function useConfigs() {
       try {
         const img = await pickImage(crop);
         if (!img) return;
-        setImage({ local: img, changed: true });
+
+        startTransition(() => {
+          setImage({ local: img, changed: true });
+        });
         clearAlerts();
       } catch (error) {
-        setError("Erro ao selecionar imagem.");
+        startTransition(() => setError("Erro ao selecionar imagem."));
       }
     },
     [clearAlerts],
@@ -132,6 +148,7 @@ export function useConfigs() {
     () => pickAndSetImage(setCoverImage, false),
     [pickAndSetImage],
   );
+
   const handlePickProfileImage = useCallback(
     () => pickAndSetImage(setProfileImage, true),
     [pickAndSetImage],
@@ -158,7 +175,7 @@ export function useConfigs() {
   const logOut = useCallback(async () => {
     disconnectSignalR();
     await clearSessionAndRedirect();
-  }, [clearSessionAndRedirect]);
+  }, [disconnectSignalR, clearSessionAndRedirect]);
 
   const confirmAndDeleteAccount = useCallback(() => {
     Alert.alert(
@@ -171,24 +188,23 @@ export function useConfigs() {
           style: "destructive",
           onPress: async () => {
             try {
-              setLoading(true);
               await request({
                 urlComplement: "/api/users/me",
                 method: "DELETE",
               });
               await clearSessionAndRedirect();
             } catch (err: any) {
-              setError(
-                err?.response?.data?.message || "Erro ao deletar conta.",
-              );
-            } finally {
-              setLoading(false);
+              startTransition(() => {
+                setError(
+                  err?.response?.data?.message || "Erro ao deletar conta.",
+                );
+              });
             }
           },
         },
       ],
     );
-  }, [request, clearSessionAndRedirect, setLoading]);
+  }, [request, clearSessionAndRedirect]);
 
   const validateForm = useCallback(() => {
     const name = form.name?.trim() || "";
@@ -230,8 +246,9 @@ export function useConfigs() {
     formData.append("Name", name);
     formData.append("Email", email);
 
-    if ((form.description || "").replace(/\s+/g, " ").trim().length > 0)
+    if (description.length > 0) {
       formData.append("Description", description);
+    }
 
     if (form.password) formData.append("Password", form.password);
 
@@ -242,18 +259,17 @@ export function useConfigs() {
     clearAlerts();
     const validationError = validateForm();
     if (validationError) {
-      setError(validationError);
+      startTransition(() => setError(validationError));
       return;
     }
 
     try {
-      setLoading(true);
       const formData = buildFormData();
 
       await request({
         urlComplement: "/api/users/me",
         method: "PATCH",
-        body: formData,
+        data: formData,
       });
 
       await Storage.saveProfileBasic({
@@ -264,20 +280,21 @@ export function useConfigs() {
         description: (form.description || "").replace(/\s+/g, " ").trim(),
       });
 
-      setLanguage(lan as any);
-      setSuccessMsg("Informações atualizadas com sucesso!");
-      setForm((prev) => ({ ...prev, password: "" }));
+      startTransition(() => {
+        setLanguage(lan as any);
+        setSuccessMsg("Informações atualizadas com sucesso!");
+        setForm((prev) => ({ ...prev, password: "" }));
+      });
     } catch (err: any) {
-      setError(err?.message || "Erro ao atualizar perfil.");
-    } finally {
-      setLoading(false);
+      startTransition(() =>
+        setError(err?.message || "Erro ao atualizar perfil."),
+      );
     }
   }, [
     clearAlerts,
     validateForm,
     buildFormData,
     request,
-    setLoading,
     profileImage,
     coverImage,
     form,
@@ -320,5 +337,6 @@ export function useConfigs() {
       goToBlockedUsers,
     ],
   );
+
   return { state, actions };
 }
