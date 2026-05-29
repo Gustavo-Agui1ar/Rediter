@@ -1,8 +1,7 @@
 import { useLanguage } from "@/context/LanguageContext";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 export function useSearch() {
-  const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("posts");
   const { t } = useLanguage();
 
@@ -15,8 +14,12 @@ export function useSearch() {
     [t],
   );
 
+  const handleSetTab = useCallback((tab: string) => {
+    setActiveTab(tab);
+  }, []);
+
   return {
-    state: { searchQuery, activeTab, tabs },
-    actions: { setSearchQuery, setActiveTab },
+    state: { activeTab, tabs },
+    actions: { setActiveTab: handleSetTab },
   };
 }

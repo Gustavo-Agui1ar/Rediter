@@ -10,16 +10,19 @@ import { useTheme } from "@/context/ThemeContext";
 import { usePostDetails } from "@/scripts/PostDetails.script";
 import { usePostDetailsStyles } from "@/styles/PostDetails.style";
 import { useFormattedDate } from "@/utils/datePost.utils";
-import React, { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { EmojiKeyboard } from "rn-emoji-keyboard";
 
 export default function PostDetailsScreen() {
   const { functions, states } = usePostDetails();
@@ -36,10 +39,6 @@ export default function PostDetailsScreen() {
     comments,
     isLoadingComments,
     hasMoreComments,
-    commentText,
-    isInputFocused,
-    replyFiles,
-    replyLocation,
     isSendingReply,
   } = states;
 
@@ -47,15 +46,61 @@ export default function PostDetailsScreen() {
     syncFollowState,
     handleLikePost,
     fetchComments,
-    setCommentText,
-    setIsInputFocused,
     handleSendReply,
-    onAddImage,
-    onRemoveImage,
-    onToggleEmoji,
-    onAddLocation,
+    pickNewImage,
+    fetchLocation,
     handleGoToProfile,
   } = functions;
+
+  const [commentText, setCommentText] = useState("");
+  const [replyFiles, setReplyFiles] = useState<any[]>([]);
+  const [replyLocation, setReplyLocation] = useState<string | null>(null);
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  const [showEmoji, setShowEmoji] = useState(false);
+
+  const onAddImage = useCallback(async () => {
+    const result = await pickNewImage();
+    if (result) setReplyFiles((prev) => [...prev, result]);
+  }, [pickNewImage]);
+
+  const onRemoveImage = useCallback((indexToRemove: number) => {
+    setReplyFiles((prev) => prev.filter((_, i) => i !== indexToRemove));
+  }, []);
+
+  const onAddLocation = useCallback(() => {
+    fetchLocation(setReplyLocation);
+  }, [fetchLocation]);
+
+  const onToggleEmoji = useCallback(() => {
+    Keyboard.dismiss();
+    setShowEmoji((prev) => !prev);
+  }, []);
+
+  const onEmojiSelected = useCallback((emojiObject: { emoji: string }) => {
+    setCommentText((prev) => prev + emojiObject.emoji);
+  }, []);
+
+  const submitReply = useCallback(async () => {
+    if (commentText.trim() === "" && replyFiles.length === 0) {
+      Alert.alert("Aviso", "A resposta não pode estar vazia.");
+      return;
+    }
+
+    Keyboard.dismiss();
+    const isSuccess = await handleSendReply(
+      commentText,
+      replyLocation,
+      replyFiles,
+    );
+
+    if (isSuccess) {
+      setCommentText("");
+      setReplyFiles([]);
+      setReplyLocation(null);
+      setIsInputFocused(false);
+      setShowEmoji(false);
+    }
+  }, [commentText, replyFiles, replyLocation, handleSendReply]);
 
   const formattedDate = useFormattedDate(postData?.createdAt || "");
 
@@ -194,6 +239,7 @@ export default function PostDetailsScreen() {
   ]);
 
   const keyExtractor = useCallback((item: any) => item.id.toString(), []);
+
   const handleEndReached = useCallback(() => {
     if (hasMoreComments && !isLoadingComments) {
       fetchComments(true);
@@ -335,11 +381,14 @@ export default function PostDetailsScreen() {
               maxLength={280}
               value={commentText}
               onChangeText={setCommentText}
-              onFocus={() => setIsInputFocused(true)}
+              onFocus={() => {
+                setIsInputFocused(true);
+                setShowEmoji(false);
+              }}
               onBlur={() => setIsInputFocused(false)}
               editable={!isSendingReply}
               icon="send"
-              onIconPress={handleSendReply}
+              onIconPress={submitReply}
             />
           </View>
 
@@ -377,6 +426,15 @@ export default function PostDetailsScreen() {
               )}
             </View>
           )}
+        </View>
+      )}
+
+      {showEmoji && (
+        <View style={{ height: 250 }}>
+          <EmojiKeyboard
+            onEmojiSelected={onEmojiSelected}
+            allowMultipleSelections
+          />
         </View>
       )}
     </KeyboardAvoidingView>

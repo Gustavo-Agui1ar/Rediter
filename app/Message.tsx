@@ -1,7 +1,7 @@
-import { Header, TextBox } from "@/components/components"; // Remova IconButton se não for usar os checks agora
+import { Header, TextBox } from "@/components/components";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
-import { MessageDTO, useChat } from "@/scripts/Message.script"; // Importando o DTO correto
+import { MessageDTO, useChat } from "@/scripts/Message.script";
 import { useChatStyles } from "@/styles/Message.style";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { memo, useCallback, useState } from "react";
@@ -13,6 +13,10 @@ import {
   Text,
   View,
 } from "react-native";
+import Animated, {
+  FadeInDown,
+  LinearTransition,
+} from "react-native-reanimated";
 
 type ChatStyles = ReturnType<typeof useChatStyles>;
 
@@ -26,7 +30,9 @@ const MessageBubble = memo(
     const isMe = item.isMine;
 
     return (
-      <View
+      <Animated.View
+        entering={FadeInDown.springify().damping(14)}
+        layout={LinearTransition.springify().damping(14)}
         style={[
           styles.bubbleWrapper,
           isMe ? styles.wrapperMe : styles.wrapperThem,
@@ -41,14 +47,9 @@ const MessageBubble = memo(
 
           <View style={styles.timeContainer}>
             <Text style={isMe ? styles.timeMe : styles.timeThem}>{hora}</Text>
-
-            {/* TODO: A implementar futuramente (Read Receipts).
-               Como o MessageDTO atual não possui isRead, essa parte pode ser 
-               removida temporariamente ou deixada apenas o check simples (sem o double-check).
-            */}
           </View>
         </View>
-      </View>
+      </Animated.View>
     );
   },
   (prev, next) => prev.item.messageId === next.item.messageId,
@@ -75,11 +76,12 @@ export default function ChatScreen() {
       isDirect: !!targetUserId,
     });
 
-  const handleSend = () => {
+  const handleSend = useCallback(() => {
     if (!inputText.trim()) return;
+
     sendMessage(inputText);
     setInputText("");
-  };
+  }, [inputText, sendMessage]);
 
   const renderItem = useCallback(
     ({ item }: { item: MessageDTO }) => (
@@ -92,13 +94,10 @@ export default function ChatScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+      style={[{ flex: 1 }, styles.container]}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 45 : 45}
     >
-      {/* Opcional: Você pode passar o targetUserName como título do cabeçalho
-         quando estiver em um chat 1:1. 
-      */}
       <Header
         divider={true}
         onBack={() => router.back()}
@@ -106,12 +105,16 @@ export default function ChatScreen() {
       />
 
       <View style={styles.chatArea}>
-        {isLoading && messages.length === 0 ? ( // Mostra o loader de tela cheia apenas na carga inicial
+        {isLoading && messages.length === 0 ? (
           <ActivityIndicator
             size="large"
             color={colors.primary}
             style={styles.loader}
           />
+        ) : messages.length === 0 ? (
+          <View style={styles.noMessagesContainer}>
+            <Text style={styles.noMessagesText}>{t("no_messages_yet")}</Text>
+          </View>
         ) : (
           <FlatList
             data={messages}
@@ -137,7 +140,12 @@ export default function ChatScreen() {
         )}
       </View>
 
-      <View style={[styles.inputContainer, { paddingBottom: 12 }]}>
+      <View
+        style={[
+          styles.inputContainer,
+          { paddingBottom: Platform.OS === "ios" ? 12 : 24 },
+        ]}
+      >
         <TextBox
           placeholder={t("type_a_message")}
           value={inputText}

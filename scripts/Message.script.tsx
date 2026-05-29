@@ -6,12 +6,14 @@ import {
   useRef,
   useState,
 } from "react";
+
 export interface MessageDTO {
   messageId: string;
   isMine: boolean;
   content: string;
   createdAt: string;
 }
+
 interface UseChatOptions {
   chatId?: string | null;
   receiverId?: string | null;
@@ -20,24 +22,32 @@ interface UseChatOptions {
 
 const PAGE_SIZE = 50;
 
+const sanitizeId = (id?: string | null) => {
+  if (!id || id === "null" || id === "undefined") return null;
+  return id;
+};
+
 export function useChat({
   chatId = null,
   receiverId = null,
   isDirect = false,
 }: UseChatOptions) {
-  const [activeChatId, setActiveChatId] = useState<string | null>(chatId);
+  const [activeChatId, setActiveChatId] = useState<string | null>(
+    sanitizeId(chatId),
+  );
   const [messages, setMessages] = useState<MessageDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const { request } = useApi();
-  const fetchingRef = useRef(false);
+  const isFetchingRef = useRef(false);
+  const hasMoreRef = useRef(true);
   const oldestMessageRef = useRef<{ id: string; createdAt: string } | null>(
     null,
   );
 
+  const { request } = useApi();
+
   useEffect(() => {
-    if (chatId) setActiveChatId(chatId);
+    setActiveChatId(sanitizeId(chatId));
   }, [chatId]);
 
   const loadMessages = useCallback(
@@ -47,19 +57,18 @@ export function useChat({
         return;
       }
 
-      if (fetchingRef.current) return;
-      if (isLoadMore && (!hasMore || isLoadingMore)) return;
+      if (isFetchingRef.current) return;
 
-      fetchingRef.current = true;
+      if (isLoadMore) {
+        if (!hasMoreRef.current) return;
+        startTransition(() => setIsLoadingMore(true));
+      } else {
+        hasMoreRef.current = true;
+        oldestMessageRef.current = null;
+        startTransition(() => setIsLoading(true));
+      }
 
-      startTransition(() => {
-        if (isLoadMore) {
-          setIsLoadingMore(true);
-        } else {
-          setIsLoading(true);
-          oldestMessageRef.current = null;
-        }
-      });
+      isFetchingRef.current = true;
 
       try {
         const params = new URLSearchParams({
@@ -87,103 +96,119 @@ export function useChat({
           };
         }
 
+        hasMoreRef.current = newMessages.length === PAGE_SIZE;
+
         startTransition(() => {
           setMessages((prev) =>
             isLoadMore ? [...prev, ...newMessages] : newMessages,
           );
-          setHasMore(newMessages.length === PAGE_SIZE);
         });
       } catch (error) {
         console.error("Falha ao carregar o chat:", error);
+        hasMoreRef.current = false;
       } finally {
-        fetchingRef.current = false;
+        isFetchingRef.current = false;
         startTransition(() => {
           setIsLoading(false);
           setIsLoadingMore(false);
         });
       }
     },
-    [activeChatId, hasMore, isLoadingMore, request],
+    [activeChatId, request],
   );
 
   useEffect(() => {
-    startTransition(() => {
-      setMessages([]);
-      setHasMore(true);
-    });
-    oldestMessageRef.current = null;
-
-    if (activeChatId) {
-      loadMessages();
-    }
-  }, [activeChatId, loadMessages]);
-
-  const sendMessage = async (text: string) => {
-    if (!text.trim()) return;
-
-    if (!activeChatId && !(isDirect && receiverId)) {
-      console.error(
-        "É necessário um chatId ou um receiverId para enviar a mensagem.",
-      );
+    if (!activeChatId) {
+      startTransition(() => {
+        setIsLoading(false);
+      });
       return;
     }
 
-    const tempId = `temp-${Date.now()}`;
-    const novaMensagem: MessageDTO = {
-      messageId: tempId,
-      isMine: true,
-      content: text,
-      createdAt: new Date().toISOString(),
-    };
+    loadMessages();
+  }, [activeChatId, loadMessages]);
 
-    startTransition(() => {
-      setMessages((prev) => [novaMensagem, ...prev]);
-    });
+  const sendMessage = useCallback(
+    async (text: string) => {
+      if (!text.trim()) return;
 
-    try {
-      let responseData: any = null;
-
-      if (activeChatId) {
-        responseData = await request({
-          urlComplement: `/api/chats/${activeChatId}/messages`,
-          method: "POST",
-          data: { content: text },
-          hasLoading: false,
-        });
-      } else if (isDirect && receiverId) {
-        responseData = await request({
-          urlComplement: `/api/chats/direct/${receiverId}`,
-          method: "POST",
-          data: { content: text },
-          hasLoading: false,
-        });
-
-        if (responseData && responseData.chatId) {
-          startTransition(() => setActiveChatId(responseData.chatId));
-        }
+      if (!activeChatId && !(isDirect && receiverId)) {
+        console.error(
+          "É necessário um chatId ou um receiverId para enviar a mensagem.",
+        );
+        return;
       }
 
-      /* * PRO-TIP (Opcional): Se a sua API C# estiver retornando o DTO da mensagem real
-       * no POST, é aqui que você substitui o tempId pelo ID definitivo no estado:
-       * * if (responseData && responseData.messageId) {
-       * setMessages(prev => prev.map(m => m.messageId === tempId ? responseData : m));
-       * }
-       */
-    } catch (error) {
-      console.error("Erro no envio:", error);
+      const tempId = `temp-${Date.now()}`;
+      const novaMensagem: MessageDTO = {
+        messageId: tempId,
+        isMine: true,
+        content: text,
+        createdAt: new Date().toISOString(),
+      };
+
       startTransition(() => {
-        setMessages((prev) => prev.filter((m) => m.messageId !== tempId));
+        setMessages((prev) => [novaMensagem, ...prev]);
       });
-      alert("Falha ao enviar mensagem. Tente novamente.");
-    }
-  };
+
+      try {
+        let responseData: any = null;
+
+        if (activeChatId) {
+          responseData = await request({
+            urlComplement: `/api/chats/${activeChatId}/messages`,
+            method: "POST",
+            data: { content: text },
+            hasLoading: false,
+          });
+        } else if (isDirect && receiverId) {
+          responseData = await request({
+            urlComplement: `/api/chats/direct/${receiverId}`,
+            method: "POST",
+            data: { content: text },
+            hasLoading: false,
+          });
+
+          if (responseData && responseData.chatId) {
+            startTransition(() => setActiveChatId(responseData.chatId));
+          }
+        }
+
+        if (responseData) {
+          const realId = responseData.messageId || responseData.id;
+          const realCreatedAt = responseData.createdAt;
+
+          startTransition(() => {
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.messageId === tempId
+                  ? {
+                      ...msg,
+                      messageId: realId || msg.messageId,
+                      createdAt: realCreatedAt || msg.createdAt,
+                    }
+                  : msg,
+              ),
+            );
+          });
+        }
+      } catch (error) {
+        console.error("Erro no envio:", error);
+        startTransition(() => {
+          setMessages((prev) => prev.filter((m) => m.messageId !== tempId));
+        });
+        alert("Falha ao enviar mensagem. Tente novamente.");
+      }
+    },
+    [activeChatId, isDirect, receiverId, request],
+  );
 
   return {
     activeChatId,
     messages,
     isLoading,
     isLoadingMore,
-    hasMore,
+    hasMore: hasMoreRef.current,
     loadMessages,
     sendMessage,
   };

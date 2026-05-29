@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+
 export interface NotificacaoProps {
   id: string;
   recipientUserId: string;
@@ -26,7 +27,8 @@ export function useNotifications() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
-  const [hasMore, setHasMore] = useState<boolean>(true);
+  const hasMoreRef = useRef<boolean>(true);
+  const isFetchingRef = useRef<boolean>(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const lastItemRef = useRef<{ createdAt: string; id: string } | null>(null);
   const { latestIncomingNotification, clearUnreadCount } = useSignalR();
@@ -34,18 +36,20 @@ export function useNotifications() {
 
   const loadNotifications = useCallback(
     async (fromRefresh = false, fromScroll = false) => {
+      if (isFetchingRef.current) return;
+
       if (fromRefresh) {
-        startTransition(() => {
-          setIsRefreshing(true);
-          setHasMore(true);
-        });
+        startTransition(() => setIsRefreshing(true));
+        hasMoreRef.current = true;
         lastItemRef.current = null;
       } else if (fromScroll) {
-        if (!hasMore || isLoadingMore) return;
+        if (!hasMoreRef.current) return;
         startTransition(() => setIsLoadingMore(true));
       } else {
         startTransition(() => setIsLoading(true));
       }
+
+      isFetchingRef.current = true;
 
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
@@ -82,7 +86,6 @@ export function useNotifications() {
               const novosItens = newNotifications.filter(
                 (item) => !idsExistentes.has(item.id),
               );
-
               return [...prev, ...novosItens];
             });
           }
@@ -96,7 +99,7 @@ export function useNotifications() {
           }
 
           if (newNotifications.length < PAGE_SIZE) {
-            setHasMore(false);
+            hasMoreRef.current = false;
           }
         });
       } catch (error: any) {
@@ -104,6 +107,7 @@ export function useNotifications() {
           console.error("Erro ao carregar notificações da API:", error);
         }
       } finally {
+        isFetchingRef.current = false;
         startTransition(() => {
           setIsLoading(false);
           setIsRefreshing(false);
@@ -111,7 +115,7 @@ export function useNotifications() {
         });
       }
     },
-    [hasMore, isLoadingMore, request, clearUnreadCount],
+    [request, clearUnreadCount],
   );
 
   const handleMarkAsRead = useCallback(
@@ -183,6 +187,7 @@ export function useNotifications() {
     isLoading,
     isRefreshing,
     isLoadingMore,
+    hasMore: hasMoreRef.current,
     onRefresh,
     handleLoadMore,
     handleMarkAsRead,

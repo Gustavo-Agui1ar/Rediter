@@ -10,7 +10,8 @@ import {
   useRef,
   useState,
 } from "react";
-import { Alert, DeviceEventEmitter, Keyboard } from "react-native";
+import { Alert, DeviceEventEmitter } from "react-native";
+
 export interface SinglePostData {
   id: string;
   userName: string;
@@ -42,11 +43,6 @@ export function usePostDetails() {
   const isFetchingCommentsRef = useRef(false);
   const hasMoreCommentsRef = useRef(true);
   const lastCursorRef = useRef<{ createdAt: string; id: string } | null>(null);
-  const [commentText, setCommentText] = useState("");
-  const [isInputFocused, setIsInputFocused] = useState(false);
-  const [replyFiles, setReplyFiles] = useState<any[]>([]);
-  const [replyLocation, setReplyLocation] = useState<string | null>(null);
-  const [showEmoji, setShowEmoji] = useState(false);
   const [isSendingReply, setIsSendingReply] = useState(false);
 
   const fetchComments = useCallback(
@@ -201,97 +197,83 @@ export function usePostDetails() {
     startTransition(() => setIsFollowing((prev) => !prev));
   }, []);
 
-  const onAddImage = useCallback(async () => {
+  const pickNewImage = useCallback(async () => {
     try {
-      const result = await pickImage();
-      if (result) {
-        startTransition(() => setReplyFiles((prev) => [...prev, result]));
-      }
+      return await pickImage();
     } catch {
       Alert.alert("Erro", "Erro ao acessar a galeria de imagens.");
+      return null;
     }
   }, []);
 
-  const onRemoveImage = useCallback((indexToRemove: number) => {
-    startTransition(() => {
-      setReplyFiles((prev) => prev.filter((_, i) => i !== indexToRemove));
-    });
-  }, []);
-
-  const onToggleEmoji = useCallback(() => {
-    Keyboard.dismiss();
-    startTransition(() => setShowEmoji((prev) => !prev));
-  }, []);
-
-  const onEmojiSelected = useCallback((emojiObject: { emoji: string }) => {
-    setCommentText((prev) => prev + emojiObject.emoji);
-  }, []);
-
-  const onAddLocation = useCallback(async () => {
-    try {
-      await handleGetLocation({ setLocationName: setReplyLocation });
-    } catch {
-      Alert.alert("Erro", "Não foi possível obter sua localização.");
-    }
-  }, []);
-
-  const createReplyFormData = useCallback(() => {
-    const formData = new FormData();
-    formData.append("Text", commentText);
-    formData.append("ParentPostId", id || "");
-    if (replyLocation) formData.append("LocationName", replyLocation);
-
-    replyFiles.forEach((fileAsset) => {
-      if (fileAsset?.uri) {
-        const uriParts = fileAsset.uri.split("/");
-        formData.append("Pictures", {
-          uri: fileAsset.uri,
-          name:
-            fileAsset.fileName ||
-            uriParts[uriParts.length - 1] ||
-            `image-${Date.now()}.jpg`,
-          type: fileAsset.mimeType || "image/jpeg",
-        } as any);
+  const fetchLocation = useCallback(
+    async (setLocationName: (loc: string | null) => void) => {
+      try {
+        await handleGetLocation({ setLocationName });
+      } catch {
+        Alert.alert("Erro", "Não foi possível obter sua localização.");
       }
-    });
+    },
+    [],
+  );
 
-    return formData;
-  }, [commentText, replyLocation, replyFiles, id]);
+  const createReplyFormData = useCallback(
+    (commentText: string, replyLocation: string | null, replyFiles: any[]) => {
+      const formData = new FormData();
+      formData.append("Text", commentText);
+      formData.append("ParentPostId", id || "");
+      if (replyLocation) formData.append("LocationName", replyLocation);
 
-  const handleSendReply = useCallback(async () => {
-    if (commentText.trim() === "" && replyFiles.length === 0) {
-      Alert.alert("Aviso", "A resposta não pode estar vazia.");
-      return;
-    }
-
-    try {
-      startTransition(() => setIsSendingReply(true));
-
-      await request({
-        urlComplement: `/api/posts/${id}/comments`,
-        method: "POST",
-        data: createReplyFormData(),
-        hasLoading: false,
+      replyFiles.forEach((fileAsset) => {
+        if (fileAsset?.uri) {
+          const uriParts = fileAsset.uri.split("/");
+          formData.append("Pictures", {
+            uri: fileAsset.uri,
+            name:
+              fileAsset.fileName ||
+              uriParts[uriParts.length - 1] ||
+              `image-${Date.now()}.jpg`,
+            type: fileAsset.mimeType || "image/jpeg",
+          } as any);
+        }
       });
 
-      startTransition(() => {
-        setCommentText("");
-        setReplyFiles([]);
-        setReplyLocation(null);
-        setIsInputFocused(false);
-      });
-      Keyboard.dismiss();
-      DeviceEventEmitter.emit("refresh_comments");
-    } catch (error) {
-      console.error("Erro ao enviar resposta:", error);
-      Alert.alert(
-        "Erro",
-        "Não foi possível enviar a resposta. Tente novamente.",
-      );
-    } finally {
-      startTransition(() => setIsSendingReply(false));
-    }
-  }, [commentText, replyFiles, id, request, createReplyFormData]);
+      return formData;
+    },
+    [id],
+  );
+
+  const handleSendReply = useCallback(
+    async (
+      commentText: string,
+      replyLocation: string | null,
+      replyFiles: any[],
+    ) => {
+      try {
+        startTransition(() => setIsSendingReply(true));
+
+        await request({
+          urlComplement: `/api/posts/${id}/comments`,
+          method: "POST",
+          data: createReplyFormData(commentText, replyLocation, replyFiles),
+          hasLoading: false,
+        });
+
+        DeviceEventEmitter.emit("refresh_comments");
+        return true;
+      } catch (error) {
+        console.error("Erro ao enviar resposta:", error);
+        Alert.alert(
+          "Erro",
+          "Não foi possível enviar a resposta. Tente novamente.",
+        );
+        return false;
+      } finally {
+        startTransition(() => setIsSendingReply(false));
+      }
+    },
+    [id, request, createReplyFormData],
+  );
 
   return useMemo(
     () => ({
@@ -304,25 +286,15 @@ export function usePostDetails() {
         comments,
         isLoadingComments,
         hasMoreComments,
-        commentText,
-        isInputFocused,
-        replyFiles,
-        replyLocation,
-        showEmoji,
         isSendingReply,
       },
       functions: {
         handleGoToProfile,
         fetchComments,
-        setCommentText,
-        setIsInputFocused,
         handleLikePost,
         syncFollowState,
-        onAddImage,
-        onRemoveImage,
-        onToggleEmoji,
-        onEmojiSelected,
-        onAddLocation,
+        pickNewImage,
+        fetchLocation,
         handleSendReply,
       },
     }),
@@ -335,21 +307,13 @@ export function usePostDetails() {
       comments,
       isLoadingComments,
       hasMoreComments,
-      commentText,
-      isInputFocused,
-      replyFiles,
-      replyLocation,
-      showEmoji,
       isSendingReply,
       handleGoToProfile,
       fetchComments,
       handleLikePost,
       syncFollowState,
-      onAddImage,
-      onRemoveImage,
-      onToggleEmoji,
-      onEmojiSelected,
-      onAddLocation,
+      pickNewImage,
+      fetchLocation,
       handleSendReply,
     ],
   );

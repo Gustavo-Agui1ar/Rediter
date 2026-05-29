@@ -85,6 +85,21 @@ export const useChatStyles = makeStyles((colors: ThemeColors) => ({
   // =========================
   // Mensagens (Balões)
   // =========================
+
+  noMessagesContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 32,
+  },
+
+  noMessagesText: {
+    color: colors.textSecondary,
+    fontSize: 16,
+    textAlign: "center",
+    lineHeight: 24,
+  },
+
   bubbleWrapper: {
     width: "100%",
     marginVertical: 2,

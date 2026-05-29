@@ -1,4 +1,5 @@
 import { ButtonType } from "@/components/UI/Button/button";
+import { useLanguage } from "@/context/LanguageContext";
 import { useApi } from "@/utils/request.utils";
 import { useState } from "react";
 
@@ -9,6 +10,7 @@ export function useFollow(
 ) {
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const { request } = useApi();
+  const { t } = useLanguage();
 
   const handleFollowToggle = async () => {
     if (!userId) return;
@@ -49,7 +51,7 @@ export function useFollow(
     isFollowing,
     handleFollowToggle,
     handleUnlockUser,
-    buttonTitle: isFollowing ? "Seguindo" : "Seguir",
+    buttonTitle: isFollowing ? t("btn_following") : t("btn_follow"),
     buttonType: (isFollowing ? "border" : "fill") as ButtonType,
   };
 }

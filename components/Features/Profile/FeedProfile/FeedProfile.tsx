@@ -1,12 +1,13 @@
-import Midiagrid, {
-  MediaGridRef,
-} from "@/components/Features/Profile/Midia/Midia";
-import Posts, { PostsRef } from "@/components/Features/Profile/Posts/Posts";
-import TabBar from "@/components/Layout/TabBar/TabBar";
-import { useLanguage } from "@/context/LanguageContext"; // 1. IMPORTADO O CONTEXTO DE IDIOMA
+import Midiagrid from "@/components/Features/Profile/Midia/Midia";
+import Posts from "@/components/Features/Profile/Posts/Posts";
+import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
-import React, { useMemo, useRef } from "react";
-import { ActivityIndicator, Animated, View } from "react-native";
+import React from "react";
+import { ActivityIndicator, View } from "react-native";
+
+// 1. Importamos o MaterialTabBar direto da biblioteca
+import { MaterialTabBar, Tabs } from "react-native-collapsible-tab-view";
+
 import { useFeedProfile } from "./FeedProfile.script";
 import { useFeedStyles } from "./FeedProfile.style";
 
@@ -26,171 +27,77 @@ export default function FeedProfile(props: FeedProfileProps) {
   const { colors } = useTheme();
   const { t } = useLanguage();
 
-  const postsRef = useRef<PostsRef>(null);
-  const mediaRef = useRef<MediaGridRef>(null);
-  const likesRef = useRef<PostsRef>(null);
+  const { state, actions } = useFeedProfile({
+    onRefreshProfile,
+    refresh_id,
+    activeTab: "posts",
+  });
 
-  const { state, actions, animations, panHandlers, getTabStyle } =
-    useFeedProfile({
-      onRefreshProfile,
-      refresh_id,
-      activeTab: "posts",
-    });
-
-  const tabs = useMemo(
-    () => [
-      { id: "posts", label: t("tab_posts") },
-      { id: "media", label: t("tab_media") },
-      { id: "likes", label: t("tab_likes") },
-    ],
-    [t],
+  // O Header principal (Foto, Bio, etc)
+  const renderHeader = () => (
+    <View
+      style={[
+        styles.headerWrapper,
+        { backgroundColor: colors.background || "#121212" },
+      ]}
+    >
+      {state.loading && (
+        <ActivityIndicator
+          size="small"
+          color={colors.primary}
+          style={styles.customSpinner}
+        />
+      )}
+      {headerComponent}
+    </View>
   );
-
-  const handleTabChange = (tabId: string) => {
-    actions.handleTabChange(tabId);
-
-    requestAnimationFrame(() => {
-      switch (tabId) {
-        case "posts":
-          postsRef.current?.scrollToTop();
-          break;
-
-        case "media":
-          mediaRef.current?.scrollToTop();
-          break;
-
-        case "likes":
-          likesRef.current?.scrollToTop();
-          break;
-      }
-    });
-  };
-
-  const renderedPostsTab = useMemo(() => {
-    if (!state.renderedTabs.posts) return null;
-
-    return (
-      <View
-        style={getTabStyle("posts")}
-        pointerEvents={state.activeTab === "posts" ? "auto" : "none"}
-      >
-        <Posts
-          ref={postsRef}
-          key="tab-posts"
-          userId={userId}
-          ownProfile={ownProfile}
-          refresh_id={`${refresh_id}_posts`}
-          onScroll={actions.onScrollEvent}
-          headerHeight={state.HEADER_HEIGHT + 24}
-        />
-      </View>
-    );
-  }, [
-    state.renderedTabs.posts,
-    state.activeTab,
-    getTabStyle,
-    userId,
-    ownProfile,
-    refresh_id,
-    actions.onScrollEvent,
-    state.HEADER_HEIGHT,
-  ]);
-
-  const renderedMediaTab = useMemo(() => {
-    if (!state.renderedTabs.media) return null;
-
-    return (
-      <View
-        style={getTabStyle("media")}
-        pointerEvents={state.activeTab === "media" ? "auto" : "none"}
-      >
-        <Midiagrid
-          ref={mediaRef}
-          key="tab-media"
-          userProfileId={userId}
-          onRefresh={actions.handleGlobalRefresh}
-          refreshing={state.loading}
-          refresh_id={`${refresh_id}_media`}
-          onScroll={actions.onScrollEvent}
-          headerHeight={state.HEADER_HEIGHT + 10}
-        />
-      </View>
-    );
-  }, [
-    state.renderedTabs.media,
-    state.activeTab,
-    getTabStyle,
-    userId,
-    actions.handleGlobalRefresh,
-    state.loading,
-    refresh_id,
-    actions.onScrollEvent,
-    state.HEADER_HEIGHT,
-  ]);
-
-  const renderedLikesTab = useMemo(() => {
-    if (!state.renderedTabs.likes) return null;
-
-    return (
-      <View
-        style={getTabStyle("likes")}
-        pointerEvents={state.activeTab === "likes" ? "auto" : "none"}
-      >
-        <Posts
-          ref={likesRef}
-          key="tab-likes"
-          userId={userId}
-          ownProfile={false}
-          onlyLiked={true}
-          refresh_id={`${refresh_id}_likes`}
-          onScroll={actions.onScrollEvent}
-          headerHeight={state.HEADER_HEIGHT + 24}
-        />
-      </View>
-    );
-  }, [
-    state.renderedTabs.likes,
-    state.activeTab,
-    getTabStyle,
-    userId,
-    refresh_id,
-    actions.onScrollEvent,
-    state.HEADER_HEIGHT,
-  ]);
 
   return (
     <View style={styles.container}>
-      <View style={{ flex: 1, position: "relative" }}>
-        <Animated.View
-          {...panHandlers}
-          style={[
-            styles.headerAnimatedContainer,
-            {
-              transform: [{ translateY: animations.headerTranslateY }],
-              backgroundColor: colors.background || "#121212",
-            },
-          ]}
-        >
-          <Animated.View
-            pointerEvents="none"
-            style={[styles.customSpinner, animations.spinnerStyle]}
-          >
-            <ActivityIndicator size="small" color={colors.primary} />
-          </Animated.View>
-
-          <View style={styles.headerWrapper}>{headerComponent}</View>
-
-          <TabBar
-            items={tabs}
-            active={state.activeTab}
-            onChange={handleTabChange}
+      <Tabs.Container
+        renderHeader={renderHeader}
+        // 2. Disparamos a sua ação de mudança de aba nativamente por aqui
+        onTabChange={({ tabName }) => {
+          actions.handleTabChange(tabName as string);
+        }}
+        // 3. Renderizamos o MaterialTabBar customizado com as cores do seu tema
+        renderTabBar={(props) => (
+          <MaterialTabBar
+            {...props}
+            activeColor={colors.primary}
+            inactiveColor="#888888" // Você pode trocar por uma cor secundária do seu useTheme()
+            indicatorStyle={{ backgroundColor: colors.primary, height: 2 }}
+            style={{ backgroundColor: colors.background || "#121212" }}
+            labelStyle={{ fontWeight: "bold", fontSize: 14 }}
           />
-        </Animated.View>
+        )}
+      >
+        <Tabs.Tab name="posts" label={t("tab_posts")}>
+          <Posts
+            userId={userId}
+            ownProfile={ownProfile}
+            refresh_id={`${refresh_id}_posts`}
+          />
+        </Tabs.Tab>
 
-        {renderedPostsTab}
-        {renderedMediaTab}
-        {renderedLikesTab}
-      </View>
+        <Tabs.Tab name="media" label={t("tab_media")}>
+          <Midiagrid
+            userProfileId={userId}
+            onRefresh={actions.handleGlobalRefresh}
+            refreshing={state.loading}
+            refresh_id={`${refresh_id}_media`}
+          />
+        </Tabs.Tab>
+
+        <Tabs.Tab name="likes" label={t("tab_likes")}>
+          <Posts
+            userId={userId}
+            ownProfile={false}
+            onlyLiked={true}
+            refresh_id={`${refresh_id}_likes`}
+          />
+        </Tabs.Tab>
+      </Tabs.Container>
     </View>
   );
 }

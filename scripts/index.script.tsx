@@ -5,7 +5,7 @@ import { useApi } from "@/utils/request.utils";
 import * as StorageUtils from "@/utils/storage.utils";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { useRootNavigationState, useRouter } from "expo-router";
-import { startTransition, useEffect, useState } from "react";
+import { startTransition, useCallback, useEffect, useState } from "react";
 
 export function useIndex() {
   const router = useRouter();
@@ -13,7 +13,6 @@ export function useIndex() {
   const { request } = useApi();
   const { googleClientId } = useRediterBaseConfigs();
   const { connectSignalR } = useSignalR();
-  const [form, setForm] = useState({ email: "", password: "" });
   const [serverError, setServerError] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
@@ -47,23 +46,24 @@ export function useIndex() {
     checkTokens();
   }, [rootNavigationState?.key, router]);
 
-  const handleInputChange = (field: "email" | "password", value: string) => {
-    startTransition(() => {
-      setForm((prev) => ({ ...prev, [field]: value }));
-      if (submitted) setSubmitted(false);
-      if (serverError) setServerError("");
-    });
-  };
+  const clearError = useCallback(() => {
+    if (serverError) {
+      startTransition(() => setServerError(""));
+    }
+    if (submitted) {
+      startTransition(() => setSubmitted(false));
+    }
+  }, [serverError, submitted]);
 
-  const handleLogin = async () => {
+  const handleLogin = async (email: string, password: string) => {
     startTransition(() => {
       setSubmitted(true);
       setServerError("");
     });
 
     if (
-      !LoginValidator.isEmailValid(form.email) ||
-      !LoginValidator.isPasswordValid(form.password)
+      !LoginValidator.isEmailValid(email) ||
+      !LoginValidator.isPasswordValid(password)
     ) {
       return;
     }
@@ -74,8 +74,8 @@ export function useIndex() {
         method: "POST",
         data: {
           name: "User Redider",
-          email: form.email,
-          password: form.password,
+          email: email,
+          password: password,
         },
         requireAuth: false,
       });
@@ -164,7 +164,7 @@ export function useIndex() {
   };
 
   return {
-    state: { form, serverError, submitted },
-    actions: { handleInputChange, handleLogin, handleGoogleLogin },
+    state: { serverError, submitted },
+    actions: { handleLogin, handleGoogleLogin, clearError },
   };
 }

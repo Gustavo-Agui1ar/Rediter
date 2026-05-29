@@ -1,13 +1,3 @@
-import { useLanguage } from "@/context/LanguageContext";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-
 import {
   AlertBanner,
   Button,
@@ -19,12 +9,21 @@ import {
   Toogle,
 } from "@/components/components";
 import { Dropdown } from "@/components/UI/DropDown/DropDown";
+import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useConfigs } from "@/scripts/Configs.script";
 import { useConfigsStyles } from "@/styles/configs.style";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { ChevronRight } from "lucide-react-native";
-import React from "react";
+import { useCallback, useEffect, useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 const LANGUAGE_OPTIONS = [
   { label: "Português", value: "pt" },
@@ -37,8 +36,39 @@ export default function Configs() {
   const styles = useGlobalStyles();
   const { theme, toggleTheme, colors } = useTheme();
   const { t } = useLanguage();
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const currentDescLength = state.form.description?.length ?? 0;
+  useEffect(() => {
+    setName(state.initialData.name);
+    setDescription(state.initialData.description);
+    setEmail(state.initialData.email);
+    setPassword("");
+  }, [state.initialData]);
+
+  const onChangeName = useCallback((text: string) => setName(text), []);
+  const onChangeDescription = useCallback(
+    (text: string) => setDescription(text),
+    [],
+  );
+  const onChangeEmail = useCallback((text: string) => setEmail(text), []);
+  const onChangePassword = useCallback((text: string) => setPassword(text), []);
+
+  const submitConfigs = useCallback(async () => {
+    const success = await actions.handleSave({
+      name,
+      email,
+      description,
+      password,
+    });
+    if (success) {
+      setPassword("");
+    }
+  }, [actions, name, email, description, password]);
+
+  const currentDescLength = description.length;
 
   return (
     <KeyboardAvoidingView
@@ -105,19 +135,15 @@ export default function Configs() {
 
             <TextBox
               placeholder={t("config_placeholder_name")}
-              value={state.form.name}
-              onChangeText={(text: string) =>
-                actions.onChangeForm("name", text)
-              }
+              value={name}
+              onChangeText={onChangeName}
               editable={!state.loading}
             />
 
             <TextBox
               placeholder={t("config_placeholder_description")}
-              value={state.form.description}
-              onChangeText={(text: string) =>
-                actions.onChangeForm("description", text)
-              }
+              value={description}
+              onChangeText={onChangeDescription}
             >
               <Text
                 style={{
@@ -138,19 +164,15 @@ export default function Configs() {
 
             <TextBox
               placeholder={t("config_placeholder_email")}
-              value={state.form.email}
-              onChangeText={(text: string) =>
-                actions.onChangeForm("email", text)
-              }
+              value={email}
+              onChangeText={onChangeEmail}
               editable={!state.loading}
             />
 
             <TextBox
               placeholder={t("config_placeholder_password")}
-              value={state.form.password}
-              onChangeText={(text: string) =>
-                actions.onChangeForm("password", text)
-              }
+              value={password}
+              onChangeText={onChangePassword}
               secureTextEntry
               editable={!state.loading}
             />
@@ -158,7 +180,7 @@ export default function Configs() {
             <Button
               title={t("btn_save")}
               disabled={state.loading}
-              onPress={actions.handleSave}
+              onPress={submitConfigs}
             />
 
             <Divider text={t("config_section_privacy")} />
@@ -215,14 +237,14 @@ export default function Configs() {
               <Button
                 title={t("btn_delete_account")}
                 type="remove_border"
-                onPress={() => actions.deleteAccount()}
+                onPress={actions.deleteAccount}
                 disabled={state.loading}
               />
 
               <Button
                 title={t("btn_logout")}
                 type="remove_fill"
-                onPress={() => actions.logOut()}
+                onPress={actions.logOut}
                 disabled={state.loading}
               />
             </View>

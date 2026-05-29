@@ -129,7 +129,7 @@ export const translations = {
     new_post_location_prefix: "📍 Em",
     new_post_btn_publish: "Publicar",
     new_post_btn_save_edit: "Salvar Edição",
-    post_edited: "Edited",
+    post_edited: "Editado",
 
     // Comentários
     comment_sending: "Enviando...",
@@ -154,6 +154,8 @@ export const translations = {
     message_started_following: "começou a seguir você",
 
     type_a_message: "Digite uma mensagem...",
+    no_messages_yet:
+      "Nenhuma mensagem ainda.\nEnvie um 'Oi!' para começar a conversa.",
   },
 
   en: {
@@ -311,6 +313,8 @@ export const translations = {
     message_started_following: "started following you",
 
     type_a_message: "Type a message...",
+    no_messages_yet:
+      "No messages yet.\nSend a 'Hi!' to start the conversation.",
   },
 };
 

@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   LayoutChangeEvent,
@@ -59,9 +59,9 @@ export default function TabBar<T>({ items, active, onChange }: TabBarProps<T>) {
     Animated.timing(translateX, {
       toValue: activeIndex * tabWidth,
       duration: 220,
-      useNativeDriver: true,
+      useNativeDriver: true, // Excelente! O transform suporta native driver.
     }).start();
-  }, [activeIndex, tabWidth, items.length]);
+  }, [activeIndex, tabWidth, items.length, translateX]);
 
   function onLayout(e: LayoutChangeEvent) {
     const width = e.nativeEvent.layout.width;

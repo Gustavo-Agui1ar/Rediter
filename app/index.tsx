@@ -1,26 +1,27 @@
 import {
-    AlertBanner,
-    Button,
-    Divider,
-    Header,
-    HelperText,
-    LinkText,
-    LoadingOverlay,
-    TextBox,
+  AlertBanner,
+  Button,
+  Divider,
+  Header,
+  HelperText,
+  LinkText,
+  LoadingOverlay,
+  TextBox,
 } from "@/components/components";
-import { useLanguage } from "@/context/LanguageContext"; // 1. IMPORTADO O CONTEXTO DE IDIOMA
+import { useLanguage } from "@/context/LanguageContext";
 import { useLoading } from "@/context/LoadingContext";
 import { useIndex } from "@/scripts/Index.script";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { useIndexStyle } from "@/styles/index.style";
 import { LoginValidator } from "@/utils/login.utils";
 import { useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import {
-    Image,
-    KeyboardAvoidingView,
-    ScrollView,
-    Text,
-    View,
+  Image,
+  KeyboardAvoidingView,
+  ScrollView,
+  Text,
+  View,
 } from "react-native";
 
 export default function Index() {
@@ -30,6 +31,28 @@ export default function Index() {
   const { loading } = useLoading();
   const { state, actions } = useIndex();
   const { t } = useLanguage();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const onChangeEmail = useCallback(
+    (text: string) => {
+      setEmail(text);
+      actions.clearError();
+    },
+    [actions],
+  );
+
+  const onChangePassword = useCallback(
+    (text: string) => {
+      setPassword(text);
+      actions.clearError();
+    },
+    [actions],
+  );
+
+  const submitLogin = useCallback(() => {
+    actions.handleLogin(email, password);
+  }, [actions, email, password]);
 
   return (
     <KeyboardAvoidingView style={[styles.container]} behavior="padding">
@@ -52,19 +75,14 @@ export default function Index() {
             <View style={indexStyles.fieldContainer}>
               <TextBox
                 placeholder={t("login_placeholder_email")}
-                value={state.form.email}
-                onChangeText={(text: string) =>
-                  actions.handleInputChange("email", text)
-                }
+                value={email}
+                onChangeText={onChangeEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
               <HelperText
                 message={t("validation_email_invalid")}
-                visible={
-                  state.submitted &&
-                  !LoginValidator.isEmailValid(state.form.email)
-                }
+                visible={state.submitted && !LoginValidator.isEmailValid(email)}
                 alert_type="error"
                 style={indexStyles.helperText}
               />
@@ -73,17 +91,14 @@ export default function Index() {
             <View style={indexStyles.fieldContainer}>
               <TextBox
                 placeholder={t("login_placeholder_password")}
-                value={state.form.password}
-                onChangeText={(text: string) =>
-                  actions.handleInputChange("password", text)
-                }
+                value={password}
+                onChangeText={onChangePassword}
                 secureTextEntry
               />
               <HelperText
                 message={t("validation_password_invalid")}
                 visible={
-                  state.submitted &&
-                  !LoginValidator.isPasswordValid(state.form.password)
+                  state.submitted && !LoginValidator.isPasswordValid(password)
                 }
                 alert_type="error"
                 style={indexStyles.helperText}
@@ -99,7 +114,7 @@ export default function Index() {
 
           <Button
             title={t("login_btn_submit")}
-            onPress={actions.handleLogin}
+            onPress={submitLogin}
             type="fill"
           />
 

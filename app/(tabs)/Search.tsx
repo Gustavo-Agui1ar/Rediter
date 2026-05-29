@@ -1,8 +1,8 @@
 import {
-    Header,
-    SearchPosts,
-    SearchUser,
-    TextBox,
+  Header,
+  SearchPosts,
+  SearchUser,
+  TextBox,
 } from "@/components/components";
 import TabBar from "@/components/Layout/TabBar/TabBar";
 import { useLanguage } from "@/context/LanguageContext";
@@ -10,6 +10,7 @@ import { useLoading } from "@/context/LoadingContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useSearch } from "@/scripts/Search.script";
 import { useStyles } from "@/styles/search.styles";
+import { useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
 
 export default function Search() {
@@ -18,14 +19,28 @@ export default function Search() {
   const { state, actions } = useSearch();
   const { loading: globalLoading } = useLoading();
   const { t } = useLanguage();
+  const [localQuery, setLocalQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(localQuery);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [localQuery]);
+
+  const onChangeSearch = useCallback((text: string) => {
+    setLocalQuery(text);
+  }, []);
 
   function renderHeader() {
     return (
       <Header divider={false}>
         <TextBox
           placeholder={t("search_placeholder")}
-          value={state.searchQuery}
-          onChangeText={actions.setSearchQuery}
+          value={localQuery}
+          onChangeText={onChangeSearch}
           icon="search"
           style={{ width: "100%" }}
           editable={!globalLoading}
@@ -41,7 +56,7 @@ export default function Search() {
           <View style={styles.postsContainer}>
             <SearchUser
               key={`tab-${state.activeTab}`}
-              searchTerm={state.searchQuery}
+              searchTerm={debouncedQuery}
               refreshing={globalLoading}
             />
           </View>
@@ -53,7 +68,7 @@ export default function Search() {
           <View style={styles.postsContainer}>
             <SearchPosts
               key={`tab-${state.activeTab}`}
-              searchTerm={state.searchQuery}
+              searchTerm={debouncedQuery}
               myProfile={false}
               refreshing={globalLoading}
               onlyWithMedia={state.activeTab === "media"}

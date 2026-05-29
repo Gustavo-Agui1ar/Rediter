@@ -7,49 +7,33 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
-import { DeviceEventEmitter, Keyboard } from "react-native";
+import { DeviceEventEmitter } from "react-native";
 
-const MAX_CHARACTERS = 250;
-const WARNING_LIMIT = 200;
-
-type HelperTextType = {
-  message: string;
-  type: "error" | "warning" | "success";
-} | null;
-
-type AlertBannerType = {
+export type AlertBannerType = {
   message: string;
   type: "error" | "success";
 } | null;
 
 export function useNewPost() {
-  const [files, setFiles] = useState<any[]>([]);
-  const [showEmoji, setShowEmoji] = useState(false);
-  const [text, setText] = useState("");
-  const [locationName, setLocationName] = useState<string | null>(null);
-  const [postId, setPostId] = useState<string | null>(null);
-  const [helperText, setHelperText] = useState<HelperTextType>(null);
-  const [alertBanner, setAlertBanner] = useState<AlertBannerType>(null);
-  const validationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { request } = useApi();
   const params = useLocalSearchParams();
+  const [alertBanner, setAlertBanner] = useState<AlertBannerType>(null);
+  const [initialData, setInitialData] = useState({
+    postId: null as string | null,
+    text: "",
+    locationName: null as string | null,
+    files: [] as any[],
+  });
 
   useEffect(() => {
     if (params.isEditing !== "true") return;
 
-    startTransition(() => {
-      if (typeof params.postId === "string") setPostId(params.postId);
-      if (typeof params.text === "string") setText(params.text);
-      if (typeof params.location === "string") setLocationName(params.location);
-    });
-
+    let parsedFiles: any[] = [];
     if (typeof params.imageUrls === "string") {
       try {
-        const parsedFiles = JSON.parse(params.imageUrls);
-        startTransition(() => setFiles(parsedFiles));
+        parsedFiles = JSON.parse(params.imageUrls);
       } catch (e) {
         console.error("Erro ao fazer parse das imagens", e);
         startTransition(() => {
@@ -60,33 +44,27 @@ export function useNewPost() {
         });
       }
     }
-  }, []);
 
-  useEffect(() => {
-    return () => {
-      if (validationTimer.current) {
-        clearTimeout(validationTimer.current);
-      }
-    };
-  }, []);
-
-  const clearMessages = useCallback(() => {
-    startTransition(() => {
-      setHelperText(null);
-      setAlertBanner(null);
+    setInitialData({
+      postId: typeof params.postId === "string" ? params.postId : null,
+      text: typeof params.text === "string" ? params.text : "",
+      locationName:
+        typeof params.location === "string" ? params.location : null,
+      files: parsedFiles,
     });
-  }, []);
+  }, [params]);
 
-  const onAddImage = useCallback(async () => {
+  const clearAlerts = useCallback(() => {
+    if (alertBanner) {
+      startTransition(() => setAlertBanner(null));
+    }
+  }, [alertBanner]);
+
+  const pickNewImage = useCallback(async () => {
     try {
       const result = await pickImage();
-
-      if (!result) return;
-
-      startTransition(() => {
-        setFiles((prev) => [...prev, result]);
-      });
-      clearMessages();
+      clearAlerts();
+      return result;
     } catch {
       startTransition(() => {
         setAlertBanner({
@@ -94,215 +72,122 @@ export function useNewPost() {
           type: "error",
         });
       });
+      return null;
     }
-  }, [clearMessages]);
+  }, [clearAlerts]);
 
-  const onRemoveImage = useCallback((indexToRemove: number) => {
-    startTransition(() => {
-      setFiles((prev) => prev.filter((_, i) => i !== indexToRemove));
-    });
-  }, []);
-
-  const onToggleEmoji = useCallback(() => {
-    Keyboard.dismiss();
-    startTransition(() => setShowEmoji((prev) => !prev));
-  }, []);
-
-  const onAddLocation = useCallback(async () => {
-    try {
-      startTransition(() => setHelperText(null));
-      await handleGetLocation({ setLocationName });
-    } catch {
-      startTransition(() => {
-        setHelperText({
-          message:
-            "Não foi possível obter sua localização. Verifique as permissões.",
-          type: "error",
+  const fetchLocation = useCallback(
+    async (setLocationName: (loc: string | null) => void) => {
+      try {
+        await handleGetLocation({ setLocationName });
+        clearAlerts();
+      } catch {
+        startTransition(() => {
+          setAlertBanner({
+            message:
+              "Não foi possível obter sua localização. Verifique as permissões.",
+            type: "error",
+          });
         });
-      });
-    }
-  }, []);
-
-  const onEmojiSelected = useCallback(
-    (emojiObject: { emoji: string }) => {
-      startTransition(() => setText((prev) => prev + emojiObject.emoji));
-      clearMessages();
+      }
     },
-    [clearMessages],
+    [clearAlerts],
   );
 
-  const validateText = useCallback((value: string) => {
-    startTransition(() => {
-      if (value.length > MAX_CHARACTERS) {
-        setHelperText({
-          message: `Você ultrapassou o limite de ${MAX_CHARACTERS} caracteres.`,
-          type: "error",
-        });
-        return;
+  const createFormData = useCallback(
+    (text: string, locationName: string | null, files: any[]) => {
+      const formData = new FormData();
+
+      formData.append("Text", text);
+
+      if (locationName) {
+        formData.append("LocationName", locationName);
       }
 
-      if (value.length > WARNING_LIMIT) {
-        setHelperText({
-          message: `Você está quase atingindo o limite de ${MAX_CHARACTERS} caracteres.`,
-          type: "warning",
-        });
-        return;
-      }
+      files.forEach((fileAsset) => {
+        if (typeof fileAsset === "string") {
+          formData.append("RetainedPictures", fileAsset);
+        } else if (fileAsset?.uri) {
+          const uriParts = fileAsset.uri.split("/");
+          const fileName =
+            fileAsset.fileName ||
+            uriParts[uriParts.length - 1] ||
+            `image-${Date.now()}.jpg`;
 
-      setHelperText(null);
-    });
-  }, []);
+          formData.append("Pictures", {
+            uri: fileAsset.uri,
+            name: fileName,
+            type: fileAsset.mimeType || "image/jpeg",
+          } as any);
+        }
+      });
 
-  const onChangeText = useCallback(
-    (newText: string) => {
-      setText(newText);
-
-      if (validationTimer.current) {
-        clearTimeout(validationTimer.current);
-      }
-
-      validationTimer.current = setTimeout(() => {
-        validateText(newText);
-      }, 250);
+      return formData;
     },
-    [validateText],
+    [],
   );
 
-  const validatePost = useCallback(() => {
-    clearMessages();
+  const handlePublish = useCallback(
+    async (
+      text: string,
+      locationName: string | null,
+      files: any[],
+      postId: string | null,
+    ) => {
+      try {
+        clearAlerts();
+        const formData = createFormData(text, locationName, files);
 
-    if (text.trim() === "" && files.length === 0) {
-      startTransition(() => {
-        setAlertBanner({
-          message: "O post não pode estar vazio. Adicione texto ou uma imagem.",
-          type: "error",
+        await request({
+          urlComplement: postId ? `/api/posts/${postId}` : "/api/posts",
+          method: postId ? "PUT" : "POST",
+          data: formData,
         });
-      });
-      return false;
-    }
 
-    if (text.length > MAX_CHARACTERS) {
-      startTransition(() => {
-        setAlertBanner({
-          message: `O texto excedeu o limite máximo de ${MAX_CHARACTERS} caracteres.`,
-          type: "error",
+        DeviceEventEmitter.emit("refresh_posts");
+
+        startTransition(() => {
+          setAlertBanner({
+            message: postId
+              ? "Post editado com sucesso!"
+              : "Post publicado com sucesso!",
+            type: "success",
+          });
         });
-      });
-      return false;
-    }
 
-    return true;
-  }, [text, files.length, clearMessages]);
-
-  const createFormData = useCallback(() => {
-    const formData = new FormData();
-
-    formData.append("Text", text);
-
-    if (locationName) {
-      formData.append("LocationName", locationName);
-    }
-
-    files.forEach((fileAsset) => {
-      if (typeof fileAsset === "string") {
-        formData.append("RetainedPictures", fileAsset);
-      } else if (fileAsset?.uri) {
-        const uriParts = fileAsset.uri.split("/");
-        const fileName =
-          fileAsset.fileName ||
-          uriParts[uriParts.length - 1] ||
-          `image-${Date.now()}.jpg`;
-
-        formData.append("Pictures", {
-          uri: fileAsset.uri,
-          name: fileName,
-          type: fileAsset.mimeType || "image/jpeg",
-        } as any);
+        setTimeout(() => {
+          router.back();
+        }, 1000);
+        return true;
+      } catch (error: any) {
+        console.error("Erro ao publicar post:", error);
+        startTransition(() => {
+          setAlertBanner({
+            message:
+              "Erro no servidor ao tentar publicar. Tente novamente mais tarde.",
+            type: "error",
+          });
+        });
+        return false;
       }
-    });
-
-    return formData;
-  }, [text, locationName, files]);
-
-  const handlePublish = useCallback(async () => {
-    if (!validatePost()) return;
-
-    try {
-      clearMessages();
-
-      const formData = createFormData();
-
-      await request({
-        urlComplement: postId ? `/api/posts/${postId}` : "/api/posts",
-        method: postId ? "PUT" : "POST",
-        data: formData,
-      });
-
-      DeviceEventEmitter.emit("refresh_posts");
-
-      startTransition(() => {
-        setAlertBanner({
-          message: postId
-            ? "Post editado com sucesso!"
-            : "Post publicado com sucesso!",
-          type: "success",
-        });
-        setText("");
-        setFiles([]);
-        setLocationName(null);
-      });
-
-      setTimeout(() => {
-        router.back();
-      }, 1000);
-    } catch (error: any) {
-      console.error("Erro ao publicar post:", error);
-
-      startTransition(() => {
-        setAlertBanner({
-          message:
-            "Erro no servidor ao tentar publicar. Tente novamente mais tarde.",
-          type: "error",
-        });
-      });
-    }
-  }, [validatePost, clearMessages, createFormData, request, postId]);
+    },
+    [clearAlerts, createFormData, request],
+  );
 
   const state = useMemo(
-    () => ({
-      files,
-      showEmoji,
-      text,
-      locationName,
-      postId,
-      helperText,
-      alertBanner,
-    }),
-    [files, showEmoji, text, locationName, postId, helperText, alertBanner],
+    () => ({ alertBanner, initialData }),
+    [alertBanner, initialData],
   );
 
   const actions = useMemo(
     () => ({
-      onChangeText,
-      onAddImage,
-      onRemoveImage,
-      onToggleEmoji,
-      onAddLocation,
-      onEmojiSelected,
+      pickNewImage,
+      fetchLocation,
       handlePublish,
-      setShowEmoji,
-      setLocationName,
+      clearAlerts,
       setAlertBanner,
     }),
-    [
-      onChangeText,
-      onAddImage,
-      onRemoveImage,
-      onToggleEmoji,
-      onAddLocation,
-      onEmojiSelected,
-      handlePublish,
-    ],
+    [pickNewImage, fetchLocation, handlePublish, clearAlerts],
   );
 
   return { state, actions };

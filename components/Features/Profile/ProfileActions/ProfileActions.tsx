@@ -15,6 +15,7 @@ interface ProfileActionsProps {
   userId?: string;
   followersCount?: number;
   followingCount?: number;
+  chatId?: string | null;
   onUpdateProfile?: (
     updatedFields: Partial<{ isFollowing: boolean; isBlocked: boolean }>,
   ) => void;
@@ -29,6 +30,7 @@ export default function ProfileActions({
   userId,
   followersCount = 0,
   followingCount = 0,
+  chatId = null,
   onUpdateProfile,
 }: ProfileActionsProps) {
   const styles = useProfileActionsStyles();
@@ -68,7 +70,7 @@ export default function ProfileActions({
               size={36}
               onPress={() =>
                 router.push(
-                  `/Message?targetUserId=${userId}&targetUserName=${userName}`,
+                  `/Message?targetUserId=${userId}&targetUserName=${userName}&chatId=${chatId}`,
                 )
               }
             />

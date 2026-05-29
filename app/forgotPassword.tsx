@@ -6,12 +6,10 @@ import {
   TextBox,
 } from "@/components/components";
 import { useLanguage } from "@/context/LanguageContext";
+import { useForgotPassword } from "@/scripts/ForgotPassword.script";
 import { useStylesForgotPassword } from "@/styles/forgotPassword.style";
 import { useGlobalStyles } from "@/styles/global.styles";
-import { useApi } from "@/utils/request.utils";
-import { deleteTokens } from "@/utils/storage.utils";
-import { router } from "expo-router";
-import { startTransition, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -21,51 +19,32 @@ import {
 } from "react-native";
 
 export default function ForgotPassword() {
-  const [form, setForm] = useState({
-    password: "",
-    confirmPassword: "",
-  });
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { request } = useApi();
   const styles = useGlobalStyles();
   const forgotStyles = useStylesForgotPassword();
   const { t } = useLanguage();
+  const { state, actions } = useForgotPassword();
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleResetPassword = async () => {
-    startTransition(() => {
-      setSubmitted(true);
-      setError(null);
-    });
+  const handlePasswordChange = useCallback(
+    (text: string) => {
+      setPassword(text);
+      actions.clearError();
+    },
+    [actions],
+  );
 
-    if (!form.password) {
-      return;
-    }
+  const handleConfirmPasswordChange = useCallback(
+    (text: string) => {
+      setConfirmPassword(text);
+      actions.clearError();
+    },
+    [actions],
+  );
 
-    if (form.password !== form.confirmPassword) {
-      startTransition(() => setError(t("validation_passwords_dont_match")));
-      return;
-    }
-
-    try {
-      const formData = new FormData();
-      formData.append("password", form.password);
-
-      await request({
-        urlComplement: "/api/users/me",
-        method: "PATCH",
-        data: formData,
-      });
-
-      await deleteTokens();
-
-      startTransition(() => {
-        router.replace("/");
-      });
-    } catch (err) {
-      startTransition(() => setError(t("error_reset_password_failed")));
-    }
-  };
+  const submitReset = useCallback(() => {
+    actions.handleResetPassword(password, confirmPassword);
+  }, [actions, password, confirmPassword]);
 
   return (
     <KeyboardAvoidingView
@@ -85,23 +64,21 @@ export default function ForgotPassword() {
           </Text>
 
           <AlertBanner
-            message={error || ""}
-            visible={!!error}
+            message={state.error || ""}
+            visible={!!state.error}
             alert_type="error"
           />
 
           <View style={forgotStyles.fieldContainer}>
             <TextBox
               placeholder={t("forgot_password_placeholder_new")}
-              value={form.password}
-              onChangeText={(text: string) =>
-                setForm({ ...form, password: text })
-              }
+              value={password}
+              onChangeText={handlePasswordChange}
               secureTextEntry
             />
             <HelperText
               message={t("validation_password_empty")}
-              visible={submitted && !form.password}
+              visible={state.submitted && !password}
               alert_type="error"
               style={forgotStyles.helperText}
             />
@@ -110,18 +87,16 @@ export default function ForgotPassword() {
           <View style={forgotStyles.fieldContainer}>
             <TextBox
               placeholder={t("forgot_password_placeholder_confirm")}
-              value={form.confirmPassword}
-              onChangeText={(text: string) =>
-                setForm({ ...form, confirmPassword: text })
-              }
+              value={confirmPassword}
+              onChangeText={handleConfirmPasswordChange}
               secureTextEntry
             />
             <HelperText
               message={t("validation_passwords_dont_match")}
               visible={
-                submitted &&
-                form.password !== form.confirmPassword &&
-                !!form.confirmPassword
+                state.submitted &&
+                password !== confirmPassword &&
+                !!confirmPassword
               }
               alert_type="error"
               style={forgotStyles.helperText}
@@ -130,7 +105,7 @@ export default function ForgotPassword() {
 
           <Button
             title={t("forgot_password_btn_submit")}
-            onPress={handleResetPassword}
+            onPress={submitReset}
             type="fill"
           />
         </View>

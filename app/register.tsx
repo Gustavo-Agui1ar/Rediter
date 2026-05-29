@@ -12,7 +12,7 @@ import { useGlobalStyles } from "@/styles/global.styles";
 import { useRegisterStyle } from "@/styles/Register.style";
 import { LoginValidator } from "@/utils/login.utils";
 import { useRouter } from "expo-router";
-import React from "react";
+import { useCallback, useState } from "react";
 import { KeyboardAvoidingView, ScrollView, Text, View } from "react-native";
 
 export default function Register() {
@@ -21,6 +21,46 @@ export default function Register() {
   const router = useRouter();
   const { state, actions } = useRegister();
   const { t } = useLanguage();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const onChangeName = useCallback(
+    (text: string) => {
+      setName(text);
+      actions.clearError();
+    },
+    [actions],
+  );
+
+  const onChangeEmail = useCallback(
+    (text: string) => {
+      setEmail(text);
+      actions.clearError();
+    },
+    [actions],
+  );
+
+  const onChangePassword = useCallback(
+    (text: string) => {
+      setPassword(text);
+      actions.clearError();
+    },
+    [actions],
+  );
+
+  const onChangeConfirmPassword = useCallback(
+    (text: string) => {
+      setConfirmPassword(text);
+      actions.clearError();
+    },
+    [actions],
+  );
+
+  const submitRegister = useCallback(() => {
+    actions.handleRegister(name, email, password, confirmPassword);
+  }, [actions, name, email, password, confirmPassword]);
 
   return (
     <KeyboardAvoidingView style={[styles.container]} behavior="padding">
@@ -45,20 +85,16 @@ export default function Register() {
           <View style={registerStyles.fieldContainer}>
             <TextBox
               placeholder={t("register_placeholder_name")}
-              value={state.form.name}
-              onChangeText={(value: string) =>
-                actions.handleInputChange("name", value)
-              }
+              value={name}
+              onChangeText={onChangeName}
             />
           </View>
 
           <View style={registerStyles.fieldContainer}>
             <TextBox
               placeholder={t("register_placeholder_email")}
-              value={state.form.email}
-              onChangeText={(value: string) =>
-                actions.handleInputChange("email", value)
-              }
+              value={email}
+              onChangeText={onChangeEmail}
               keyboardType="email-address"
               autoCapitalize="none"
             />
@@ -66,20 +102,15 @@ export default function Register() {
               message={t("validation_email_invalid")}
               alert_type="error"
               style={registerStyles.helperText}
-              visible={
-                !!state.form.email &&
-                !LoginValidator.isEmailValid(state.form.email)
-              }
+              visible={!!email && !LoginValidator.isEmailValid(email)}
             />
           </View>
 
           <View style={registerStyles.fieldContainer}>
             <TextBox
               placeholder={t("register_placeholder_password")}
-              value={state.form.password}
-              onChangeText={(value: string) =>
-                actions.handleInputChange("password", value)
-              }
+              value={password}
+              onChangeText={onChangePassword}
               secureTextEntry
             />
           </View>
@@ -87,10 +118,8 @@ export default function Register() {
           <View style={registerStyles.fieldContainer}>
             <TextBox
               placeholder={t("register_placeholder_confirm_password")}
-              value={state.form.confirmPassword}
-              onChangeText={(value: string) =>
-                actions.handleInputChange("confirmPassword", value)
-              }
+              value={confirmPassword}
+              onChangeText={onChangeConfirmPassword}
               secureTextEntry
             />
             <HelperText
@@ -98,18 +127,15 @@ export default function Register() {
               alert_type="error"
               style={registerStyles.helperText}
               visible={
-                !!state.form.confirmPassword &&
-                !LoginValidator.doPasswordsMatch(
-                  state.form.password,
-                  state.form.confirmPassword,
-                )
+                !!confirmPassword &&
+                !LoginValidator.doPasswordsMatch(password, confirmPassword)
               }
             />
           </View>
 
           <Button
             title={t("register_btn_submit")}
-            onPress={actions.handleRegister}
+            onPress={submitRegister}
             type="fill"
             style={{ marginTop: 20 }}
           />

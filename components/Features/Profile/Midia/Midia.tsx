@@ -1,15 +1,7 @@
 import IconButton from "@/components/UI/IconButton/IconButton";
 import { Image } from "expo-image";
 
-import {
-  forwardRef,
-  memo,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-} from "react";
+import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 
 import {
   Animated,
@@ -23,6 +15,9 @@ import {
   View,
 } from "react-native";
 
+// 1. IMPORTAÇÃO DA BIBLIOTECA
+import { Tabs } from "react-native-collapsible-tab-view";
+
 import { useImageUtils } from "@/utils/imageUri.utils";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useMediaGrid } from "./Midia.script";
@@ -30,25 +25,18 @@ import { useMidiaStyles } from "./Midia.styles";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
-export interface MediaGridRef {
-  scrollToTop: () => void;
-}
-
+// Removemos a necessidade de exportar Refs de ScrollToTop,
+// pois a biblioteca cuida da navegação nativa.
 interface MediaGridProps {
   userProfileId?: string;
   refresh_id: string;
-
   onRefresh?: () => Promise<void> | void;
   refreshing?: boolean;
-
-  onScroll?: any;
-
-  headerHeight?: number;
 }
 
 const SkeletonItem = memo(({ styles }: { styles: any }) => {
   const opacity = useRef(new Animated.Value(0.5)).current;
-  const { getSafeUri } = useImageUtils();
+  // const { getSafeUri } = useImageUtils(); // Removido pois não estava sendo usado aqui
 
   useEffect(() => {
     const animation = Animated.loop(
@@ -81,20 +69,12 @@ const SkeletonItem = memo(({ styles }: { styles: any }) => {
   );
 });
 
-const MediaGrid = forwardRef<MediaGridRef, MediaGridProps>(function MediaGrid(
-  {
-    userProfileId,
-    refresh_id,
-
-    onRefresh,
-    refreshing = false,
-
-    onScroll,
-
-    headerHeight = 0,
-  },
-  ref,
-) {
+const MediaGrid = function MediaGrid({
+  userProfileId,
+  refresh_id,
+  onRefresh,
+  refreshing = false,
+}: MediaGridProps) {
   const styles = useMidiaStyles();
   const { getSafeUri } = useImageUtils();
 
@@ -103,19 +83,13 @@ const MediaGrid = forwardRef<MediaGridRef, MediaGridProps>(function MediaGrid(
     loading,
     modalVisible,
     selectedIndex,
-    listRef,
     modalListRef,
     openModal,
     closeModal,
-    scrollToTop,
   } = useMediaGrid({
     userProfileId,
     refresh_id,
   });
-
-  useImperativeHandle(ref, () => ({
-    scrollToTop,
-  }));
 
   const displayData = useMemo(() => {
     if (!loading) {
@@ -152,7 +126,7 @@ const MediaGrid = forwardRef<MediaGridRef, MediaGridProps>(function MediaGrid(
         </TouchableOpacity>
       );
     },
-    [openModal, styles],
+    [openModal, styles, getSafeUri],
   );
 
   const renderEmpty = useCallback(() => {
@@ -187,51 +161,39 @@ const MediaGrid = forwardRef<MediaGridRef, MediaGridProps>(function MediaGrid(
         />
       </View>
     ),
-    [styles],
+    [styles, getSafeUri],
   );
 
+  // Limpamos a soma matemática do headerHeight.
+  // Mantive o 80 de paddingBottom para garantir que a última linha não fique presa debaixo do menu.
   const contentContainerStyle = useMemo(
     () => [
       styles.listContainer,
       {
         flexGrow: 1,
-        paddingBottom: headerHeight + 80,
+        paddingBottom: 80,
       },
     ],
-    [headerHeight, styles.listContainer],
+    [styles.listContainer],
   );
 
   return (
-    <View
-      style={{
-        flex: 1,
-        width: "100%",
-      }}
-    >
-      <Animated.FlatList
-        ref={listRef}
+    <View style={{ flex: 1, width: "100%" }}>
+      <Tabs.FlatList // 2. SUBSTITUÍDO AQUI
         data={displayData}
         numColumns={2}
         renderItem={renderItem}
         keyExtractor={(item, index) => `media-${index}-${String(item)}`}
         columnWrapperStyle={styles.columnWrapper}
         contentContainerStyle={contentContainerStyle}
-        ListHeaderComponent={
-          <View
-            style={{
-              height: headerHeight,
-            }}
-          />
-        }
         ListEmptyComponent={renderEmpty}
         showsVerticalScrollIndicator={false}
-        nestedScrollEnabled
-        onScroll={onScroll}
-        scrollEventThrottle={16}
+        nestedScrollEnabled // É bom manter se estiver dentro de outros scrolls
         initialNumToRender={8}
         maxToRenderPerBatch={8}
         windowSize={5}
         removeClippedSubviews={Platform.OS === "android"}
+        // O RefreshControl pode continuar aqui sem problemas
         refreshControl={
           onRefresh ? (
             <RefreshControl
@@ -245,6 +207,7 @@ const MediaGrid = forwardRef<MediaGridRef, MediaGridProps>(function MediaGrid(
         }
       />
 
+      {/* Modal permanece inalterado pois não afeta o Scroll do Feed */}
       <Modal
         visible={modalVisible}
         transparent
@@ -253,13 +216,7 @@ const MediaGrid = forwardRef<MediaGridRef, MediaGridProps>(function MediaGrid(
         statusBarTranslucent
       >
         <SafeAreaView
-          style={[
-            styles.modalSafeArea,
-            {
-              flex: 1,
-              backgroundColor: "#000",
-            },
-          ]}
+          style={[styles.modalSafeArea, { flex: 1, backgroundColor: "#000" }]}
         >
           <View style={styles.modalHeader}>
             <IconButton
@@ -300,6 +257,6 @@ const MediaGrid = forwardRef<MediaGridRef, MediaGridProps>(function MediaGrid(
       </Modal>
     </View>
   );
-});
+};
 
 export default memo(MediaGrid);

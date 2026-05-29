@@ -20,19 +20,14 @@ interface ImageState {
   remote?: string;
   changed?: boolean;
 }
-interface FormState {
+
+export interface ProfileFormData {
   name: string;
   email: string;
-  password: string;
-  description?: string;
+  password?: string;
+  description: string;
 }
 
-const INITIAL_FORM: FormState = {
-  name: "",
-  email: "",
-  password: "",
-  description: "",
-};
 const MAX_DESCRIPTION_LENGTH = 150;
 
 export function useConfigs() {
@@ -40,7 +35,14 @@ export function useConfigs() {
   const { loading, setLoading } = useLoading();
   const { request } = useApi();
   const { disconnectSignalR } = useSignalR();
-  const [form, setForm] = useState<FormState>(INITIAL_FORM);
+
+  const [initialData, setInitialData] = useState<ProfileFormData>({
+    name: "",
+    email: "",
+    password: "",
+    description: "",
+  });
+
   const [profileImage, setProfileImage] = useState<ImageState>({});
   const [coverImage, setCoverImage] = useState<ImageState>({});
   const [error, setError] = useState<string | null>(null);
@@ -58,28 +60,9 @@ export function useConfigs() {
     router.push("/BlockedUsers");
   }, []);
 
-  const onChangeForm = useCallback(
-    (field: keyof FormState, value: string) => {
-      startTransition(() => {
-        setForm((prev) => {
-          if (
-            field === "description" &&
-            value.length > MAX_DESCRIPTION_LENGTH
-          ) {
-            return prev;
-          }
-          if (prev[field] === value) return prev;
-          return { ...prev, [field]: value };
-        });
-      });
-      clearAlerts();
-    },
-    [clearAlerts],
-  );
-
   const applyProfileData = useCallback((data: any) => {
     startTransition(() => {
-      setForm({
+      setInitialData({
         name: data.userName || "",
         email: data.email || "",
         password: "",
@@ -206,7 +189,7 @@ export function useConfigs() {
     );
   }, [request, clearSessionAndRedirect]);
 
-  const validateForm = useCallback(() => {
+  const validateForm = useCallback((form: ProfileFormData) => {
     const name = form.name?.trim() || "";
     const email = form.email?.trim().toLowerCase() || "";
     const password = form.password || "";
@@ -223,88 +206,96 @@ export function useConfigs() {
       return "A nova senha é inválida.";
 
     return null;
-  }, [form]);
+  }, []);
 
-  const buildFormData = useCallback(() => {
-    const formData = new FormData();
-    const name = form.name.trim();
-    const email = form.email.trim().toLowerCase();
-    const description = (form.description || "")
-      .replace(/\s+/g, " ")
-      .trim()
-      .substring(0, MAX_DESCRIPTION_LENGTH);
+  const buildFormData = useCallback(
+    (form: ProfileFormData) => {
+      const formData = new FormData();
+      const name = form.name.trim();
+      const email = form.email.trim().toLowerCase();
+      const description = (form.description || "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .substring(0, MAX_DESCRIPTION_LENGTH);
 
-    if (profileImage.changed && profileImage.local) {
-      const fileData = createFileData(profileImage.local);
-      if (fileData) formData.append("File", fileData);
-    }
-    if (coverImage.changed && coverImage.local) {
-      const coverData = createFileData(coverImage.local);
-      if (coverData) formData.append("Cover", coverData);
-    }
+      if (profileImage.changed && profileImage.local) {
+        const fileData = createFileData(profileImage.local);
+        if (fileData) formData.append("File", fileData);
+      }
+      if (coverImage.changed && coverImage.local) {
+        const coverData = createFileData(coverImage.local);
+        if (coverData) formData.append("Cover", coverData);
+      }
 
-    formData.append("Name", name);
-    formData.append("Email", email);
+      formData.append("Name", name);
+      formData.append("Email", email);
 
-    if (description.length > 0) {
-      formData.append("Description", description);
-    }
+      if (description.length > 0) {
+        formData.append("Description", description);
+      }
 
-    if (form.password) formData.append("Password", form.password);
+      if (form.password) formData.append("Password", form.password);
 
-    return formData;
-  }, [form, profileImage, coverImage, createFileData]);
+      return formData;
+    },
+    [profileImage, coverImage, createFileData],
+  );
 
-  const handleSave = useCallback(async () => {
-    clearAlerts();
-    const validationError = validateForm();
-    if (validationError) {
-      startTransition(() => setError(validationError));
-      return;
-    }
+  const handleSave = useCallback(
+    async (formDataFromScreen: ProfileFormData) => {
+      clearAlerts();
+      const validationError = validateForm(formDataFromScreen);
+      if (validationError) {
+        startTransition(() => setError(validationError));
+        return false;
+      }
 
-    try {
-      const formData = buildFormData();
+      try {
+        const formData = buildFormData(formDataFromScreen);
 
-      await request({
-        urlComplement: "/api/users/me",
-        method: "PATCH",
-        data: formData,
-      });
+        await request({
+          urlComplement: "/api/users/me",
+          method: "PATCH",
+          data: formData,
+        });
 
-      await Storage.saveProfileBasic({
-        imageUrl: profileImage.local?.uri || profileImage.remote,
-        coverUrl: coverImage.local?.uri || coverImage.remote,
-        userName: form.name.trim(),
-        email: form.email.trim().toLowerCase(),
-        description: (form.description || "").replace(/\s+/g, " ").trim(),
-      });
+        await Storage.saveProfileBasic({
+          imageUrl: profileImage.local?.uri || profileImage.remote,
+          coverUrl: coverImage.local?.uri || coverImage.remote,
+          userName: formDataFromScreen.name.trim(),
+          email: formDataFromScreen.email.trim().toLowerCase(),
+          description: (formDataFromScreen.description || "")
+            .replace(/\s+/g, " ")
+            .trim(),
+        });
 
-      startTransition(() => {
-        setLanguage(lan as any);
-        setSuccessMsg("Informações atualizadas com sucesso!");
-        setForm((prev) => ({ ...prev, password: "" }));
-      });
-    } catch (err: any) {
-      startTransition(() =>
-        setError(err?.message || "Erro ao atualizar perfil."),
-      );
-    }
-  }, [
-    clearAlerts,
-    validateForm,
-    buildFormData,
-    request,
-    profileImage,
-    coverImage,
-    form,
-    lan,
-    setLanguage,
-  ]);
+        startTransition(() => {
+          setLanguage(lan as any);
+          setSuccessMsg("Informações atualizadas com sucesso!");
+        });
+        return true;
+      } catch (err: any) {
+        startTransition(() =>
+          setError(err?.message || "Erro ao atualizar perfil."),
+        );
+        return false;
+      }
+    },
+    [
+      clearAlerts,
+      validateForm,
+      buildFormData,
+      request,
+      profileImage,
+      coverImage,
+      lan,
+      setLanguage,
+    ],
+  );
 
   const state = useMemo(
     () => ({
-      form,
+      initialData,
       profileImage,
       coverImage,
       error,
@@ -313,12 +304,11 @@ export function useConfigs() {
       lan,
       maxDescriptionLength: MAX_DESCRIPTION_LENGTH,
     }),
-    [form, profileImage, coverImage, error, successMsg, loading, lan],
+    [initialData, profileImage, coverImage, error, successMsg, loading, lan],
   );
 
   const actions = useMemo(
     () => ({
-      onChangeForm,
       handlePickCover,
       handlePickProfileImage,
       handleSave,
@@ -328,7 +318,6 @@ export function useConfigs() {
       setLan,
     }),
     [
-      onChangeForm,
       handlePickCover,
       handlePickProfileImage,
       handleSave,

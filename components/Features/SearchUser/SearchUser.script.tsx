@@ -17,11 +17,11 @@ const PAGE_SIZE = 12;
 
 export function useSearchUsers(searchTerm: string) {
   const [users, setUsers] = useState<SearchUserItem[]>([]);
-  const [hasMore, setHasMore] = useState(false);
   const [initialLoading, setInitialLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const { request } = useApi();
-  const fetchingRef = useRef(false);
+  const isFetchingRef = useRef(false);
+  const hasMoreRef = useRef(false);
   const lastItemRef = useRef<{ id: string; createdAt: string } | null>(null);
 
   const fetchUsers = useCallback(
@@ -29,26 +29,24 @@ export function useSearchUsers(searchTerm: string) {
       if (!currentTerm?.trim()) {
         startTransition(() => {
           setUsers([]);
-          setHasMore(false);
           setInitialLoading(false);
         });
+        hasMoreRef.current = false;
         return;
       }
 
-      if (fetchingRef.current) return;
+      if (isFetchingRef.current) return;
 
       if (isMore) {
-        if (loadingMore || !hasMore) return;
+        if (!hasMoreRef.current) return;
         startTransition(() => setLoadingMore(true));
       } else {
         lastItemRef.current = null;
-        startTransition(() => {
-          setInitialLoading(true);
-          setHasMore(true);
-        });
+        hasMoreRef.current = true;
+        startTransition(() => setInitialLoading(true));
       }
 
-      fetchingRef.current = true;
+      isFetchingRef.current = true;
 
       try {
         const params = new URLSearchParams();
@@ -78,6 +76,8 @@ export function useSearchUsers(searchTerm: string) {
           };
         }
 
+        hasMoreRef.current = newUsers.length >= PAGE_SIZE;
+
         startTransition(() => {
           setUsers((prev) => {
             if (!isMore) return newUsers;
@@ -87,27 +87,26 @@ export function useSearchUsers(searchTerm: string) {
 
             return [...prev, ...filtered];
           });
-          setHasMore(newUsers.length >= PAGE_SIZE);
         });
       } catch (error) {
         console.error("Erro na busca de usuários:", error);
       } finally {
-        fetchingRef.current = false;
+        isFetchingRef.current = false;
         startTransition(() => {
           setInitialLoading(false);
           setLoadingMore(false);
         });
       }
     },
-    [hasMore, loadingMore, request],
+    [request],
   );
 
   useEffect(() => {
     if (!searchTerm || !searchTerm.trim()) {
       startTransition(() => {
         setUsers([]);
-        setHasMore(false);
       });
+      hasMoreRef.current = false;
       lastItemRef.current = null;
       return;
     }
@@ -123,6 +122,7 @@ export function useSearchUsers(searchTerm: string) {
     users,
     initialLoading,
     loadingMore,
+    hasMore: hasMoreRef.current,
     loadMore: () => fetchUsers(true, searchTerm),
   };
 }

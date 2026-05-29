@@ -1,32 +1,29 @@
 import { LoginValidator } from "@/utils/login.utils";
 import { useApi } from "@/utils/request.utils";
 import { router } from "expo-router";
-import { startTransition, useState } from "react";
+import { startTransition, useCallback, useState } from "react";
 
 export function useRegister() {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-
   const [errorText, setErrorText] = useState("");
   const { request } = useApi();
 
-  const handleInputChange = (field: keyof typeof form, value: string) => {
-    startTransition(() => {
-      setForm((prev) => ({ ...prev, [field]: value }));
-      if (errorText) setErrorText("");
-    });
-  };
+  const clearError = useCallback(() => {
+    if (errorText) {
+      startTransition(() => setErrorText(""));
+    }
+  }, [errorText]);
 
-  const handleRegister = async () => {
-    const trimmedEmail = form.email.trim().toLowerCase();
+  const handleRegister = async (
+    name: string,
+    email: string,
+    pass: string,
+    confirmPass: string,
+  ) => {
+    const trimmedEmail = email.trim().toLowerCase();
 
     startTransition(() => setErrorText(""));
 
-    if (!form.name.trim()) {
+    if (!name.trim()) {
       startTransition(() => setErrorText("Por favor, insira o seu nome."));
       return;
     }
@@ -38,7 +35,7 @@ export function useRegister() {
       return;
     }
 
-    if (!LoginValidator.doPasswordsMatch(form.password, form.confirmPassword)) {
+    if (!LoginValidator.doPasswordsMatch(pass, confirmPass)) {
       startTransition(() =>
         setErrorText("Por favor, insira senhas coincidentes."),
       );
@@ -47,9 +44,9 @@ export function useRegister() {
 
     try {
       const user = {
-        name: form.name,
+        name: name.trim(),
         email: trimmedEmail,
-        password: form.password,
+        password: pass,
       };
 
       await request({
@@ -81,7 +78,7 @@ export function useRegister() {
   };
 
   return {
-    state: { form, errorText },
-    actions: { handleInputChange, handleRegister },
+    state: { errorText },
+    actions: { handleRegister, clearError },
   };
 }

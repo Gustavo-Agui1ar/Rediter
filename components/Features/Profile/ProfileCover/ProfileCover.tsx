@@ -15,7 +15,7 @@ const ProfileCover = ({ imageName, style, ...props }: ProfileCoverProps) => {
   const { getSafeUri } = useImageUtils();
 
   const imageSource = useMemo(() => {
-    return getSafeUri(imageName) || DEFAULT_COVER_IMAGE;
+    return getSafeUri(imageName, false) || DEFAULT_COVER_IMAGE;
   }, [imageName]);
 
   const combinedStyle = useMemo(() => {
