@@ -2,7 +2,6 @@ import IconButton from "@/components/UI/IconButton/IconButton";
 import { useImageUtils } from "@/utils/imageUri.utils";
 import { Image } from "expo-image";
 import { FlatList, Modal, Text, TouchableOpacity, View } from "react-native";
-
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDisplayImages } from "./DisplayImage.script";
 import { SCREEN_WIDTH, useDisplayImageStyles } from "./DisplayImage.styles";
@@ -48,11 +47,11 @@ export default function DisplayImages({
     >
       {displayFiles.map((file, index) => {
         const isLastVisible = index === MAX_VISIBLE - 1 && remaining > 0;
-        const uri = getSafeUri(file);
+        const uri = typeof file === "string" ? getSafeUri(file) : file?.uri;
 
         return (
           <TouchableOpacity
-            key={uri}
+            key={`grid-img-${index}`}
             style={{
               width: gridLayout.width as any,
               height: gridLayout.height as any,
@@ -130,17 +129,22 @@ export default function DisplayImages({
               index: i,
             })}
             keyExtractor={(_, i) => i.toString()}
-            renderItem={({ item }) => (
-              <View style={styles.carouselItem}>
-                <Image
-                  source={{ uri: getSafeUri(item, false) }}
-                  style={styles.largeImage}
-                  contentFit="contain"
-                  transition={200}
-                  cachePolicy="memory-disk"
-                />
-              </View>
-            )}
+            renderItem={({ item }) => {
+              const fullUri =
+                typeof item === "string" ? getSafeUri(item, false) : item?.uri;
+
+              return (
+                <View style={styles.carouselItem}>
+                  <Image
+                    source={fullUri ? { uri: fullUri } : undefined}
+                    style={styles.largeImage}
+                    contentFit="contain"
+                    transition={200}
+                    cachePolicy="memory-disk"
+                  />
+                </View>
+              );
+            }}
           />
         </SafeAreaView>
       </Modal>

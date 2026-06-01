@@ -1,5 +1,6 @@
 import { useSignalR } from "@/context/NotificationsContext";
 import { useApi } from "@/utils/request.utils";
+import * as signalR from "@microsoft/signalr";
 import {
   startTransition,
   useCallback,
@@ -13,6 +14,7 @@ export interface MessageDTO {
   isMine: boolean;
   content: string;
   createdAt: string;
+  senderUserName?: string;
 }
 
 interface UseChatOptions {
@@ -49,16 +51,29 @@ export function useChat({
   const isTypingRef = useRef(false);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { request } = useApi();
-  const { connection } = useSignalR();
+  const { connection, isSignalRConnected } = useSignalR();
 
   useEffect(() => {
     setActiveChatId(sanitizeId(chatId));
   }, [chatId]);
 
   useEffect(() => {
-    if (!connection || !activeChatId) return;
+    if (!connection || !activeChatId || !isSignalRConnected) return;
 
-    connection.invoke("JoinChatGroup", activeChatId).catch(console.error);
+    const joinGroupSafe = async () => {
+      try {
+        if (connection.state === signalR.HubConnectionState.Connected) {
+          await connection.invoke("JoinChatGroup", activeChatId);
+          console.log(`📡 Entrou no grupo do chat: ${activeChatId}`);
+        } else {
+          console.warn("SignalR aguardando conexão para entrar no grupo...");
+        }
+      } catch (error) {
+        console.error("Erro ao entrar no grupo do chat:", error);
+      }
+    };
+
+    joinGroupSafe();
 
     const onReceiveTyping = (incomingChatId: string, isTyping: boolean) => {
       if (incomingChatId.toLowerCase() !== activeChatId.toLowerCase()) return;
@@ -87,7 +102,7 @@ export function useChat({
       connection.off("ReceiveTyping", onReceiveTyping);
       connection.off("ReceiveMessage", onReceiveMessage);
     };
-  }, [connection, activeChatId]);
+  }, [connection, activeChatId, isSignalRConnected]);
 
   const loadMessages = useCallback(
     async (isLoadMore = false) => {
@@ -171,7 +186,11 @@ export function useChat({
 
     if (!isTypingRef.current) {
       isTypingRef.current = true;
-      connection.invoke("SendTyping", activeChatId, true).catch(console.error);
+      if (connection.state === signalR.HubConnectionState.Connected) {
+        connection
+          .invoke("SendTyping", activeChatId, true)
+          .catch(console.error);
+      }
     }
 
     if (typingTimeoutRef.current) {
@@ -180,7 +199,11 @@ export function useChat({
 
     typingTimeoutRef.current = setTimeout(() => {
       isTypingRef.current = false;
-      connection.invoke("SendTyping", activeChatId, false).catch(console.error);
+      if (connection.state === signalR.HubConnectionState.Connected) {
+        connection
+          .invoke("SendTyping", activeChatId, false)
+          .catch(console.error);
+      }
     }, 2000);
   }, [activeChatId, connection]);
 
@@ -198,9 +221,11 @@ export function useChat({
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       if (isTypingRef.current && connection && activeChatId) {
         isTypingRef.current = false;
-        connection
-          .invoke("SendTyping", activeChatId, false)
-          .catch(console.error);
+        if (connection.state === signalR.HubConnectionState.Connected) {
+          connection
+            .invoke("SendTyping", activeChatId, false)
+            .catch(console.error);
+        }
       }
 
       const tempId = `temp-${Date.now()}`;

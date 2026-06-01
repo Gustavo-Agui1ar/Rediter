@@ -4,6 +4,7 @@ import { useTheme } from "@/context/ThemeContext";
 import React, { useCallback } from "react";
 import {
   ActivityIndicator,
+  Alert,
   RefreshControl,
   SectionList,
   Text,
@@ -21,12 +22,15 @@ const UserSkeleton = () => {
     </View>
   );
 };
+
 interface SearchUsersProps {
   searchTerm: string;
   onRefresh?: () => Promise<void>;
   refreshing?: boolean;
   profileHeader?: React.ReactElement;
   tabBar?: React.ReactElement;
+  isAdminMode?: boolean;
+  onDeleteUser?: (userId: string) => void;
 }
 
 export default function SearchUsers({
@@ -35,6 +39,8 @@ export default function SearchUsers({
   refreshing = false,
   profileHeader,
   tabBar,
+  isAdminMode = false,
+  onDeleteUser,
 }: SearchUsersProps) {
   const { colors } = useTheme();
   const styles = useStylesSearchUsers();
@@ -51,14 +57,41 @@ export default function SearchUsers({
       ] as any)
     : users;
 
+  const handleConfirmDelete = useCallback(
+    (user: any) => {
+      Alert.alert(
+        `${t("admin_confirm_delete_title")}`,
+        `${t("admin_confirm_delete_message")} ${user.name}? ${t("admin_confirm_delete_confirmation")}.`,
+        [
+          { text: `${t("btn_cancel")}`, style: "cancel" },
+          {
+            text: "Deletar",
+            style: "destructive",
+            onPress: () => {
+              if (onDeleteUser) onDeleteUser(user.userID);
+            },
+          },
+        ],
+      );
+    },
+    [onDeleteUser],
+  );
+
   const renderItem = useCallback(
     ({ item }: { item: any }) => {
       if (item._isSkeleton) {
         return <UserSkeleton />;
       }
-      return <UserItem user={item} searchTerm={searchTerm} />;
+      return (
+        <UserItem
+          user={item}
+          searchTerm={searchTerm}
+          isAdminMode={isAdminMode}
+          onDelete={() => handleConfirmDelete(item)}
+        />
+      );
     },
-    [searchTerm],
+    [searchTerm, isAdminMode, handleConfirmDelete],
   );
 
   const renderSectionFooter = useCallback(

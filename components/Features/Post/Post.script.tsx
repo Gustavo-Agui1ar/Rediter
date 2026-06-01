@@ -115,9 +115,12 @@ export function usePost({
           !validUrl.startsWith("http://") &&
           !validUrl.startsWith("https://")
         ) {
-          const cleanImage = validUrl.startsWith("/")
+          let cleanImage = validUrl.startsWith("/")
             ? validUrl.slice(1)
             : validUrl;
+
+          cleanImage = cleanImage.replace(/_thumb(?=\.[^.]+$)/, "");
+
           validUrl = `${baseUrl}/api/pictures/${cleanImage}`;
         }
 

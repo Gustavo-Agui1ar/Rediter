@@ -42,6 +42,9 @@ const MessageBubble = memo(
         <View
           style={[styles.bubble, isMe ? styles.bubbleMe : styles.bubbleThem]}
         >
+          {!isMe && item.senderUserName && (
+            <Text style={styles.senderName}>{item.senderUserName}</Text>
+          )}
           <Text style={isMe ? styles.textMe : styles.textThem}>
             {item.content}
           </Text>
@@ -116,11 +119,7 @@ export default function ChatScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 45 : 45}
     >
-      <Header
-        divider={true}
-        onBack={() => router.back()}
-        title={targetUserName}
-      />
+      <Header divider={true} arrowBack={true} title={targetUserName} />
 
       <View style={styles.chatArea}>
         {isLoading && messages.length === 0 ? (

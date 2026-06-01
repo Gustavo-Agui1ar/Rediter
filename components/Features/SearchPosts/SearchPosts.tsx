@@ -4,6 +4,7 @@ import { useTheme } from "@/context/ThemeContext";
 import React, { memo, useCallback, useMemo } from "react";
 import {
   ActivityIndicator,
+  Alert,
   RefreshControl,
   SectionList,
   StyleProp,
@@ -38,6 +39,7 @@ const SKELETON_DATA = [
   { _isSkeleton: true, id: "skel-1" },
   { _isSkeleton: true, id: "skel-2" },
 ];
+
 interface SearchPostsProps {
   searchTerm: string;
   onlyWithMedia?: boolean;
@@ -47,6 +49,8 @@ interface SearchPostsProps {
   profileHeader?: React.ReactElement;
   tabBar?: React.ReactElement;
   feedMode?: "following" | "foryou";
+  isAdminMode?: boolean;
+  onDeletePost?: (postId: string) => void;
 }
 
 const SearchPosts = ({
@@ -58,11 +62,12 @@ const SearchPosts = ({
   profileHeader,
   tabBar,
   feedMode,
+  isAdminMode = false,
+  onDeletePost,
 }: SearchPostsProps) => {
   const { colors } = useTheme();
   const styles = useStylesPosts();
   const { t } = useLanguage();
-
   const { posts, initialLoading, loadingMore, loadMore } = useSearchPosts(
     searchTerm,
     onlyWithMedia,
@@ -71,6 +76,29 @@ const SearchPosts = ({
 
   const displayData = initialLoading ? SKELETON_DATA : posts || [];
   const sections = useMemo(() => [{ data: displayData }], [displayData]);
+
+  const handleConfirmDelete = useCallback(
+    (item: any) => {
+      Alert.alert(
+        "Deletar Post",
+        "Tem certeza que deseja deletar este post? Esta ação não pode ser desfeita.",
+        [
+          { text: "Cancelar", style: "cancel" },
+          {
+            text: "Deletar",
+            style: "destructive",
+            onPress: () => {
+              const id = getId(item) as string;
+              if (onDeletePost && id) {
+                onDeletePost(id);
+              }
+            },
+          },
+        ],
+      );
+    },
+    [onDeletePost],
+  );
 
   const renderItem = useCallback(
     ({ item }: { item: any }) => {
@@ -96,11 +124,13 @@ const SearchPosts = ({
             liked={item.likedByCurrentUser}
             userId={item.postUserID}
             canGoToProfile={true}
+            isAdminMode={isAdminMode}
+            onDelete={() => handleConfirmDelete(item)}
           />
         </View>
       );
     },
-    [myProfile, searchTerm, styles.PostContainer],
+    [searchTerm, styles.PostContainer, isAdminMode, handleConfirmDelete],
   );
 
   const handleKeyExtractor = useCallback((item: any, index: number) => {

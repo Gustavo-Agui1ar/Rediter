@@ -1,6 +1,7 @@
 import { useTheme } from "@/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
+import { useRouter } from "expo-router";
 import React from "react";
 import {
   ImageSourcePropType,
@@ -16,7 +17,7 @@ interface HeaderProps extends ViewProps {
   resource?: ImageSourcePropType;
   children?: React.ReactNode;
   divider?: boolean;
-  onBack?: () => void;
+  arrowBack?: boolean;
 }
 
 export default function Header({
@@ -24,13 +25,14 @@ export default function Header({
   resource,
   children,
   divider = true,
-  onBack,
+  arrowBack = false,
   style,
   ...rest
 }: HeaderProps) {
   const stylesHeader = useStylesHeader();
   const { colors } = useTheme();
   const defaultLogo = require("@/assets/logo/white_r.svg");
+  const router = useRouter();
 
   return (
     <View
@@ -38,9 +40,9 @@ export default function Header({
       {...rest}
     >
       <View style={stylesHeader.left}>
-        {onBack ? (
+        {arrowBack ? (
           <TouchableOpacity
-            onPress={onBack}
+            onPress={router.back}
             hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
           >
             <Ionicons

@@ -9,7 +9,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { DeviceEventEmitter } from "react-native";
+import { DeviceEventEmitter, Platform } from "react-native";
 
 export type AlertBannerType = {
   message: string;
@@ -114,10 +114,21 @@ export function useNewPost() {
             uriParts[uriParts.length - 1] ||
             `image-${Date.now()}.jpg`;
 
+          const mimeType = fileAsset.mimeType || fileAsset.type || "image/jpeg";
+
+          let localUri = fileAsset.uri;
+          if (
+            Platform.OS === "android" &&
+            !localUri.startsWith("file://") &&
+            !localUri.startsWith("content://")
+          ) {
+            localUri = `file://${localUri}`;
+          }
+
           formData.append("Pictures", {
-            uri: fileAsset.uri,
+            uri: localUri,
             name: fileName,
-            type: fileAsset.mimeType || "image/jpeg",
+            type: mimeType,
           } as any);
         }
       });
@@ -137,6 +148,10 @@ export function useNewPost() {
       try {
         clearAlerts();
         const formData = createFormData(text, locationName, files);
+
+        for (const pair of formData.entries()) {
+          console.log(pair[0], pair[1]);
+        }
 
         await request({
           urlComplement: postId ? `/api/posts/${postId}` : "/api/posts",

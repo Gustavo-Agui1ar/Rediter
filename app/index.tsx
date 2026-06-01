@@ -8,6 +8,7 @@ import {
   LoadingOverlay,
   TextBox,
 } from "@/components/components";
+import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useLoading } from "@/context/LoadingContext";
 import { useIndex } from "@/scripts/Index.script";
@@ -31,6 +32,7 @@ export default function Index() {
   const { loading } = useLoading();
   const { state, actions } = useIndex();
   const { t } = useLanguage();
+  const { isInitializing } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -56,7 +58,7 @@ export default function Index() {
 
   return (
     <KeyboardAvoidingView style={[styles.container]} behavior="padding">
-      {loading && <LoadingOverlay />}
+      {(loading || isInitializing) && <LoadingOverlay />}
 
       <Header title={t("login_header_title")} />
 

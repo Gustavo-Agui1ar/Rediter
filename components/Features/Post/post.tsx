@@ -6,7 +6,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { useFormattedDate } from "@/utils/datePost.utils";
-import React, { memo, useMemo } from "react";
+import { memo, useMemo } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -34,6 +34,8 @@ interface PostProps {
   canGoToProfile?: boolean;
   userId: string;
   isReply?: boolean;
+  isAdminMode?: boolean;
+  onDelete?: () => void;
 }
 
 const EMPTY_IMAGE_ARRAY: string[] = [];
@@ -55,6 +57,8 @@ function Post({
   canGoToProfile = true,
   userId,
   isReply = false,
+  isAdminMode = false,
+  onDelete,
 }: PostProps) {
   const styles = useGlobalStyles();
   const postStyles = usePostStyles();
@@ -87,7 +91,8 @@ function Post({
   const { t } = useLanguage();
   const safeImageUrls = postImageUrl || EMPTY_IMAGE_ARRAY;
   const hasImages = safeImageUrls.length > 0;
-  const hasOptions = !ownProfile || hasImages;
+  const hasOptions = ownProfile || hasImages || isAdminMode;
+
   const downloadingOpacityStyle = useMemo(
     () => ({ opacity: isDownloading ? 0.5 : 1 }),
     [isDownloading],
@@ -181,6 +186,17 @@ function Post({
                         </Text>
                       </TouchableOpacity>
                     </>
+                  )}
+
+                  {isAdminMode && !ownProfile && (
+                    <TouchableOpacity
+                      onPress={onDelete}
+                      style={postStyles.itemOptionsContainer}
+                    >
+                      <Text style={postStyles.optionTextDelete}>
+                        {t("btn_delete")} (Admin)
+                      </Text>
+                    </TouchableOpacity>
                   )}
 
                   {hasImages && (
@@ -284,6 +300,7 @@ const areEqual = (prevProps: PostProps, nextProps: PostProps) => {
     prevProps.countComments === nextProps.countComments &&
     prevProps.searchTerm === nextProps.searchTerm &&
     prevProps.isReply === nextProps.isReply &&
+    prevProps.isAdminMode === nextProps.isAdminMode &&
     prevProps.postImageUrl?.length === nextProps.postImageUrl?.length
   );
 };

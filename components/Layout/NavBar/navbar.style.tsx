@@ -4,17 +4,18 @@ import { makeStyles } from "@/utils/makeStyles.utils";
 
 export const useNavStyles = makeStyles((colors: ThemeColors) => ({
   container: {
-    width: "100%",
+    minWidth: "100%",
     flexDirection: "row",
-    justifyContent: "space-around",
     alignItems: "center",
     backgroundColor: colors.surface,
     borderTopWidth: 1,
     borderColor: colors.border,
     paddingVertical: 6,
+    paddingHorizontal: 12,
+    gap: 8,
   },
   navItem: {
-    flex: 1,
+    width: 72,
     alignItems: "center",
     justifyContent: "center",
     gap: 4,
@@ -30,6 +31,7 @@ export const useNavStyles = makeStyles((colors: ThemeColors) => ({
   },
   label: {
     fontSize: TextSize.xs,
+    textAlign: "center",
   },
   badgeContainer: {
     position: "absolute",

@@ -1,5 +1,6 @@
 import React from "react";
 
+import { AuthProvider } from "@/context/AuthContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { LoadingProvider } from "@/context/LoadingContext";
 import { SignalRProvider } from "@/context/NotificationsContext";
@@ -11,13 +12,15 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
     <SafeAreaProvider>
       <RediterConfigProvider>
-        <LoadingProvider>
-          <ThemeProvider>
-            <LanguageProvider>
-              <SignalRProvider>{children}</SignalRProvider>
-            </LanguageProvider>
-          </ThemeProvider>
-        </LoadingProvider>
+        <AuthProvider>
+          <LoadingProvider>
+            <ThemeProvider>
+              <LanguageProvider>
+                <SignalRProvider>{children}</SignalRProvider>
+              </LanguageProvider>
+            </ThemeProvider>
+          </LoadingProvider>
+        </AuthProvider>
       </RediterConfigProvider>
     </SafeAreaProvider>
   );

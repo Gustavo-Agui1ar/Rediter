@@ -1,24 +1,27 @@
 import { useTheme } from "@/context/ThemeContext";
 import { iconMapping } from "@/styles/icons";
-import React, { memo, useEffect, useRef } from "react";
-import { Animated, Text, TouchableOpacity, View } from "react-native";
+import { memo, useEffect, useRef } from "react";
+import {
+  Animated,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useNavStyles } from "./navbar.style";
 
 type IconName = keyof typeof iconMapping;
-
 export interface NavItem<T = string> {
   id: T;
   label?: string;
   icon?: IconName;
   badge?: number;
 }
-
 interface NavBarProps<T> {
   items: NavItem<T>[];
   activeId: T;
   onPress: (id: T) => void;
 }
-
 interface AnimatedItemProps<T> {
   item: NavItem<T>;
   isActive: boolean;
@@ -114,7 +117,15 @@ export default function NavBar<T>({
   const stylesNav = useNavStyles();
 
   return (
-    <View style={stylesNav.container}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={{ flex: 1, width: "100%" }}
+      contentContainerStyle={[
+        stylesNav.container,
+        { flexGrow: 1, justifyContent: "center" },
+      ]}
+    >
       {items.map((item) => (
         <AnimatedItem
           key={String(item.id)}
@@ -125,6 +136,6 @@ export default function NavBar<T>({
           stylesNav={stylesNav}
         />
       ))}
-    </View>
+    </ScrollView>
   );
 }

@@ -1,5 +1,6 @@
-import { Header, IconButton, NavBar } from "@/components/components";
+import { IconButton, NavBar } from "@/components/components";
 import { NavItem } from "@/components/Layout/NavBar/navbar";
+import { useAuth } from "@/context/AuthContext"; // ✅ IMPORTADO
 import { useLanguage } from "@/context/LanguageContext";
 import { useSignalR } from "@/context/NotificationsContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -8,12 +9,13 @@ import { Tabs, router } from "expo-router";
 import { useCallback, useEffect, useMemo } from "react";
 import { View } from "react-native";
 
-type Tab = "home" | "message" | "Perfil" | "Search" | "Notifications";
+type Tab = "home" | "message" | "Perfil" | "Search" | "Notifications" | "Admin";
 
 export default function TabLayout() {
   const stylesMain = useStylesMain();
   const { colors } = useTheme();
   const { t } = useLanguage();
+  const { isAdmin } = useAuth();
 
   const { unreadCount, clearUnreadCount, registerAndSendPushToken } =
     useSignalR();
@@ -22,8 +24,8 @@ export default function TabLayout() {
     registerAndSendPushToken();
   }, [registerAndSendPushToken]);
 
-  const navItems: NavItem<Tab>[] = useMemo(
-    () => [
+  const navItems: NavItem<Tab>[] = useMemo(() => {
+    const items: NavItem<Tab>[] = [
       { id: "home", label: t("tab_home"), icon: "home" },
       { id: "Search", label: t("tab_search"), icon: "search" },
       {
@@ -34,15 +36,22 @@ export default function TabLayout() {
       },
       { id: "message", label: t("tab_messages"), icon: "message" },
       { id: "Perfil", label: t("tab_profile"), icon: "profile" },
-    ],
-    [t, unreadCount],
-  );
+    ];
+
+    if (isAdmin) {
+      items.push({
+        id: "Admin",
+        label: "Admin",
+        icon: "shield",
+      });
+    }
+
+    return items;
+  }, [t, unreadCount, isAdmin]); // 'isAdmin' adicionado como dependência
 
   const handleNewPost = useCallback(() => {
     router.push("/NewPost");
   }, []);
-
-  const renderHeader = useCallback(() => <Header />, []);
 
   const renderTabBar = useCallback(
     ({ state, navigation }: any) => {
@@ -86,33 +95,22 @@ export default function TabLayout() {
       }}
       tabBar={renderTabBar}
     >
-      <Tabs.Screen
-        name="home"
-        options={{
-          headerShown: false,
-          header: renderHeader,
-        }}
-      />
+      <Tabs.Screen name="home" />
 
-      <Tabs.Screen name="Search" options={{ headerShown: false }} />
+      <Tabs.Screen name="Search" />
 
-      <Tabs.Screen
-        name="message"
-        options={{
-          headerShown: true,
-          header: renderHeader,
-        }}
-      />
+      <Tabs.Screen name="message" />
+
+      <Tabs.Screen name="Notifications" />
+
+      <Tabs.Screen name="Perfil" />
 
       <Tabs.Screen
-        name="Notifications"
+        name="Admin"
         options={{
-          headerShown: false,
-          header: renderHeader,
+          href: isAdmin ? "/Admin" : null,
         }}
       />
-
-      <Tabs.Screen name="Perfil" options={{ headerShown: false }} />
     </Tabs>
   );
 }

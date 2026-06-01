@@ -32,6 +32,7 @@ Notifications.setNotificationHandler({
 
 interface SignalRContextType {
   connection: signalR.HubConnection | null;
+  isSignalRConnected: boolean;
   unreadCount: number;
   latestIncomingNotification: any | null;
   clearUnreadCount: () => void;
@@ -42,6 +43,7 @@ interface SignalRContextType {
 
 const SignalRContext = createContext<SignalRContextType>({
   connection: null,
+  isSignalRConnected: false,
   unreadCount: 0,
   latestIncomingNotification: null,
   clearUnreadCount: () => {},
@@ -60,6 +62,7 @@ export const SignalRProvider = ({
   const [connection, setConnection] = useState<signalR.HubConnection | null>(
     null,
   );
+  const [isSignalRConnected, setIsSignalRConnected] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [latestIncomingNotification, setLatestIncomingNotification] = useState<
     any | null
@@ -68,17 +71,15 @@ export const SignalRProvider = ({
   const appState = useRef(AppState.currentState);
   const connectionRef = useRef<signalR.HubConnection | null>(null);
   const { request } = useApi();
+  const requestRef = useRef(request);
 
   useEffect(() => {
-    connectionRef.current = connection;
-  }, [connection]);
+    requestRef.current = request;
+  }, [request]);
 
   const registerAndSendPushToken = useCallback(async () => {
     try {
-      if (!Device.isDevice) {
-        console.log("⚠️ Push Notifications não funcionam no emulador.");
-        return;
-      }
+      if (!Device.isDevice) return;
 
       if (Platform.OS === "android") {
         await Notifications.setNotificationChannelAsync("default", {
@@ -98,17 +99,12 @@ export const SignalRProvider = ({
         finalStatus = status;
       }
 
-      if (finalStatus !== "granted") {
-        console.log("❌ Permissão para Push Notifications negada.");
-        return;
-      }
+      if (finalStatus !== "granted") return;
 
       const tokenData = await Notifications.getDevicePushTokenAsync();
       const pushToken = tokenData.data;
 
-      console.log("✅ Device Token Nativo gerado:", pushToken);
-
-      await request({
+      await requestRef.current({
         urlComplement: "/api/users/devices",
         method: "POST",
         data: { deviceToken: pushToken },
@@ -117,35 +113,42 @@ export const SignalRProvider = ({
     } catch (error) {
       console.error("❌ Erro ao registrar Push Token:", error);
     }
-  }, [request]);
+  }, []);
 
   const fetchInitialUnreadCount = useCallback(async () => {
     try {
-      const data = await request({
+      const data = await requestRef.current({
         urlComplement: "/api/notifications/unread-count",
         method: "GET",
         hasLoading: false,
       });
 
       const count = typeof data === "number" ? data : data.count || 0;
-
       startTransition(() => setUnreadCount(count));
     } catch (error) {
-      console.error(
-        "❌ Erro ao buscar contador inicial de notificações:",
-        error,
-      );
+      console.error("❌ Erro ao buscar contador inicial:", error);
     }
-  }, [request]);
+  }, []);
+
+  const disconnectSignalR = useCallback(async () => {
+    if (connectionRef.current) {
+      await connectionRef.current.stop();
+      setConnection(null);
+      connectionRef.current = null;
+      startTransition(() => {
+        setIsSignalRConnected(false);
+        setUnreadCount(0);
+        setLatestIncomingNotification(null);
+      });
+      console.log("🛑 SignalR: Desconectado com segurança.");
+    }
+  }, []);
 
   const connectSignalR = useCallback(async () => {
     try {
       const jwtToken = await Storage.getStoreageItem("user_token");
 
-      if (!jwtToken) {
-        console.warn("⚠️ SignalR: Conexão abortada (Token não encontrado).");
-        return;
-      }
+      if (!jwtToken) return;
 
       if (connectionRef.current) {
         await connectionRef.current.stop();
@@ -158,53 +161,73 @@ export const SignalRProvider = ({
             return token || "";
           },
         })
-        .withAutomaticReconnect()
+        .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
         .build();
 
+      newConnection.onreconnecting((error) => {
+        console.warn("⚠️ SignalR reconectando...", error);
+        startTransition(() => setIsSignalRConnected(false));
+      });
+
+      newConnection.onreconnected((connectionId) => {
+        console.log(`✅ Reconectado! ID: ${connectionId}`);
+        startTransition(() => setIsSignalRConnected(true));
+        fetchInitialUnreadCount();
+      });
+
+      newConnection.onclose(async (error) => {
+        console.error("🛑 SignalR desconectado.", error);
+        startTransition(() => setIsSignalRConnected(false));
+      });
+
+      connectionRef.current = newConnection;
+
+      await newConnection.start();
+      console.log("✅ Conectado ao SignalR no App!");
+
       setConnection(newConnection);
+      startTransition(() => setIsSignalRConnected(true));
+
+      fetchInitialUnreadCount();
+      registerAndSendPushToken();
     } catch (error) {
       console.error("🔴 SignalR: Erro ao inicializar conexão:", error);
     }
-  }, [baseUrl]);
+  }, [baseUrl, fetchInitialUnreadCount, registerAndSendPushToken]);
 
-  const disconnectSignalR = useCallback(async () => {
-    if (connectionRef.current) {
-      await connectionRef.current.stop();
-      setConnection(null);
-      startTransition(() => {
-        setUnreadCount(0);
-        setLatestIncomingNotification(null);
-      });
-      console.log("🛑 SignalR: Desconectado com segurança.");
+  useEffect(() => {
+    if (!baseUrl) return;
+
+    if (isServerOnline) {
+      connectSignalR();
+    } else {
+      disconnectSignalR();
     }
-  }, []);
+
+    return () => {
+      disconnectSignalR();
+    };
+  }, [baseUrl, isServerOnline, connectSignalR, disconnectSignalR]);
 
   useEffect(() => {
     const subscription = DeviceEventEmitter.addListener(
       "onTokenRefresh",
       async () => {
         console.log("🔄 Axios atualizou o token! Reconectando SignalR...");
-
-        if (connectionRef.current) {
-          if (
-            connectionRef.current.state ===
-            signalR.HubConnectionState.Disconnected
-          ) {
-            try {
-              await connectionRef.current.start();
-              console.log("✅ SignalR reconectado com o novo token!");
-              fetchInitialUnreadCount();
-            } catch (e) {
-              console.error(
-                "❌ Falha ao reconectar SignalR após refresh do token:",
-                e,
-              );
-            }
+        if (
+          connectionRef.current?.state ===
+          signalR.HubConnectionState.Disconnected
+        ) {
+          try {
+            await connectionRef.current.start();
+            startTransition(() => setIsSignalRConnected(true));
+            fetchInitialUnreadCount();
+          } catch (e) {
+            console.error("❌ Falha ao reconectar SignalR:", e);
           }
         }
       },
     );
-
     return () => subscription.remove();
   }, [fetchInitialUnreadCount]);
 
@@ -216,46 +239,9 @@ export const SignalRProvider = ({
   }, []);
 
   useEffect(() => {
-    if (!baseUrl) return;
-
-    if (isServerOnline) {
-      connectSignalR();
-    } else {
-      disconnectSignalR();
-    }
-  }, [baseUrl, isServerOnline, connectSignalR, disconnectSignalR]);
-
-  useEffect(() => {
-    if (connection && isServerOnline) {
-      connection
-        .start()
-        .then(() => {
-          console.log("✅ Conectado ao SignalR no App!");
-          fetchInitialUnreadCount();
-          registerAndSendPushToken();
-        })
-        .catch((e) => console.log("❌ Erro ao iniciar SignalR: ", e));
-
-      return () => {
-        connection.stop();
-      };
-    }
-  }, [
-    connection,
-    isServerOnline,
-    fetchInitialUnreadCount,
-    registerAndSendPushToken,
-  ]);
-
-  useEffect(() => {
     if (!connection) return;
 
     const handleGlobalNotification = (notification: any) => {
-      console.log(
-        "🔔 Notificação capturada globalmente no Contexto:",
-        notification.id,
-      );
-
       startTransition(() => {
         setUnreadCount((prev) => prev + 1);
         setLatestIncomingNotification(notification);
@@ -278,15 +264,13 @@ export const SignalRProvider = ({
         appState.current.match(/inactive|background/) &&
         nextAppState === "active"
       ) {
-        console.log("App em primeiro plano. Verificando conexão do SignalR...");
-
         if (
           connection.state === signalR.HubConnectionState.Disconnected &&
           isServerOnline
         ) {
           try {
             await connection.start();
-            console.log("Reconectado ao SignalR com sucesso!");
+            startTransition(() => setIsSignalRConnected(true));
             fetchInitialUnreadCount();
           } catch (e) {
             console.error("Erro ao reconectar após voltar pro app: ", e);
@@ -296,14 +280,11 @@ export const SignalRProvider = ({
         appState.current === "active" &&
         nextAppState.match(/inactive|background/)
       ) {
-        console.log(
-          "App em segundo plano. Desconectando SignalR para poupar bateria...",
-        );
         if (connection.state === signalR.HubConnectionState.Connected) {
           await connection.stop();
+          startTransition(() => setIsSignalRConnected(false));
         }
       }
-
       appState.current = nextAppState;
     };
 
@@ -311,16 +292,14 @@ export const SignalRProvider = ({
       "change",
       handleAppStateChange,
     );
-
-    return () => {
-      subscription.remove();
-    };
+    return () => subscription.remove();
   }, [connection, isServerOnline, fetchInitialUnreadCount]);
 
   return (
     <SignalRContext.Provider
       value={{
         connection,
+        isSignalRConnected,
         unreadCount,
         latestIncomingNotification,
         clearUnreadCount,

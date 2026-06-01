@@ -15,7 +15,6 @@ import {
   View,
 } from "react-native";
 
-// 1. IMPORTAÇÃO DA BIBLIOTECA
 import { Tabs } from "react-native-collapsible-tab-view";
 
 import { useImageUtils } from "@/utils/imageUri.utils";
@@ -25,8 +24,6 @@ import { useMidiaStyles } from "./Midia.styles";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
-// Removemos a necessidade de exportar Refs de ScrollToTop,
-// pois a biblioteca cuida da navegação nativa.
 interface MediaGridProps {
   userProfileId?: string;
   refresh_id: string;
@@ -36,7 +33,6 @@ interface MediaGridProps {
 
 const SkeletonItem = memo(({ styles }: { styles: any }) => {
   const opacity = useRef(new Animated.Value(0.5)).current;
-  // const { getSafeUri } = useImageUtils(); // Removido pois não estava sendo usado aqui
 
   useEffect(() => {
     const animation = Animated.loop(
@@ -46,7 +42,6 @@ const SkeletonItem = memo(({ styles }: { styles: any }) => {
           duration: 800,
           useNativeDriver: true,
         }),
-
         Animated.timing(opacity, {
           toValue: 0.5,
           duration: 800,
@@ -95,7 +90,6 @@ const MediaGrid = function MediaGrid({
     if (!loading) {
       return data;
     }
-
     return Array.from({ length: 12 }, (_, i) => `skeleton-${i}`);
   }, [data, loading]);
 
@@ -143,18 +137,9 @@ const MediaGrid = function MediaGrid({
 
   const renderModalItem = useCallback(
     ({ item }: any) => (
-      <View
-        style={[
-          styles.modalCarouselItem,
-          {
-            width: SCREEN_WIDTH,
-          },
-        ]}
-      >
+      <View style={[styles.modalCarouselItem, { width: SCREEN_WIDTH }]}>
         <Image
-          source={{
-            uri: getSafeUri(item),
-          }}
+          source={{ uri: getSafeUri(item) }}
           style={styles.modalCarouselImage}
           contentFit="contain"
           cachePolicy="memory"
@@ -164,8 +149,6 @@ const MediaGrid = function MediaGrid({
     [styles, getSafeUri],
   );
 
-  // Limpamos a soma matemática do headerHeight.
-  // Mantive o 80 de paddingBottom para garantir que a última linha não fique presa debaixo do menu.
   const contentContainerStyle = useMemo(
     () => [
       styles.listContainer,
@@ -179,21 +162,27 @@ const MediaGrid = function MediaGrid({
 
   return (
     <View style={{ flex: 1, width: "100%" }}>
-      <Tabs.FlatList // 2. SUBSTITUÍDO AQUI
+      <Tabs.FlatList
         data={displayData}
         numColumns={2}
         renderItem={renderItem}
-        keyExtractor={(item, index) => `media-${index}-${String(item)}`}
+        // Key mais segura para evitar re-renderizações desnecessárias
+        keyExtractor={(item, index) =>
+          typeof item === "string" && item.startsWith("skeleton")
+            ? item
+            : `media-${index}`
+        }
         columnWrapperStyle={styles.columnWrapper}
         contentContainerStyle={contentContainerStyle}
         ListEmptyComponent={renderEmpty}
         showsVerticalScrollIndicator={false}
-        nestedScrollEnabled // É bom manter se estiver dentro de outros scrolls
+        // ❌ REMOVIDO: nestedScrollEnabled
+        // Motivo: Interfere nos gestos do react-native-collapsible-tab-view
+
         initialNumToRender={8}
         maxToRenderPerBatch={8}
         windowSize={5}
         removeClippedSubviews={Platform.OS === "android"}
-        // O RefreshControl pode continuar aqui sem problemas
         refreshControl={
           onRefresh ? (
             <RefreshControl
@@ -202,12 +191,13 @@ const MediaGrid = function MediaGrid({
               tintColor="transparent"
               colors={["transparent"]}
               progressBackgroundColor="transparent"
+              // zIndex ajuda a evitar que o RefreshControl fique oculto por baixo das abas no Android
+              style={{ zIndex: 1 }}
             />
           ) : undefined
         }
       />
 
-      {/* Modal permanece inalterado pois não afeta o Scroll do Feed */}
       <Modal
         visible={modalVisible}
         transparent

@@ -1,3 +1,4 @@
+import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useLoading } from "@/context/LoadingContext";
 import { useSignalR } from "@/context/NotificationsContext";
@@ -35,6 +36,7 @@ export function useConfigs() {
   const { loading, setLoading } = useLoading();
   const { request } = useApi();
   const { disconnectSignalR } = useSignalR();
+  const { logout: contextLogout } = useAuth();
 
   const [initialData, setInitialData] = useState<ProfileFormData>({
     name: "",
@@ -152,8 +154,9 @@ export function useConfigs() {
 
   const clearSessionAndRedirect = useCallback(async () => {
     await Storage.deleteInfoUser();
+    await contextLogout();
     router.replace("/");
-  }, []);
+  }, [contextLogout]);
 
   const logOut = useCallback(async () => {
     disconnectSignalR();

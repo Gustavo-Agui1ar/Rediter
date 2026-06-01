@@ -39,10 +39,26 @@ export function useApi() {
         startTransition(() => setError(null));
         if (hasLoading) startTransition(() => setLoading(true));
 
+        const isFormData = axiosConfig.data instanceof FormData;
+
+        const customHeaders: Record<string, any> = {
+          requireAuth,
+          ...axiosConfig.headers,
+        };
+
+        if (isFormData) {
+          customHeaders["Content-Type"] = "multipart/form-data";
+        } else if (axiosConfig.data && !customHeaders["Content-Type"]) {
+          customHeaders["Content-Type"] = "application/json";
+        }
+
         const response = await api({
           url: urlComplement,
-          headers: { requireAuth, ...axiosConfig.headers },
           ...axiosConfig,
+          headers: customHeaders,
+          transformRequest: isFormData
+            ? (data) => data
+            : axiosConfig.transformRequest,
         });
 
         return response.data;
@@ -67,7 +83,9 @@ export function useApi() {
       } finally {
         if (hasLoading) startTransition(() => setLoading(false));
         console.log(
-          `🏁 [API FIM] ${options.method} ${urlComplement} - ${(performance.now() - startTotal).toFixed(2)}ms\n`,
+          `🏁 [API FIM] ${options.method || "GET"} ${urlComplement} - ${(
+            performance.now() - startTotal
+          ).toFixed(2)}ms\n`,
         );
       }
     },

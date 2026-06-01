@@ -20,10 +20,11 @@ import {
   Repeat2,
   Search,
   Settings,
+  Shield,
   SmilePlus,
   User,
 } from "lucide-react-native";
-import React, { forwardRef } from "react";
+import { forwardRef } from "react";
 import { Animated } from "react-native";
 
 const anim = (Component: any) => Animated.createAnimatedComponent(Component);
@@ -52,6 +53,7 @@ const AnimatedArrowBack = anim(ArrowLeft);
 const AnimatedSend = anim(ArrowRight);
 const AnimatedCheck = anim(Check);
 const AnimatedDoubleCheck = anim(CheckCheck);
+const AnimatedShield = anim(Shield);
 
 const AnimatedMessageFilled = forwardRef<any, any>((props, ref) => (
   <MessageCircle
@@ -102,6 +104,7 @@ export const ICON_NAMES = [
   "send",
   "check",
   "double-check",
+  "shield",
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];
@@ -133,4 +136,5 @@ export const iconMapping: Record<IconName, any> = {
   send: AnimatedSend,
   check: AnimatedCheck,
   "double-check": AnimatedDoubleCheck,
+  shield: AnimatedShield,
 };

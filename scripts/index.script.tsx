@@ -1,8 +1,8 @@
+import { useAuth } from "@/context/AuthContext";
 import { useSignalR } from "@/context/NotificationsContext";
 import { useRediterBaseConfigs } from "@/context/RediterConfigContext";
 import { LoginValidator } from "@/utils/login.utils";
 import { useApi } from "@/utils/request.utils";
-import * as StorageUtils from "@/utils/storage.utils";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { useRootNavigationState, useRouter } from "expo-router";
 import { startTransition, useCallback, useEffect, useState } from "react";
@@ -13,6 +13,8 @@ export function useIndex() {
   const { request } = useApi();
   const { googleClientId } = useRediterBaseConfigs();
   const { connectSignalR } = useSignalR();
+  const { login: contextLogin, isAuthenticated } = useAuth();
+
   const [serverError, setServerError] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
@@ -28,23 +30,13 @@ export function useIndex() {
   useEffect(() => {
     if (!rootNavigationState?.key) return;
 
-    const checkTokens = async () => {
-      try {
-        const accessToken = await StorageUtils.getStoreageItem("user_token");
-        const refreshToken =
-          await StorageUtils.getStoreageItem("refresh_token");
-
-        if (accessToken && refreshToken) {
-          console.log("Tokens encontrados, redirecionando para main...");
-          router.replace("/home");
-        }
-      } catch (error) {
-        console.error("Erro ao recuperar tokens:", error);
-      }
-    };
-
-    checkTokens();
-  }, [rootNavigationState?.key, router]);
+    if (isAuthenticated) {
+      console.log(
+        "Tokens encontrados no Contexto, redirecionando para main...",
+      );
+      router.replace("/home");
+    }
+  }, [rootNavigationState?.key, isAuthenticated, router]);
 
   const clearError = useCallback(() => {
     if (serverError) {
@@ -88,7 +80,7 @@ export function useIndex() {
         return;
       }
 
-      await StorageUtils.saveTokens(access, refresh);
+      await contextLogin(access, refresh);
       await connectSignalR();
       router.replace("/home");
     } catch (error: any) {
@@ -131,7 +123,7 @@ export function useIndex() {
         return;
       }
 
-      await StorageUtils.saveTokens(access, refresh);
+      await contextLogin(access, refresh);
       await connectSignalR();
       router.replace("/home");
     } catch (error: any) {

@@ -4,7 +4,7 @@ import HighlightedText from "@/components/UI/HighLightText";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useRouter } from "expo-router";
-import React, { memo } from "react";
+import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { useFollow } from "./UserItem.script";
 import { useStylesUserItem } from "./UserItem.style";
@@ -21,9 +21,18 @@ interface UserItemProps {
   searchTerm?: string;
   blocked?: boolean;
   onUnblock?: (userId: string) => void;
+  isAdminMode?: boolean;
+  onDelete?: () => void;
 }
 
-const UserItem = ({ user, searchTerm, blocked, onUnblock }: UserItemProps) => {
+export const UserItem = ({
+  user,
+  searchTerm,
+  blocked,
+  onUnblock,
+  isAdminMode = false,
+  onDelete,
+}: UserItemProps) => {
   const styles = useStylesUserItem();
   const { colors } = useTheme();
   const router = useRouter();
@@ -65,28 +74,42 @@ const UserItem = ({ user, searchTerm, blocked, onUnblock }: UserItemProps) => {
         </View>
       </Pressable>
 
-      {!user.ownProfile && !blocked && (
+      {isAdminMode && !user.ownProfile ? (
         <View style={styles.buttonContainer}>
           <Button
-            title={buttonTitle}
-            type={buttonType}
-            size="small"
-            onPress={handleFollowToggle}
-            fullWidth={false}
-          />
-        </View>
-      )}
-
-      {blocked && (
-        <View style={styles.blockedContainer}>
-          <Button
-            title={t("btn_unblock")}
+            title={t("btn_delete")}
             type="remove_border"
             size="small"
-            onPress={handleUnlockUser}
+            onPress={onDelete}
             fullWidth={false}
           />
         </View>
+      ) : (
+        <>
+          {!user.ownProfile && !blocked && (
+            <View style={styles.buttonContainer}>
+              <Button
+                title={buttonTitle}
+                type={buttonType}
+                size="small"
+                onPress={handleFollowToggle}
+                fullWidth={false}
+              />
+            </View>
+          )}
+
+          {blocked && (
+            <View style={styles.blockedContainer}>
+              <Button
+                title={t("btn_unblock")}
+                type="remove_border"
+                size="small"
+                onPress={handleUnlockUser}
+                fullWidth={false}
+              />
+            </View>
+          )}
+        </>
       )}
     </View>
   );

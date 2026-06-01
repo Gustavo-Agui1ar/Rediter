@@ -42,6 +42,7 @@ function AppStack() {
         <Stack.Screen name="profile/[id]" />
         <Stack.Screen name="posts/[id]" />
         <Stack.Screen name="Message" />
+        <Stack.Screen name="CreateGroup" />
       </Stack>
     </SafeAreaView>
   );

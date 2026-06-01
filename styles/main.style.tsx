@@ -3,6 +3,7 @@ import { ThemeColors } from "./types/theme.types";
 
 export const useStylesMain = makeStyles((colors: ThemeColors) => ({
   footerContainer: {
+    minHeight: 90,
     width: "100%",
     borderTopWidth: 1,
     borderColor: colors.divider,

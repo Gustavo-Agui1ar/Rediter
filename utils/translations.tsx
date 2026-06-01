@@ -25,6 +25,7 @@ export const translations = {
     default_username: "Usuário",
 
     // Botões
+    btn_cancel: "Cancelar",
     btn_back: "Voltar",
     btn_follow: "Seguir",
     btn_following: "Seguindo",
@@ -156,6 +157,22 @@ export const translations = {
     type_a_message: "Digite uma mensagem...",
     no_messages_yet:
       "Nenhuma mensagem ainda.\nEnvie um 'Oi!' para começar a conversa.",
+    messages: "Mensagens",
+    no_chats_found: "Nenhuma conversa encontrada.",
+
+    //Admin
+    admin_warning_title: "Área Restrita",
+    admin_warning:
+      "Com grandes poderes vêm grandes responsabilidades. O que você deseja moderar hoje?",
+    admin_manage_posts: "Moderação de Posts",
+    admin_manage_users: "Moderação de Usuários",
+    admin_system_settings: "Configurações do Sistema",
+    admin_advanced_settings: "Configurações Avançadas",
+
+    admin_confirm_delete_title: "Confirmar Exclusão",
+    admin_confirm_delete_message:
+      "Tem certeza que deseja deletar/banir o usuário",
+    admin_confirm_delete_confirmation: "Esta ação não pode ser desfeita",
   },
 
   en: {
@@ -184,6 +201,7 @@ export const translations = {
     default_username: "User",
 
     // Buttons
+    btn_cancel: "Cancel",
     btn_back: "Go back",
     btn_follow: "Follow",
     btn_following: "Following",
@@ -315,6 +333,22 @@ export const translations = {
     type_a_message: "Type a message...",
     no_messages_yet:
       "No messages yet.\nSend a 'Hi!' to start the conversation.",
+    messages: "Messages",
+    no_chats_found: "No conversations found.",
+
+    //Admin
+    admin_warning_title: "Restricted Area",
+    admin_warning:
+      "With great power comes great responsibility. What do you want to moderate today?",
+
+    admin_manage_posts: "Manage Posts",
+    admin_manage_users: "Manage Users",
+    admin_system_settings: "System Settings",
+    admin_advanced_settings: "Advanced Settings",
+    admin_confirm_delete_title: "Confirm Deletion",
+    admin_confirm_delete_message:
+      "Are you sure you want to delete/ban the user",
+    admin_confirm_delete_confirmation: "This action cannot be undone",
   },
 };
 
