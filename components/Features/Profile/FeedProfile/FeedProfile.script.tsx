@@ -10,7 +10,7 @@ export interface UseFeedProfileProps {
 export const useFeedProfile = (props: UseFeedProfileProps) => {
   const { onRefreshProfile, refresh_id } = props;
   const [activeTab, setActiveTab] = useState(props.activeTab || "posts");
-  const { setLoading, loading } = useLoading();
+  const { loading } = useLoading();
 
   const [renderedTabs, setRenderedTabs] = useState({
     posts: true,
@@ -25,16 +25,15 @@ export const useFeedProfile = (props: UseFeedProfileProps) => {
   }, [activeTab]);
 
   const handleGlobalRefresh = useCallback(async () => {
-    setLoading(true);
     try {
+      console.time("handleGlobalRefresh");
       DeviceEventEmitter.emit(`${refresh_id}_${activeTabRef.current}`);
       await onRefreshProfile();
+      console.timeEnd("handleGlobalRefresh");
     } catch (error) {
       console.error("[handleGlobalRefresh ERROR]", error);
-    } finally {
-      setLoading(false);
     }
-  }, [onRefreshProfile, refresh_id, setLoading]);
+  }, [onRefreshProfile, refresh_id]);
 
   const handleTabChange = useCallback((newTab: string) => {
     setActiveTab(newTab);

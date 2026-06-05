@@ -17,7 +17,6 @@ export function useApi() {
 
   const request = useCallback(
     async (options: RequestOptions) => {
-      const startTotal = performance.now();
       const {
         urlComplement,
         hasLoading = true,
@@ -30,6 +29,8 @@ export function useApi() {
         startTransition(() => setError(offlineMsg));
         throw new Error(offlineMsg);
       }
+
+      const startTime = Date.now();
 
       if (baseUrl && api.defaults.baseURL !== baseUrl) {
         api.defaults.baseURL = baseUrl;
@@ -82,10 +83,9 @@ export function useApi() {
         throw err;
       } finally {
         if (hasLoading) startTransition(() => setLoading(false));
+        const endTime = Date.now();
         console.log(
-          `🏁 [API FIM] ${options.method || "GET"} ${urlComplement} - ${(
-            performance.now() - startTotal
-          ).toFixed(2)}ms\n`,
+          `[API Request] ${axiosConfig.method || "GET"} ${urlComplement} - Duration: ${endTime - startTime} ms`,
         );
       }
     },

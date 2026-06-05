@@ -33,7 +33,7 @@ const MAX_DESCRIPTION_LENGTH = 150;
 
 export function useConfigs() {
   const { language, setLanguage } = useLanguage();
-  const { loading, setLoading } = useLoading();
+  const { loading } = useLoading();
   const { request } = useApi();
   const { disconnectSignalR } = useSignalR();
   const { logout: contextLogout } = useAuth();

@@ -58,7 +58,10 @@ export function usePosts(
       if (fetchingRef.current) return;
       fetchingRef.current = true;
 
-      if (isRefresh) lastItemRef.current = null;
+      if (isRefresh) {
+        lastItemRef.current = null;
+        setPosts(SKELETONS as any);
+      }
 
       startTransition(() => {
         if (isRefresh) setHasMore(true);

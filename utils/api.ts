@@ -32,7 +32,6 @@ const processQueue = (error: Error | null, token: string | null = null) => {
 api.interceptors.request.use(async (config) => {
   if (config.headers.requireAuth !== false) {
     const token = await getStoreageItem(STORAGE_KEYS.ACCESS_TOKEN);
-    console.log("Token adicionado ao header:", token);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

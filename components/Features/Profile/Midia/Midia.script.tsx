@@ -22,7 +22,7 @@ export function useMediaGrid({
 }: UseMediaGridProps) {
   const { request } = useApi();
   const [data, setData] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -44,10 +44,6 @@ export function useMediaGrid({
       if (fetchingRef.current) return;
       fetchingRef.current = true;
 
-      if (showLoader) {
-        startTransition(() => setLoading(true));
-      }
-
       try {
         const responseData = await request({
           urlComplement: endpoint,
@@ -64,7 +60,6 @@ export function useMediaGrid({
         startTransition(() => setData([]));
       } finally {
         fetchingRef.current = false;
-        startTransition(() => setLoading(false));
       }
     },
     [endpoint, requireAuth, request],
