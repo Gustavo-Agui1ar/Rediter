@@ -1,6 +1,7 @@
 import { AppProviders } from "@/components/AppProvider";
 import { useTheme } from "@/context/ThemeContext";
 import { Stack } from "expo-router";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import {
   configureReanimatedLogger,
@@ -25,25 +26,27 @@ function AppStack() {
       }}
       edges={["top", "bottom"]}
     >
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.background },
-        }}
-      >
-        <Stack.Screen name="index" />
-        <Stack.Screen name="Register" />
-        <Stack.Screen name="Verify" />
-        <Stack.Screen name="Configs" />
-        <Stack.Screen name="forgotPassword" />
-        <Stack.Screen name="NewPost" />
-        <Stack.Screen name="sendEmail" />
-        <Stack.Screen name="BlockedUsers" />
-        <Stack.Screen name="profile/[id]" />
-        <Stack.Screen name="posts/[id]" />
-        <Stack.Screen name="Message" />
-        <Stack.Screen name="CreateGroup" />
-      </Stack>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.background },
+          }}
+        >
+          <Stack.Screen name="index" />
+          <Stack.Screen name="Register" />
+          <Stack.Screen name="Verify" />
+          <Stack.Screen name="Configs" />
+          <Stack.Screen name="forgotPassword" />
+          <Stack.Screen name="NewPost" />
+          <Stack.Screen name="sendEmail" />
+          <Stack.Screen name="BlockedUsers" />
+          <Stack.Screen name="profile/[id]" />
+          <Stack.Screen name="posts/[id]" />
+          <Stack.Screen name="Message" />
+          <Stack.Screen name="CreateGroup" />
+        </Stack>
+      </GestureHandlerRootView>
     </SafeAreaView>
   );
 }

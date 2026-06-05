@@ -21,6 +21,7 @@ export const useFeedStyles = makeStyles((colors: ThemeColors) => ({
 
   headerWrapper: {
     width: "100%",
+    height: 380,
     backgroundColor: colors.background,
   },
 

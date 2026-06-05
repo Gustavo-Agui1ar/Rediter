@@ -149,7 +149,6 @@ export const SignalRProvider = ({
       const jwtToken = await Storage.getStoreageItem("user_token");
 
       if (!jwtToken) return;
-
       if (connectionRef.current) {
         await connectionRef.current.stop();
       }

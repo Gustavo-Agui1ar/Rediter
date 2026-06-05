@@ -1,10 +1,5 @@
-import {
-  deleteTokens,
-  getStoreageItem,
-  saveTokens,
-} from "@/utils/storage.utils";
+import { getStoreageItem, saveTokens } from "@/utils/storage.utils";
 import axios, { AxiosError } from "axios";
-import { router } from "expo-router";
 import { DeviceEventEmitter } from "react-native";
 
 const STORAGE_KEYS = {
@@ -37,6 +32,7 @@ const processQueue = (error: Error | null, token: string | null = null) => {
 api.interceptors.request.use(async (config) => {
   if (config.headers.requireAuth !== false) {
     const token = await getStoreageItem(STORAGE_KEYS.ACCESS_TOKEN);
+    console.log("Token adicionado ao header:", token);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -101,8 +97,7 @@ api.interceptors.response.use(
       return api(originalRequest);
     } catch (refreshError) {
       processQueue(refreshError as Error, null);
-      await deleteTokens();
-      router.replace("/");
+      DeviceEventEmitter.emit("onSessionExpired");
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;

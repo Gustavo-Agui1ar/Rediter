@@ -1,6 +1,5 @@
 import IconButton from "@/components/UI/IconButton/IconButton";
 import { Image } from "expo-image";
-
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 
 import {
@@ -9,15 +8,13 @@ import {
   FlatList,
   Modal,
   Platform,
-  RefreshControl,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 
-import { Tabs } from "react-native-collapsible-tab-view";
-
 import { useImageUtils } from "@/utils/imageUri.utils";
+import { Tabs } from "react-native-collapsible-tab-view";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useMediaGrid } from "./Midia.script";
 import { useMidiaStyles } from "./Midia.styles";
@@ -27,8 +24,7 @@ const SCREEN_WIDTH = Dimensions.get("window").width;
 interface MediaGridProps {
   userProfileId?: string;
   refresh_id: string;
-  onRefresh?: () => Promise<void> | void;
-  refreshing?: boolean;
+  shouldFetch?: boolean;
 }
 
 const SkeletonItem = memo(({ styles }: { styles: any }) => {
@@ -67,8 +63,7 @@ const SkeletonItem = memo(({ styles }: { styles: any }) => {
 const MediaGrid = function MediaGrid({
   userProfileId,
   refresh_id,
-  onRefresh,
-  refreshing = false,
+  shouldFetch = true,
 }: MediaGridProps) {
   const styles = useMidiaStyles();
   const { getSafeUri } = useImageUtils();
@@ -84,6 +79,7 @@ const MediaGrid = function MediaGrid({
   } = useMediaGrid({
     userProfileId,
     refresh_id,
+    shouldFetch,
   });
 
   const displayData = useMemo(() => {
@@ -166,7 +162,6 @@ const MediaGrid = function MediaGrid({
         data={displayData}
         numColumns={2}
         renderItem={renderItem}
-        // Key mais segura para evitar re-renderizações desnecessárias
         keyExtractor={(item, index) =>
           typeof item === "string" && item.startsWith("skeleton")
             ? item
@@ -176,26 +171,10 @@ const MediaGrid = function MediaGrid({
         contentContainerStyle={contentContainerStyle}
         ListEmptyComponent={renderEmpty}
         showsVerticalScrollIndicator={false}
-        // ❌ REMOVIDO: nestedScrollEnabled
-        // Motivo: Interfere nos gestos do react-native-collapsible-tab-view
-
         initialNumToRender={8}
         maxToRenderPerBatch={8}
         windowSize={5}
         removeClippedSubviews={Platform.OS === "android"}
-        refreshControl={
-          onRefresh ? (
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor="transparent"
-              colors={["transparent"]}
-              progressBackgroundColor="transparent"
-              // zIndex ajuda a evitar que o RefreshControl fique oculto por baixo das abas no Android
-              style={{ zIndex: 1 }}
-            />
-          ) : undefined
-        }
       />
 
       <Modal

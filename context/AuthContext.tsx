@@ -1,16 +1,18 @@
 import {
-    deleteTokens,
-    getStoreageItem,
-    saveTokens,
-} from "@/utils/storage.utils"; // Os métodos que você já tem!
+  deleteTokens,
+  getStoreageItem,
+  saveTokens,
+} from "@/utils/storage.utils";
+import { router } from "expo-router";
 import { jwtDecode } from "jwt-decode";
 import {
-    createContext,
-    startTransition,
-    useContext,
-    useEffect,
-    useState,
+  createContext,
+  startTransition,
+  useContext,
+  useEffect,
+  useState,
 } from "react";
+import { DeviceEventEmitter } from "react-native";
 
 export const AuthContext = createContext<any>(null);
 
@@ -19,9 +21,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
 
-  console.log("AuthProvider renderizado. isAuthenticated:", isAuthenticated);
-  console.log("AuthProvider renderizado. isAdmin:", isAdmin);
-  console.log("AuthProvider renderizado. isInitializing:", isInitializing);
+  const logout = async () => {
+    await deleteTokens();
+    startTransition(() => {
+      setIsAdmin(false);
+      setIsAuthenticated(false);
+    });
+  };
+
+  useEffect(() => {
+    const subscription = DeviceEventEmitter.addListener(
+      "onSessionExpired",
+      async () => {
+        await logout();
+        router.replace("/");
+      },
+    );
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   useEffect(() => {
     const loadSession = async () => {
@@ -65,12 +85,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (accessToken: string, refreshToken: string) => {
     await saveTokens(accessToken, refreshToken);
     processToken(accessToken);
-  };
-
-  const logout = async () => {
-    await deleteTokens();
-    setIsAdmin(false);
-    setIsAuthenticated(false);
   };
 
   return (

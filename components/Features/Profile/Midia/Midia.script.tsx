@@ -8,18 +8,26 @@ import {
   useState,
 } from "react";
 import { DeviceEventEmitter, FlatList } from "react-native";
+
 interface UseMediaGridProps {
   userProfileId?: string;
   refresh_id: string;
+  shouldFetch?: boolean;
 }
 
-export function useMediaGrid({ userProfileId, refresh_id }: UseMediaGridProps) {
+export function useMediaGrid({
+  userProfileId,
+  refresh_id,
+  shouldFetch = true,
+}: UseMediaGridProps) {
   const { request } = useApi();
   const [data, setData] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
+
   const fetchingRef = useRef(false);
+  const initialFetchDone = useRef(false);
   const listRef = useRef<FlatList>(null);
   const modalListRef = useRef<FlatList>(null);
 
@@ -84,8 +92,13 @@ export function useMediaGrid({ userProfileId, refresh_id }: UseMediaGridProps) {
   }, []);
 
   useEffect(() => {
-    fetchMedia();
+    if (shouldFetch && !initialFetchDone.current) {
+      initialFetchDone.current = true;
+      fetchMedia();
+    }
+  }, [shouldFetch, fetchMedia]);
 
+  useEffect(() => {
     const sub = DeviceEventEmitter.addListener(refresh_id, () => {
       fetchMedia(false);
     });
