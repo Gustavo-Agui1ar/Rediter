@@ -43,11 +43,11 @@ export default function CreateGroup() {
 
   const handleCreateGroup = async () => {
     if (!groupName.trim()) {
-      alert("Digite um nome para o grupo.");
+      alert(t("group_name_required"));
       return;
     }
     if (selectedUsers.size === 0) {
-      alert("Selecione pelo menos um participante.");
+      alert(t("select_at_least_one_user"));
       return;
     }
 
@@ -66,8 +66,8 @@ export default function CreateGroup() {
 
       router.back();
     } catch (error) {
-      console.error("Erro ao criar grupo", error);
-      alert("Falha ao criar o grupo. Tente novamente.");
+      console.error(t("create_group_failed"), error);
+      alert(t("create_group_failed_message"));
     } finally {
       setIsCreating(false);
     }
@@ -83,17 +83,17 @@ export default function CreateGroup() {
             color: colors.textPrimary,
           }}
         >
-          Novo Grupo
+          {t("create_group")}
         </Text>
       </Header>
 
       <View style={styles.content}>
         <View style={styles.inputSection}>
           <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
-            Nome do Grupo
+            {t("enter_group_name")}
           </Text>
           <TextBox
-            placeholder="Ex: Amigos do Futebol"
+            placeholder={t("enter_group_name_description")}
             value={groupName}
             onChangeText={setGroupName}
           />
@@ -104,7 +104,7 @@ export default function CreateGroup() {
             <Text
               style={[styles.sectionTitle, { color: colors.textSecondary }]}
             >
-              Participantes ({selectedUsers.size})
+              {t("participants")} ({selectedUsers.size})
             </Text>
 
             <ScrollView
@@ -171,7 +171,7 @@ export default function CreateGroup() {
 
         <View style={styles.inputSection}>
           <TextBox
-            placeholder="Buscar novos usuários..."
+            placeholder={t("search_users_by_name_or_username")}
             value={query}
             onChangeText={setQuery}
           />
@@ -186,7 +186,7 @@ export default function CreateGroup() {
               { color: colors.textSecondary, marginBottom: 0 },
             ]}
           >
-            Resultados da Busca
+            {t("search_results")} ({users.length})
           </Text>
         </View>
 

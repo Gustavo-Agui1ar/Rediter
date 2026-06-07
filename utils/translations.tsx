@@ -173,6 +173,19 @@ export const translations = {
     admin_confirm_delete_message:
       "Tem certeza que deseja deletar/banir o usuário",
     admin_confirm_delete_confirmation: "Esta ação não pode ser desfeita",
+
+    // Create Group
+    select_at_least_one_user: "Por favor, selecione pelo menos um usuário.",
+    group_name_required: "Por favor, insira um nome para o grupo.",
+    create_group_failed: "Falha ao criar o grupo",
+    create_group_failed_message:
+      "Não foi possível criar o grupo. Por favor, tente novamente.",
+    enter_group_name: "Nome do Grupo",
+    enter_group_name_description: "Ex: gamers de RPG, amigos da escola, etc.",
+    search_users_by_name_or_username: "Buscar usuários por nome ou username...",
+    create_group: "Novo Grupo",
+    participants: "Participantes",
+    search_results: "Resultados da busca",
   },
 
   en: {
@@ -349,6 +362,19 @@ export const translations = {
     admin_confirm_delete_message:
       "Are you sure you want to delete/ban the user",
     admin_confirm_delete_confirmation: "This action cannot be undone",
+    select_at_least_one_user: "Please select at least one user.",
+
+    // Create Group
+    group_name_required: "Please enter a name for the group.",
+    create_group_failed: "Failed to create group",
+    create_group_failed_message:
+      "Could not create the group. Please try again.",
+    enter_group_name: "Name Group",
+    enter_group_name_description: "Ex: rpg gamers, friends from school, etc.",
+    search_users_by_name_or_username: "Search users by name or username...",
+    create_group: "New Group",
+    participants: "Participants",
+    search_results: "Search results",
   },
 };
 
