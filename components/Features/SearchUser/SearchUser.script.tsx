@@ -25,7 +25,7 @@ export function useSearchUsers(searchTerm: string) {
   const lastItemRef = useRef<{ id: string; createdAt: string } | null>(null);
 
   const fetchUsers = useCallback(
-    async (isMore = false, currentTerm: string) => {
+    async (isMore = false, currentTerm: string, isRefresh = false) => {
       if (!currentTerm?.trim()) {
         startTransition(() => {
           setUsers([]);
@@ -43,7 +43,10 @@ export function useSearchUsers(searchTerm: string) {
       } else {
         lastItemRef.current = null;
         hasMoreRef.current = true;
-        startTransition(() => setInitialLoading(true));
+
+        if (!isRefresh) {
+          startTransition(() => setInitialLoading(true));
+        }
       }
 
       isFetchingRef.current = true;
@@ -101,6 +104,10 @@ export function useSearchUsers(searchTerm: string) {
     [request],
   );
 
+  const refresh = useCallback(async () => {
+    await fetchUsers(false, searchTerm, true);
+  }, [fetchUsers, searchTerm]);
+
   useEffect(() => {
     if (!searchTerm || !searchTerm.trim()) {
       startTransition(() => {
@@ -124,5 +131,6 @@ export function useSearchUsers(searchTerm: string) {
     loadingMore,
     hasMore: hasMoreRef.current,
     loadMore: () => fetchUsers(true, searchTerm),
+    refresh,
   };
 }

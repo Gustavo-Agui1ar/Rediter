@@ -174,11 +174,16 @@ export function useSearchPosts(
     fetchPosts(false, searchTerm);
   }, [hasMore, loadingMore, initialLoading, fetchPosts, searchTerm]);
 
+  const refresh = useCallback(async () => {
+    await fetchPosts(true, searchTerm);
+  }, [fetchPosts, searchTerm]);
+
   return {
     posts,
     initialLoading,
     loadingMore,
     loadMore,
+    refresh,
     error,
   };
 }
