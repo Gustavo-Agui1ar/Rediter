@@ -1,7 +1,6 @@
 import IconButton from "@/components/UI/IconButton/IconButton";
 import { Image } from "expo-image";
-import { memo, useCallback, useEffect, useMemo, useRef } from "react";
-
+import { memo, useCallback, useEffect, useRef } from "react";
 import {
   Animated,
   Dimensions,
@@ -16,7 +15,7 @@ import {
 import { useImageUtils } from "@/utils/imageUri.utils";
 import { Tabs } from "react-native-collapsible-tab-view";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useMediaGrid } from "./Midia.script";
+import { useMediaGridUI } from "./Midia.script";
 import { useMidiaStyles } from "./Midia.styles";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
@@ -70,24 +69,22 @@ const MediaGrid = function MediaGrid({
 
   const {
     data,
+    listRef,
+    modalListRef,
+    displayData,
     loading,
     modalVisible,
     selectedIndex,
-    modalListRef,
+    keyExtractor,
+    contentContainerStyle,
     openModal,
     closeModal,
-  } = useMediaGrid({
+  } = useMediaGridUI({
     userProfileId,
     refresh_id,
     shouldFetch,
+    styles,
   });
-
-  const displayData = useMemo(() => {
-    if (!loading) {
-      return data;
-    }
-    return Array.from({ length: 12 }, (_, i) => `skeleton-${i}`);
-  }, [data, loading]);
 
   const renderItem = useCallback(
     ({ item, index }: any) => {
@@ -106,7 +103,7 @@ const MediaGrid = function MediaGrid({
         >
           <Image
             source={{
-              uri: getSafeUri(item),
+              uri: getSafeUri(item, true),
             }}
             style={styles.image}
             contentFit="cover"
@@ -120,9 +117,7 @@ const MediaGrid = function MediaGrid({
   );
 
   const renderEmpty = useCallback(() => {
-    if (loading) {
-      return null;
-    }
+    if (loading) return null;
 
     return (
       <View style={styles.emptyStateContainer}>
@@ -135,7 +130,7 @@ const MediaGrid = function MediaGrid({
     ({ item }: any) => (
       <View style={[styles.modalCarouselItem, { width: SCREEN_WIDTH }]}>
         <Image
-          source={{ uri: getSafeUri(item) }}
+          source={{ uri: getSafeUri(item, false) }}
           style={styles.modalCarouselImage}
           contentFit="contain"
           cachePolicy="memory"
@@ -145,28 +140,14 @@ const MediaGrid = function MediaGrid({
     [styles, getSafeUri],
   );
 
-  const contentContainerStyle = useMemo(
-    () => [
-      styles.listContainer,
-      {
-        flexGrow: 1,
-        paddingBottom: 80,
-      },
-    ],
-    [styles.listContainer],
-  );
-
   return (
-    <View style={{ flex: 1, width: "100%" }}>
+    <View style={{ flex: 1, width: "100%", paddingTop: 16 }}>
       <Tabs.FlatList
+        ref={listRef}
         data={displayData}
         numColumns={2}
         renderItem={renderItem}
-        keyExtractor={(item, index) =>
-          typeof item === "string" && item.startsWith("skeleton")
-            ? item
-            : `media-${index}`
-        }
+        keyExtractor={keyExtractor}
         columnWrapperStyle={styles.columnWrapper}
         contentContainerStyle={contentContainerStyle}
         ListEmptyComponent={renderEmpty}

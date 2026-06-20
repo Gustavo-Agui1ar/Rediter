@@ -47,7 +47,7 @@ export default function TabLayout() {
     }
 
     return items;
-  }, [t, unreadCount, isAdmin]); // 'isAdmin' adicionado como dependência
+  }, [t, unreadCount, isAdmin]);
 
   const handleNewPost = useCallback(() => {
     router.push("/NewPost");

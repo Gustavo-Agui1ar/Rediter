@@ -62,6 +62,7 @@ export default function Configs() {
       email,
       description,
       password,
+      lan: state.lan,
     });
     if (success) {
       setPassword("");

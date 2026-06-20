@@ -38,8 +38,11 @@ export const UserItem = ({
   const router = useRouter();
   const { t } = useLanguage();
 
-  const { handleFollowToggle, buttonTitle, buttonType, handleUnlockUser } =
-    useFollow(user.userID, user.isFollowing, onUnblock);
+  const { handleFollowToggle, buttonTitle, buttonType } = useFollow(
+    user.userID,
+    user.isFollowing,
+    onUnblock,
+  );
 
   const handleGoToProfile = () => {
     router.push({
@@ -104,7 +107,9 @@ export const UserItem = ({
                 title={t("btn_unblock")}
                 type="remove_border"
                 size="small"
-                onPress={handleUnlockUser}
+                onPress={() => {
+                  if (onUnblock) onUnblock(user.userID as unknown as string);
+                }}
                 fullWidth={false}
               />
             </View>

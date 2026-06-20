@@ -27,6 +27,7 @@ export interface ProfileFormData {
   email: string;
   password?: string;
   description: string;
+  lan: string;
 }
 
 const MAX_DESCRIPTION_LENGTH = 150;
@@ -43,6 +44,7 @@ export function useConfigs() {
     email: "",
     password: "",
     description: "",
+    lan: "",
   });
 
   const [profileImage, setProfileImage] = useState<ImageState>({});
@@ -69,9 +71,10 @@ export function useConfigs() {
         email: data.email || "",
         password: "",
         description: data.description || "",
+        lan: data.lan || "",
       });
-      setProfileImage({ remote: data.imageUrl });
-      setCoverImage({ remote: data.coverUrl });
+      setProfileImage({ remote: data.imageUrl, changed: false });
+      setCoverImage({ remote: data.coverUrl, changed: false });
     });
   }, []);
 
@@ -94,6 +97,7 @@ export function useConfigs() {
         imageUrl: data.imageName,
         coverUrl: data.imageCover,
         description: data.description,
+        lan: data.lan || "",
       };
 
       applyProfileData(profileData);
@@ -216,6 +220,7 @@ export function useConfigs() {
       const formData = new FormData();
       const name = form.name.trim();
       const email = form.email.trim().toLowerCase();
+      const lan = form.lan;
       const description = (form.description || "")
         .replace(/\s+/g, " ")
         .trim()
@@ -232,6 +237,7 @@ export function useConfigs() {
 
       formData.append("Name", name);
       formData.append("Email", email);
+      formData.append("Lan", lan);
 
       if (description.length > 0) {
         formData.append("Description", description);

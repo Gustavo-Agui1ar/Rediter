@@ -45,6 +45,10 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     if (error.response?.status !== 401 || !originalRequest) {
+      const apiMessage = (error.response?.data as any)?.message;
+      if (apiMessage) {
+        error.message = apiMessage;
+      }
       return Promise.reject(error);
     }
 

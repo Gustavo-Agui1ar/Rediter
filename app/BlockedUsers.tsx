@@ -1,5 +1,5 @@
-import { Header, UserItem } from "@/components/components";
-import { useLanguage } from "@/context/LanguageContext"; // 1. IMPORTADO O CONTEXTO DE IDIOMA
+import { AlertBanner, Header, UserItem } from "@/components/components";
+import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useBlockedUsers } from "@/scripts/BlockedUsers.script";
 import { useStylesBlockedUsers } from "@/styles/BlockedUsers.style";
@@ -41,8 +41,14 @@ export default function Blocks({
   const router = useRouter();
   const { t } = useLanguage();
 
-  const { users, initialLoading, loadingMore, loadMore, unblockUserLocally } =
-    useBlockedUsers();
+  const {
+    users,
+    initialLoading,
+    loadingMore,
+    loadMore,
+    unblockUserLocally,
+    error,
+  } = useBlockedUsers();
 
   const skeletons = useMemo(
     () => [
@@ -109,8 +115,12 @@ export default function Blocks({
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <Header title={t("blocked_users_title")} onBack={() => router.back()} />
-
+      <Header title={t("blocked_users_title")} arrowBack={true} />
+      <AlertBanner
+        message={error || undefined}
+        visible={!!error}
+        alert_type="error"
+      />
       <FlatList
         data={displayData}
         renderItem={renderItem}

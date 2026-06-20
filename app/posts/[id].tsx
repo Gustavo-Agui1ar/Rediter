@@ -137,7 +137,7 @@ export default function PostDetailsScreen() {
                 {postData.userName}
               </Text>
               <Text style={styles.timeText}>
-                {formattedDate} {postData.edited && "• Editado"}
+                {formattedDate} {postData.edited && "• " + t("post_edited")}
               </Text>
             </View>
           </TouchableOpacity>

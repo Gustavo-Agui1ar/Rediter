@@ -186,6 +186,15 @@ export const translations = {
     create_group: "Novo Grupo",
     participants: "Participantes",
     search_results: "Resultados da busca",
+
+    // Verify
+    verify_title: "Verifique seu email",
+    verify_description:
+      "Insira o código de verificação que enviamos para o seu email.",
+    verify_no_code: "Não recebeu o código?",
+    verify_resend: "Reenviar código",
+    verify_loading: "Verificando...",
+    verify_button: "Verificar",
   },
 
   en: {
@@ -375,6 +384,14 @@ export const translations = {
     create_group: "New Group",
     participants: "Participants",
     search_results: "Search results",
+
+    // Verify
+    verify_title: "Verify your email",
+    verify_description: "Enter the verification code we sent to your email.",
+    verify_no_code: "Didn't receive the code?",
+    verify_resend: "Resend code",
+    verify_loading: "Verifying...",
+    verify_button: "Verify",
   },
 };
 

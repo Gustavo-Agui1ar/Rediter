@@ -1,4 +1,5 @@
 import { Button, Code, LinkText } from "@/components/components";
+import { useLanguage } from "@/context/LanguageContext";
 import { useVerifyCode } from "@/scripts/verify.script";
 import { useGlobalStyles } from "@/styles/global.styles";
 import { Image, KeyboardAvoidingView, Text, View } from "react-native";
@@ -6,6 +7,7 @@ import { Image, KeyboardAvoidingView, Text, View } from "react-native";
 export default function Verify() {
   const styles = useGlobalStyles();
   const { setCode, handleVerify, handleResendCode, loading } = useVerifyCode();
+  const { t } = useLanguage();
 
   return (
     <KeyboardAvoidingView style={[styles.content]} behavior="padding">
@@ -14,9 +16,12 @@ export default function Verify() {
           source={require("@/assets/images/verify.svg")}
           style={styles.icon_lg}
         />
-        <Text style={styles.title}>Verifique seu email</Text>
+        <Text style={styles.title}>
+          {t("verify_title") || "Verifique seu email"}
+        </Text>
         <Text style={[styles.paragraph, styles.subtitle]}>
-          Enviamos um código de verificação para seu email.
+          {t("verify_description") ||
+            "Insira o código de verificação que enviamos para o seu email."}
         </Text>
 
         <Code length={6} OnChangeCode={setCode} />
@@ -30,14 +35,21 @@ export default function Verify() {
           }}
         >
           <Text style={[styles.paragraph, styles.subtitle]}>
-            Não recebeu o código?{" "}
+            {t("verify_no_code") || "Não recebeu o código?"}
           </Text>
 
-          <LinkText text="Reenviar código" onPress={handleResendCode} />
+          <LinkText
+            text={t("verify_resend") || "Reenviar código"}
+            onPress={handleResendCode}
+          />
         </View>
 
         <Button
-          title={loading ? "Verificando..." : "Verificar"}
+          title={
+            loading
+              ? t("verify_loading") || "Verificando..."
+              : t("verify_button") || "Verificar"
+          }
           onPress={handleVerify}
           type="fill"
         />

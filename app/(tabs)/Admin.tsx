@@ -48,14 +48,6 @@ export default function AdminScreen() {
         />
 
         <Divider text={t("admin_advanced_settings")} />
-
-        <Button
-          title={t("admin_system_settings")}
-          type="border"
-          onPress={() => {
-            console.log("Abrir variáveis do sistema");
-          }}
-        />
       </ScrollView>
     </View>
   );

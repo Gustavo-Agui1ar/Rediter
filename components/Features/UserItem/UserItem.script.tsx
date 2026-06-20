@@ -32,25 +32,9 @@ export function useFollow(
     }
   };
 
-  const handleUnlockUser = async () => {
-    if (!userId) return;
-
-    try {
-      await request({
-        urlComplement: `/api/users/${userId}/unlock`,
-        method: "DELETE",
-        hasLoading: true,
-      });
-      onSuccessRemove?.(userId.toString());
-    } catch (error) {
-      console.error("Erro ao desbloquear usuário:", error);
-    }
-  };
-
   return {
     isFollowing,
     handleFollowToggle,
-    handleUnlockUser,
     buttonTitle: isFollowing ? t("btn_following") : t("btn_follow"),
     buttonType: (isFollowing ? "border" : "fill") as ButtonType,
   };

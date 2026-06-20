@@ -16,7 +16,7 @@ const ProfileCover = ({ imageName, style, ...props }: ProfileCoverProps) => {
 
   const imageSource = useMemo(() => {
     return getSafeUri(imageName, false) || DEFAULT_COVER_IMAGE;
-  }, [imageName]);
+  }, [imageName, getSafeUri]);
 
   const combinedStyle = useMemo(() => {
     return [styles.image, style];
@@ -32,7 +32,6 @@ const ProfileCover = ({ imageName, style, ...props }: ProfileCoverProps) => {
     <View style={styles.container}>
       <Image
         source={imageSource}
-        placeholder={DEFAULT_COVER_IMAGE}
         contentFit="cover"
         style={combinedStyle}
         transition={200}

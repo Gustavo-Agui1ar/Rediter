@@ -85,7 +85,18 @@ export function useIndex() {
       router.replace("/home");
     } catch (error: any) {
       startTransition(() => {
-        setServerError(error?.message || "Falha na conexão com o servidor.");
+        // 1. Tenta pegar a mensagem customizada vinda do corpo da resposta da API
+        // Ajuste 'error.response?.data?.message' conforme a estrutura de erro do seu backend
+        const apiErrorMessage =
+          error.response?.data?.message || error.response?.data?.error;
+
+        // 2. Se não houver resposta do backend, usa a mensagem do erro ou o fallback genérico
+        const finalMessage =
+          apiErrorMessage ||
+          error?.message ||
+          "Falha na conexão com o servidor.";
+
+        setServerError(finalMessage);
       });
     }
   };

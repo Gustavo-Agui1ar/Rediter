@@ -9,7 +9,7 @@ import {
 } from "react";
 import { DeviceEventEmitter, FlatList } from "react-native";
 
-interface UseMediaGridProps {
+export interface UseMediaGridProps {
   userProfileId?: string;
   refresh_id: string;
   shouldFetch?: boolean;
@@ -22,13 +22,13 @@ export function useMediaGrid({
 }: UseMediaGridProps) {
   const { request } = useApi();
   const [data, setData] = useState<string[]>([]);
-  const [loading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const fetchingRef = useRef(false);
   const initialFetchDone = useRef(false);
-  const listRef = useRef<FlatList>(null);
+  const listRef = useRef<any>(null);
   const modalListRef = useRef<FlatList>(null);
 
   const endpoint = useMemo(() => {
@@ -43,6 +43,10 @@ export function useMediaGrid({
     async (showLoader = true) => {
       if (fetchingRef.current) return;
       fetchingRef.current = true;
+
+      if (showLoader) {
+        startTransition(() => setLoading(true));
+      }
 
       try {
         const responseData = await request({
@@ -60,6 +64,7 @@ export function useMediaGrid({
         startTransition(() => setData([]));
       } finally {
         fetchingRef.current = false;
+        startTransition(() => setLoading(false));
       }
     },
     [endpoint, requireAuth, request],
@@ -67,7 +72,6 @@ export function useMediaGrid({
 
   const openModal = useCallback((index: number) => {
     setSelectedIndex(index);
-
     startTransition(() => {
       setModalVisible(true);
     });
@@ -79,10 +83,8 @@ export function useMediaGrid({
 
   const scrollToTop = useCallback(() => {
     try {
-      listRef.current?.scrollToOffset({
-        offset: 0,
-        animated: true,
-      });
+      const listNode = listRef.current?.getNode?.() || listRef.current;
+      listNode?.scrollToOffset?.({ offset: 0, animated: true });
     } catch {}
   }, []);
 
@@ -112,5 +114,64 @@ export function useMediaGrid({
     openModal,
     closeModal,
     scrollToTop,
+  };
+}
+
+export interface UseMediaGridUIProps extends UseMediaGridProps {
+  styles: any;
+}
+
+// 2. Hook responsável por formatar os dados para a interface visual
+export function useMediaGridUI({
+  userProfileId,
+  refresh_id,
+  shouldFetch = true,
+  styles,
+}: UseMediaGridUIProps) {
+  const {
+    data,
+    loading,
+    modalVisible,
+    selectedIndex,
+    listRef,
+    modalListRef,
+    openModal,
+    closeModal,
+  } = useMediaGrid({ userProfileId, refresh_id, shouldFetch });
+
+  // Lógica de Skeleton transferida do componente para cá
+  const displayData = useMemo(() => {
+    if (!loading) return data;
+    return Array.from({ length: 12 }, (_, i) => `skeleton-${i}`);
+  }, [data, loading]);
+
+  const keyExtractor = useCallback((item: any, index: number) => {
+    if (typeof item === "string" && item.startsWith("skeleton")) return item;
+    return `media-${index}`;
+  }, []);
+
+  const contentContainerStyle = useMemo(
+    () => [
+      styles.listContainer,
+      {
+        flexGrow: 1,
+        paddingBottom: 80,
+      },
+    ],
+    [styles.listContainer],
+  );
+
+  return {
+    data,
+    listRef,
+    modalListRef,
+    displayData,
+    loading,
+    modalVisible,
+    selectedIndex,
+    keyExtractor,
+    contentContainerStyle,
+    openModal,
+    closeModal,
   };
 }
