@@ -120,6 +120,31 @@ export function usePosts(
   );
 
   useEffect(() => {
+    const subDeleted = DeviceEventEmitter.addListener(
+      "post_deleted",
+      (deletedPostId: string) => {
+        startTransition(() => {
+          setPosts((prev) =>
+            prev.filter((post) => getId(post) !== deletedPostId),
+          );
+        });
+      },
+    );
+
+    const subRefresh = DeviceEventEmitter.addListener(
+      "refresh_profile_posts",
+      () => {
+        fetchPosts(true);
+      },
+    );
+
+    return () => {
+      subRefresh.remove();
+      subDeleted.remove();
+    };
+  }, []);
+
+  useEffect(() => {
     if (shouldFetch && !initialFetchDone.current) {
       initialFetchDone.current = true;
       fetchPosts(true);

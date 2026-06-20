@@ -72,7 +72,7 @@ export function usePost({
                 hasLoading: true,
               });
 
-              DeviceEventEmitter.emit("refresh_posts");
+              DeviceEventEmitter.emit("post_deleted", postId);
             } catch (error) {
               console.error("Erro ao excluir post:", error);
               Alert.alert("Erro", "Não foi possível excluir o post.");

@@ -159,7 +159,7 @@ export function useNewPost() {
           data: formData,
         });
 
-        DeviceEventEmitter.emit("refresh_posts");
+        DeviceEventEmitter.emit("refresh_profile_posts");
 
         startTransition(() => {
           setAlertBanner({
