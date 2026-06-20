@@ -1,6 +1,7 @@
 import Post from "@/components/Features/Post/Post";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useApi } from "@/utils/request.utils";
 import React, {
   memo,
   useCallback,
@@ -12,6 +13,7 @@ import React, {
 import {
   ActivityIndicator,
   Alert,
+  DeviceEventEmitter,
   Dimensions,
   SectionList,
   StyleProp,
@@ -91,8 +93,10 @@ const SearchPosts = ({
   const { colors } = useTheme();
   const styles = useStylesPosts();
   const { t } = useLanguage();
+  const { request } = useApi();
   const listRef = useRef<SectionList>(null);
   const [internalRefreshing, setInternalRefreshing] = useState(false);
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
 
   const { posts, initialLoading, loadingMore, loadMore, refresh } =
     useSearchPosts(searchTerm, onlyWithMedia, feedMode);
@@ -112,12 +116,21 @@ const SearchPosts = ({
     }
   }, [refreshing, isRefreshingSV]);
 
-  const displayData = initialLoading ? SKELETON_DATA : posts || [];
+  const displayData = useMemo(() => {
+    if (initialLoading) return SKELETON_DATA;
+    return (posts || []).filter((item) => {
+      const id = getId(item);
+      return !id || !deletedIds.has(id.toString());
+    });
+  }, [initialLoading, posts, deletedIds]);
+
   const sections = useMemo(() => [{ data: displayData }], [displayData]);
 
   const handleRefreshTrigger = useCallback(async () => {
     isRefreshingSV.value = true;
     setInternalRefreshing(true);
+
+    setDeletedIds(new Set());
 
     if (onRefresh) {
       await onRefresh();
@@ -188,17 +201,42 @@ const SearchPosts = ({
           {
             text: "Deletar",
             style: "destructive",
-            onPress: () => {
+            onPress: async () => {
               const id = getId(item) as string;
-              if (onDeletePost && id) {
+              if (!id) return;
+
+              if (onDeletePost) {
                 onDeletePost(id);
+              } else {
+                try {
+                  await request({
+                    urlComplement: `/api/posts/${id}`,
+                    method: "DELETE",
+                  });
+
+                  setDeletedIds((prev) => {
+                    const next = new Set(prev);
+                    next.add(id.toString());
+                    return next;
+                  });
+
+                  DeviceEventEmitter.emit("post_deleted", id);
+
+                  Alert.alert("Sucesso", "Post deletado com sucesso.");
+                } catch (error: any) {
+                  Alert.alert(
+                    "Erro",
+                    error?.response?.data?.message ||
+                      "Não foi possível deletar o post.",
+                  );
+                }
               }
             },
           },
         ],
       );
     },
-    [onDeletePost],
+    [onDeletePost, request],
   );
 
   const renderItem = useCallback(

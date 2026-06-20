@@ -190,7 +190,7 @@ function Post({
 
                   {isAdmin && !ownProfile && (
                     <TouchableOpacity
-                      onPress={onDelete}
+                      onPress={onDelete ? onDelete : handleDeletePost}
                       style={postStyles.itemOptionsContainer}
                     >
                       <Text style={postStyles.optionTextDelete}>
