@@ -45,11 +45,7 @@ export default function AdminPostsScreen() {
       </View>
 
       <View style={{ flex: 1 }} key={refreshKey}>
-        <SearchPosts
-          searchTerm={searchTerm}
-          isAdminMode={true}
-          onDeletePost={handleDeletePost}
-        />
+        <SearchPosts searchTerm={searchTerm} onDeletePost={handleDeletePost} />
       </View>
     </View>
   );

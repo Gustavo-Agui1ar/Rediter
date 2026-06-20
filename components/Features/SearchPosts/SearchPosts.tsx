@@ -74,7 +74,6 @@ interface SearchPostsProps {
   profileHeader?: React.ReactElement;
   tabBar?: React.ReactElement;
   feedMode?: "following" | "foryou";
-  isAdminMode?: boolean;
   onDeletePost?: (postId: string) => void;
 }
 
@@ -87,7 +86,6 @@ const SearchPosts = ({
   profileHeader,
   tabBar,
   feedMode,
-  isAdminMode = false,
   onDeletePost,
 }: SearchPostsProps) => {
   const { colors } = useTheme();
@@ -227,13 +225,12 @@ const SearchPosts = ({
             liked={item.likedByCurrentUser}
             userId={item.postUserID}
             canGoToProfile={true}
-            isAdminMode={isAdminMode}
             onDelete={() => handleConfirmDelete(item)}
           />
         </View>
       );
     },
-    [searchTerm, styles.PostContainer, isAdminMode, handleConfirmDelete],
+    [searchTerm, styles.PostContainer, handleConfirmDelete],
   );
 
   const handleKeyExtractor = useCallback((item: any, index: number) => {

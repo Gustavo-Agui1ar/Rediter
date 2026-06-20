@@ -59,7 +59,6 @@ interface SearchUsersProps {
   refreshing?: boolean;
   profileHeader?: React.ReactElement;
   tabBar?: React.ReactElement;
-  isAdminMode?: boolean;
   onDeleteUser?: (userId: string) => void;
 }
 
@@ -69,7 +68,6 @@ const SearchUsers = ({
   refreshing = false,
   profileHeader,
   tabBar,
-  isAdminMode = false,
   onDeleteUser,
 }: SearchUsersProps) => {
   const { colors } = useTheme();
@@ -206,12 +204,11 @@ const SearchUsers = ({
         <UserItem
           user={item}
           searchTerm={searchTerm}
-          isAdminMode={isAdminMode}
           onDelete={() => handleConfirmDelete(item)}
         />
       );
     },
-    [searchTerm, isAdminMode, handleConfirmDelete],
+    [searchTerm, handleConfirmDelete],
   );
 
   const handleKeyExtractor = useCallback((item: any, index: number) => {

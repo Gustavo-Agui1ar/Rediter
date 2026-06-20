@@ -1,6 +1,7 @@
 import ProfileImage from "@/components/Features/Profile/ProfileImage";
 import Button from "@/components/UI/Button/button";
 import HighlightedText from "@/components/UI/HighLightText";
+import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useRouter } from "expo-router";
@@ -21,7 +22,6 @@ interface UserItemProps {
   searchTerm?: string;
   blocked?: boolean;
   onUnblock?: (userId: string) => void;
-  isAdminMode?: boolean;
   onDelete?: () => void;
 }
 
@@ -30,14 +30,13 @@ export const UserItem = ({
   searchTerm,
   blocked,
   onUnblock,
-  isAdminMode = false,
   onDelete,
 }: UserItemProps) => {
   const styles = useStylesUserItem();
   const { colors } = useTheme();
   const router = useRouter();
   const { t } = useLanguage();
-
+  const { isAdmin } = useAuth();
   const { handleFollowToggle, buttonTitle, buttonType } = useFollow(
     user.userID,
     user.isFollowing,
@@ -77,7 +76,7 @@ export const UserItem = ({
         </View>
       </Pressable>
 
-      {isAdminMode && !user.ownProfile ? (
+      {isAdmin && !user.ownProfile ? (
         <View style={styles.buttonContainer}>
           <Button
             title={t("btn_delete")}

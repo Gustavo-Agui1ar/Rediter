@@ -50,11 +50,7 @@ export default function AdminUsersScreen() {
       </View>
 
       <View style={{ flex: 1 }} key={refreshKey}>
-        <SearchUsers
-          searchTerm={searchTerm}
-          isAdminMode={true}
-          onDeleteUser={handleDeleteUser}
-        />
+        <SearchUsers searchTerm={searchTerm} onDeleteUser={handleDeleteUser} />
       </View>
     </View>
   );

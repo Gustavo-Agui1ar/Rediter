@@ -2,6 +2,7 @@ import ProfileImage from "@/components/Features/Profile/ProfileImage";
 import DisplayImages from "@/components/Feedback/DisplayImages/DisplayImage";
 import HighlightedText from "@/components/UI/HighLightText";
 import IconButton from "@/components/UI/IconButton/IconButton";
+import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useGlobalStyles } from "@/styles/global.styles";
@@ -34,7 +35,6 @@ interface PostProps {
   canGoToProfile?: boolean;
   userId: string;
   isReply?: boolean;
-  isAdminMode?: boolean;
   onDelete?: () => void;
 }
 
@@ -57,12 +57,12 @@ function Post({
   canGoToProfile = true,
   userId,
   isReply = false,
-  isAdminMode = false,
   onDelete,
 }: PostProps) {
   const styles = useGlobalStyles();
   const postStyles = usePostStyles();
   const { colors } = useTheme();
+  const { isAdmin } = useAuth();
 
   const {
     showOptions,
@@ -91,7 +91,7 @@ function Post({
   const { t } = useLanguage();
   const safeImageUrls = postImageUrl || EMPTY_IMAGE_ARRAY;
   const hasImages = safeImageUrls.length > 0;
-  const hasOptions = ownProfile || hasImages || isAdminMode;
+  const hasOptions = ownProfile || hasImages || isAdmin;
 
   const downloadingOpacityStyle = useMemo(
     () => ({ opacity: isDownloading ? 0.5 : 1 }),
@@ -188,7 +188,7 @@ function Post({
                     </>
                   )}
 
-                  {isAdminMode && !ownProfile && (
+                  {isAdmin && !ownProfile && (
                     <TouchableOpacity
                       onPress={onDelete}
                       style={postStyles.itemOptionsContainer}
@@ -300,7 +300,6 @@ const areEqual = (prevProps: PostProps, nextProps: PostProps) => {
     prevProps.countComments === nextProps.countComments &&
     prevProps.searchTerm === nextProps.searchTerm &&
     prevProps.isReply === nextProps.isReply &&
-    prevProps.isAdminMode === nextProps.isAdminMode &&
     prevProps.postImageUrl?.length === nextProps.postImageUrl?.length
   );
 };
