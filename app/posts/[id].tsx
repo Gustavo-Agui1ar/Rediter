@@ -22,6 +22,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Animated, { LinearTransition } from "react-native-reanimated";
 import { EmojiKeyboard } from "rn-emoji-keyboard";
 
 export default function PostDetailsScreen() {
@@ -76,10 +77,6 @@ export default function PostDetailsScreen() {
     setShowEmoji((prev) => !prev);
   }, []);
 
-  const onEmojiSelected = useCallback((emojiObject: { emoji: string }) => {
-    setCommentText((prev) => prev + emojiObject.emoji);
-  }, []);
-
   const submitReply = useCallback(async () => {
     if (commentText.trim() === "" && replyFiles.length === 0) {
       Alert.alert("Aviso", "A resposta não pode estar vazia.");
@@ -87,6 +84,7 @@ export default function PostDetailsScreen() {
     }
 
     Keyboard.dismiss();
+
     const isSuccess = await handleSendReply(
       commentText,
       replyLocation,
@@ -101,6 +99,10 @@ export default function PostDetailsScreen() {
       setShowEmoji(false);
     }
   }, [commentText, replyFiles, replyLocation, handleSendReply]);
+
+  const onEmojiSelected = useCallback((emojiObject: { emoji: string }) => {
+    setCommentText((prev) => prev + emojiObject.emoji);
+  }, []);
 
   const formattedDate = useFormattedDate(postData?.createdAt || "");
 
@@ -298,8 +300,11 @@ export default function PostDetailsScreen() {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: colors.background }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.select({
+        ios: 90,
+        android: 80,
+      })}
     >
       <FlatList
         style={[styles.container, { flex: 1 }]}
@@ -319,7 +324,8 @@ export default function PostDetailsScreen() {
       />
 
       {!isLoadingComments && postData && (
-        <View
+        <Animated.View
+          layout={LinearTransition.duration(150)}
           style={[
             styles.bottomInputContainer,
             {
@@ -426,16 +432,19 @@ export default function PostDetailsScreen() {
               )}
             </View>
           )}
-        </View>
+        </Animated.View>
       )}
 
       {showEmoji && (
-        <View style={{ height: 250 }}>
+        <Animated.View
+          style={{ height: 250 }}
+          layout={LinearTransition.duration(150)}
+        >
           <EmojiKeyboard
             onEmojiSelected={onEmojiSelected}
             allowMultipleSelections
           />
-        </View>
+        </Animated.View>
       )}
     </KeyboardAvoidingView>
   );

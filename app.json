@@ -66,9 +66,9 @@
           "icon": "./assets/images/notification/notification_white_r.png",
           "color": "#6B66FF"
         }
-      ]
+      ],
+      "expo-localization"
     ],
-
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": false

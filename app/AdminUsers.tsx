@@ -21,7 +21,7 @@ export default function AdminUsersScreen() {
           method: "DELETE",
         });
 
-        Alert.alert("Sucesso", "Usuário deletado e removido do sistema.");
+        Alert.alert("Sucesso", t("user_deleted"));
 
         setRefreshKey((prev) => prev + 1);
       } catch (error: any) {
@@ -29,7 +29,7 @@ export default function AdminUsersScreen() {
           "Erro",
           error?.response?.data?.message ||
             error?.message ||
-            "Não foi possível deletar o usuário.",
+            t("failed_to_delete_user"),
         );
       }
     },
@@ -38,11 +38,11 @@ export default function AdminUsersScreen() {
 
   return (
     <View style={styles.container}>
-      <Header title="Gerenciar Usuários" arrowBack={true} />
+      <Header title={t("manage_users")} arrowBack={true} />
 
       <View style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
         <TextBox
-          placeholder="Buscar usuário pelo nome..."
+          placeholder={t("search_users")}
           value={searchTerm}
           onChangeText={setSearchTerm}
           autoCapitalize="none"
