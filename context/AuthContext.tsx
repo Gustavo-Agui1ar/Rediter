@@ -1,17 +1,8 @@
-import {
-  deleteTokens,
-  getStoreageItem,
-  saveTokens,
-} from "@/utils/storage.utils";
+import * as Storage from "@/utils/storage.utils";
+import { getStoreageItem, saveTokens } from "@/utils/storage.utils";
 import { router } from "expo-router";
 import { jwtDecode } from "jwt-decode";
-import {
-  createContext,
-  startTransition,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { DeviceEventEmitter } from "react-native";
 
 export const AuthContext = createContext<any>(null);
@@ -22,11 +13,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isInitializing, setIsInitializing] = useState(true);
 
   const logout = async () => {
-    await deleteTokens();
-    startTransition(() => {
+    try {
+      await Storage.deleteInfoUser();
+    } catch (error) {
+      console.error("Erro ao limpar dados do usuário", error);
+    } finally {
       setIsAdmin(false);
       setIsAuthenticated(false);
-    });
+    }
   };
 
   useEffect(() => {
@@ -34,6 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       "onSessionExpired",
       async () => {
         await logout();
+
         router.replace("/");
       },
     );
@@ -64,6 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const decoded: any = jwtDecode(token);
       console.log("🚀 Payload do JWT:", decoded);
+
       const roleClaim =
         decoded[
           "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
@@ -71,11 +67,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const rolesArray = Array.isArray(roleClaim) ? roleClaim : [roleClaim];
 
-      startTransition(() => {
-        console.log("Token processado. Roles:", rolesArray);
-        setIsAdmin(rolesArray.includes("SuperAdmin"));
-        setIsAuthenticated(true);
-      });
+      console.log("Token processado. Roles:", rolesArray);
+
+      setIsAdmin(rolesArray.includes("SuperAdmin"));
+      setIsAuthenticated(true);
     } catch (error) {
       console.error("Token inválido", error);
       logout();

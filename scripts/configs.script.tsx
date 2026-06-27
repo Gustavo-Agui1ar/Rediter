@@ -157,7 +157,6 @@ export function useConfigs() {
   }, []);
 
   const clearSessionAndRedirect = useCallback(async () => {
-    await Storage.deleteInfoUser();
     await contextLogout();
     router.replace("/");
   }, [contextLogout]);
